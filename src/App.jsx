@@ -14,6 +14,7 @@ const AIChat = lazy(() => import('./pages/AIChat'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Diagnostics = lazy(() => import('./pages/Diagnostics'));
+const DebugPage = lazy(() => import('./pages/DebugPage'));
 
 // Lazy Load Modals (Optional, but good for performance)
 const BuyModal = lazy(() => import('./components/features/BuyModal'));
@@ -22,7 +23,7 @@ const CheckoutModal = lazy(() => import('./components/features/CheckoutModal'));
 const AppContent = () => {
     const { loading } = useAuth();
     const { cartItems, addToCart, removeFromCart, clearCart } = useCart();
-    const [activeTab, setActiveTab] = useState('home');
+    const [activeTab, setActiveTab] = useState('debug');
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
@@ -56,6 +57,8 @@ const AppContent = () => {
                 return <Profile />;
             case 'diagnostics':
                 return <Diagnostics />;
+            case 'debug':
+                return <DebugPage />;
             default:
                 return <Showcase onBuy={setSelectedProduct} />;
         }
