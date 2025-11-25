@@ -53,6 +53,12 @@ const FlipProductCard = ({ product, onBuy }) => {
                             {product.price.toLocaleString()} ₽
                         </div>
 
+                        {product.isSold && (
+                            <div className="absolute bottom-3 left-3 bg-stone-900/80 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-lg z-20 pointer-events-none border border-stone-700">
+                                ПРОДАНО
+                            </div>
+                        )}
+
                         {/* Кнопка переворота */}
                         <button
                             onClick={handleFlip}
@@ -106,12 +112,21 @@ const FlipProductCard = ({ product, onBuy }) => {
 
                     {/* Container for the button to ensure it's clickable and visible */}
                     <div className="relative z-10" style={{ transform: "translateZ(1px)" }}>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onBuy(product); }}
-                            className="w-full bg-white text-stone-900 py-3 rounded-xl font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-lg hover:bg-stone-100"
-                        >
-                            В корзину <ShoppingBag size={16} />
-                        </button>
+                        {product.isSold ? (
+                            <button
+                                disabled
+                                className="w-full bg-stone-600 text-stone-300 py-3 rounded-xl font-bold text-sm cursor-not-allowed flex items-center justify-center gap-2 shadow-none opacity-80"
+                            >
+                                Продано
+                            </button>
+                        ) : (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onBuy(product); }}
+                                className="w-full bg-white text-stone-900 py-3 rounded-xl font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-lg hover:bg-stone-100"
+                            >
+                                В корзину <ShoppingBag size={16} />
+                            </button>
+                        )}
                     </div>
                 </div>
             </motion.div>

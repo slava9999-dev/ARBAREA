@@ -15,7 +15,13 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
     const currentPrice = selectedSize === '80 см' ? product.price + 1000 : (selectedSize === '100 см' ? product.price + 2000 : product.price);
 
     const handleAddToCart = () => {
-        onAddToCart({ ...product, price: currentPrice, selectedSize, selectedColorName: selectedColor ? COLORS[selectedColor].name : null, id: `${product.id}-${Date.now()}` });
+        onAddToCart({
+            ...product,
+            price: currentPrice,
+            selectedSize,
+            selectedColor, // Pass the key (e.g., 'bronze') for ID generation
+            selectedColorName: selectedColor ? COLORS[selectedColor].name : null
+        });
         onClose();
     };
 
