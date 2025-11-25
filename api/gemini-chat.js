@@ -66,7 +66,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Gemini API key missing' });
     }
 
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
     // Format history for Gemini API
     const contents = history.map(msg => ({
