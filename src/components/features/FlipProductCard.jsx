@@ -110,7 +110,7 @@ const FlipProductCard = ({ product, onBuy }) => {
                             onClick={(e) => { e.stopPropagation(); onBuy(product); }}
                             className="w-full bg-white text-stone-900 py-3 rounded-xl font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-lg hover:bg-stone-100"
                         >
-                            Заказать <ShoppingBag size={16} />
+                            В корзину <ShoppingBag size={16} />
                         </button>
                     </div>
                 </div>

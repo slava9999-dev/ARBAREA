@@ -45,6 +45,17 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const clearRecaptcha = () => {
+        if (window.recaptchaVerifier) {
+            try {
+                window.recaptchaVerifier.clear();
+            } catch (e) {
+                console.error("Error clearing recaptcha", e);
+            }
+            window.recaptchaVerifier = null;
+        }
+    };
+
     const loginWithPhone = async (phoneNumber, appVerifier) => {
         return await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
     };
@@ -80,6 +91,7 @@ export const AuthProvider = ({ children }) => {
             loginWithEmail,
             registerWithEmail,
             setupRecaptcha,
+            clearRecaptcha,
             loginWithPhone,
             loginWithTelegram,
             loginWithYandex

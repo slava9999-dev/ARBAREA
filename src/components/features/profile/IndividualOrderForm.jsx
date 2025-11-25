@@ -58,11 +58,10 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
 🔗 <b>ID заявки:</b> ${orderData.orderId}
             `.trim();
 
-            const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:4000/api' : '/api';
-            const response = await fetch(`${API_BASE_URL}/send-telegram`, {
+            const response = await fetch('/api/telegram-notify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message })
+                body: JSON.stringify({ text: message })
             });
 
             if (!response.ok) {
@@ -189,8 +188,8 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
                 <div
                     onClick={!file ? handleFileClick : undefined}
                     className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center transition-colors ${file
-                            ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
-                            : 'border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 cursor-pointer'
+                        ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
+                        : 'border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 cursor-pointer'
                         }`}
                 >
                     {file ? (

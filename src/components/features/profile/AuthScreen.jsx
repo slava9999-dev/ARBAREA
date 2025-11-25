@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 
 const AuthScreen = () => {
-    const { loginWithGoogle, loginWithEmail, registerWithEmail, loginWithPhone, loginWithTelegram, loginWithYandex, setupRecaptcha } = useAuth();
+    const { loginWithGoogle, loginWithEmail, registerWithEmail, loginWithPhone, loginWithTelegram, loginWithYandex, setupRecaptcha, clearRecaptcha } = useAuth();
     const [method, setMethod] = useState('main'); // main, email, phone
+    // ...
+
+    useEffect(() => {
+        return () => {
+            clearRecaptcha();
+        };
+    }, [clearRecaptcha]);
+
+    useEffect(() => {
+        if (method !== 'phone') {
+            clearRecaptcha();
+        }
+    }, [method, clearRecaptcha]);
     const [emailMode, setEmailMode] = useState('login'); // login, register
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');

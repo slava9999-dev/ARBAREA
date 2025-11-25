@@ -24,21 +24,41 @@ if (!fs.existsSync(OUTPUT_DIR)) {
     console.log(`📁 Создана папка для готовых фото: ${OUTPUT_DIR}`);
 }
 
+// Рекурсивная функция для поиска файлов
+function getAllFiles(dirPath, arrayOfFiles) {
+    const files = fs.readdirSync(dirPath);
+
+    arrayOfFiles = arrayOfFiles || [];
+
+    files.forEach(function (file) {
+        if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+            arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+        } else {
+            arrayOfFiles.push(path.join(dirPath, "/", file));
+        }
+    });
+
+    return arrayOfFiles;
+}
+
 async function processImages() {
     try {
-        const files = fs.readdirSync(INPUT_DIR);
-        const images = files.filter(file => /\.(jpg|jpeg|png|webp)$/i.test(file));
+        const allFiles = getAllFiles(INPUT_DIR);
+        const images = allFiles.filter(file => /\.(jpg|jpeg|png|webp)$/i.test(file));
 
         if (images.length === 0) {
-            console.log('⚠️ В папке raw_images нет изображений.');
+            console.log('⚠️ В папке raw_images и её подпапках нет изображений.');
             return;
         }
 
         console.log(`🚀 Найдено изображений: ${images.length}. Начинаем оптимизацию...`);
 
-        for (const file of images) {
-            const inputPath = path.join(INPUT_DIR, file);
-            const fileName = path.parse(file).name;
+        for (const inputPath of images) {
+            const fileName = path.parse(inputPath).name;
+            // Сохраняем все в одну плоскую папку public/images/products, 
+            // так как у нас в products.js пути прописаны плоско.
+            // Если нужно сохранять структуру папок, логику нужно усложнить.
+            // Но пока для простоты и совместимости с products.js - плоская структура.
             const outputPath = path.join(OUTPUT_DIR, `${fileName}.webp`);
 
             await sharp(inputPath)
@@ -48,7 +68,7 @@ async function processImages() {
                 .webp({ quality: QUALITY })
                 .toFile(outputPath);
 
-            console.log(`✅ Готово: ${file} -> ${fileName}.webp`);
+            console.log(`✅ Готово: ${path.basename(inputPath)} -> ${fileName}.webp`);
         }
 
         console.log('🎉 Все изображения оптимизированы!');

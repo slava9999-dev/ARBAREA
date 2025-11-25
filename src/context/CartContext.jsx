@@ -14,15 +14,10 @@ export const CartProvider = ({ children }) => {
     });
     const { user } = useAuth();
 
-    // Sync with Firestore when user logs in, or use LocalStorage for guests
+    // Sync with Firestore when user logs in
     useEffect(() => {
-        if (!user) {
-            // Guest mode: persist to local storage
-            localStorage.setItem('guest_cart', JSON.stringify(cartItems));
-            return;
-        }
+        if (!user) return;
 
-        // Auth mode: Sync with Firestore
         const cartRef = collection(db, 'users', user.uid, 'cart');
         const q = query(cartRef);
 
@@ -37,7 +32,14 @@ export const CartProvider = ({ children }) => {
         });
 
         return unsubscribe;
-    }, [user, cartItems]);
+    }, [user]);
+
+    // Persist to LocalStorage for guests
+    useEffect(() => {
+        if (!user) {
+            localStorage.setItem('guest_cart', JSON.stringify(cartItems));
+        }
+    }, [cartItems, user]);
 
     const addToCart = async (product) => {
         const cartItemId = `${product.id}-${product.selectedSize || 'default'}-${product.selectedColor || 'default'}`;
