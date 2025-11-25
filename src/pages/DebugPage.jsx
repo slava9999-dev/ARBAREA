@@ -23,7 +23,11 @@ const DebugPage = () => {
 
         const status = {};
         Object.keys(envs).forEach(key => {
-            status[key] = envs[key] ? '✅ Loaded' : '❌ Missing';
+            if (key === 'VITE_GEMINI_API_KEY' && !envs[key]) {
+                status[key] = 'ℹ️ Backend Only (OK)';
+            } else {
+                status[key] = envs[key] ? '✅ Loaded' : '❌ Missing';
+            }
         });
         setEnvStatus(status);
         addLog('Environment variables checked');
@@ -56,8 +60,12 @@ const DebugPage = () => {
                 setApiStatus({ loading: false, result: '✅ Success: ' + (data.text || 'No text') });
                 addLog('✅ AI API Success', 'success');
             } else {
-                setApiStatus({ loading: false, result: '❌ Error: ' + JSON.stringify(data) });
-                addLog('❌ AI API Error: ' + JSON.stringify(data), 'error');
+                let errorMsg = JSON.stringify(data);
+                if (data.error?.code === 404) {
+                    errorMsg = "⚠️ API Not Enabled? Go to Google Cloud Console -> Enable 'Generative Language API'.";
+                }
+                setApiStatus({ loading: false, result: '❌ Error: ' + errorMsg });
+                addLog('❌ AI API Error: ' + errorMsg, 'error');
             }
         } catch (e) {
             setApiStatus({ loading: false, result: '❌ Network Error: ' + e.message });
