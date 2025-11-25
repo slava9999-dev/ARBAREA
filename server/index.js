@@ -132,6 +132,43 @@ app.post('/api/send-telegram', async (req, res) => {
     }
 });
 
+// Gemini Chat endpoint for local development
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+app.post('/api/gemini-chat', async (req, res) => {
+    try {
+        const { message, history } = req.body;
+        const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+
+        if (!apiKey) {
+            return res.status(500).json({ error: 'Gemini API key missing' });
+        }
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        let chat;
+        if (history && Array.isArray(history)) {
+            const historyForGemini = history.map(msg => ({
+                role: msg.sender === 'user' ? 'user' : 'model',
+                parts: [{ text: msg.text }]
+            }));
+            chat = model.startChat({ history: historyForGemini });
+        } else {
+            chat = model.startChat();
+        }
+
+        const result = await chat.sendMessage(message);
+        const response = await result.response;
+        const text = response.text();
+
+        return res.json({ text });
+    } catch (error) {
+        console.error('Gemini API Error:', error);
+        return res.status(500).json({ error: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`⚡️ Server listening on http://localhost:${PORT}`);
     console.log(`📱 Telegram notifications: ${process.env.TELEGRAM_BOT_TOKEN ? 'Configured' : 'Not configured'}`);

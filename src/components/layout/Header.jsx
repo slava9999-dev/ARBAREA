@@ -7,9 +7,14 @@ const Header = () => {
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md z-40 px-6 py-4 flex justify-between items-center border-b border-stone-100 dark:border-stone-800">
-      <h1 className="text-xl font-serif font-bold text-stone-800 dark:text-stone-100 tracking-wider">
-        ARBAREA
-      </h1>
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 bg-stone-900 dark:bg-stone-100 rounded-tr-xl rounded-bl-xl flex items-center justify-center">
+          <span className="text-white dark:text-stone-900 font-serif font-bold text-lg">A</span>
+        </div>
+        <h1 className="text-xl font-serif font-bold text-stone-900 dark:text-stone-100 tracking-[0.2em]">
+          RBAREA
+        </h1>
+      </div>
       <div className="flex items-center gap-2">
         <button
           type="button"

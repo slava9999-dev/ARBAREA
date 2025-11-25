@@ -18,11 +18,21 @@ const Showcase = ({ onBuy }) => {
       <div className="mb-6">
         <h2 className="text-2xl font-serif text-stone-800 mb-2">Коллекция</h2>
       </div>
-      <div className="mb-8 bg-stone-800 text-white p-4 rounded-2xl flex justify-between items-center shadow-lg">
-        <div className="flex gap-2 items-center font-bold">
-          <Zap className="text-yellow-400" /> Покупка в 1 клик
+      <div className="mb-8 relative overflow-hidden rounded-2xl shadow-xl group cursor-pointer">
+        <div className="absolute inset-0 bg-gradient-to-r from-stone-800 to-stone-900" />
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10" />
+        <div className="relative p-6 flex justify-between items-center text-white">
+          <div>
+            <div className="flex items-center gap-2 font-bold text-lg mb-1">
+              <Zap className="text-yellow-400 fill-yellow-400" size={20} /> 
+              Покупка в 1 клик
+            </div>
+            <p className="text-stone-400 text-xs">Быстрый заказ без регистрации</p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+            <ChevronRight className="text-white" />
+          </div>
         </div>
-        <ChevronRight />
       </div>
       <div className="flex gap-3 overflow-x-auto pb-4 mb-2 scrollbar-hide">
         {CATEGORIES.map((c) => (

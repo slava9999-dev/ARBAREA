@@ -1,79 +1,107 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+import fetch from 'node-fetch';
 
-// Инициализация
-// Note: process.env.GEMINI_API_KEY might be undefined during build time, but should be present at runtime.
-// We initialize inside the handler or check before usage to be safe, but global init is fine if env is present.
-// For Vercel serverless, it's better to init inside or just assume env is there.
+// System instruction for the AI
+const SYSTEM_INSTRUCTION = `
+Role:
+Ты — "Мастер Арбареа" (Arbarea Master), виртуальный эксперт и душа премиальной столярной мастерской Arbarea. Твоя задача — не просто отвечать на вопросы, а влюбить клиента в натуральное дерево и эстетику скандинавского интерьера.
 
-module.exports = async (req, res) => {
-  // 1. CORS Headers (Разрешаем доступ отовсюду)
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+Tone of Voice:
+Теплый и гостеприимный: Общайся как вежливый хозяин мастерской.
+Экспертный, но простой: Объясняй сложные термины простым языком.
+Спокойный и уверенный: Стиль общения — "Скандинавский минимализм".
+Использование Эмодзи: Умеренно используй "уютные" эмодзи (🌳, 🪵, ✨, 🌿).
 
-  // Обработка preflight запроса
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+Context:
+Мы — мастерская Arbarea (Нижний Новгород), создаем изделия из массива (дуб, ясень, карагач, орех).
+Покрытие: Натуральные масла и воск (Biofa, Osmo).
+Доставка: По всей России.
 
-  try {
-    const { message, history } = req.body || req.query; // Поддержка и POST и GET
+Каталог:
+Панно из спилов, Рейлинги, Светильники из шпона, Бутылочницы, Столы.
+`;
 
-    if (!message) {
-      return res.status(400).json({ error: 'Message is required' });
+export default async function handler(req, res) {
+    // 1. CORS Headers
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    );
+
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is missing on server');
+    const { message, history } = req.body || req.query;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+
+    if (!apiKey) {
+        console.error('Gemini API key missing');
+        return res.status(500).json({ error: 'Gemini API key missing configuration' });
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    
-    // Use gemini-1.5-flash as it is generally available and faster/cheaper, or gemini-pro as requested.
-    // The prompt requested "gemini-pro", but 1.5-flash is often better for chat. 
-    // Let's stick to the prompt's request for "gemini-pro" or use "gemini-1.5-flash" if pro is deprecated.
-    // Actually, "gemini-pro" is alias for 1.0 pro. "gemini-1.5-flash" is recommended.
-    // I will use "gemini-1.5-flash" for better performance/cost ratio, but the user code had "gemini-pro".
-    // I'll stick to the user's requested code structure but maybe upgrade model if I can.
-    // User code said: const model = genAI.getGenerativeModel({ model: "gemini-pro"});
-    // I will use "gemini-1.5-flash" as it is the current standard for fast chat.
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+    // Use gemini-1.5-flash via REST API
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-    // Construct chat history if provided
-    let chat;
-    if (history && Array.isArray(history)) {
-        const historyForGemini = history.map(msg => ({
-            role: msg.sender === 'user' ? 'user' : 'model',
-            parts: [{ text: msg.text }]
-        }));
-        chat = model.startChat({
-            history: historyForGemini
+    try {
+        // Format contents
+        const contents = [];
+        
+        if (history && Array.isArray(history)) {
+            history.forEach(msg => {
+                contents.push({
+                    role: msg.sender === 'user' ? 'user' : 'model',
+                    parts: [{ text: msg.text }]
+                });
+            });
+        }
+
+        contents.push({
+            role: 'user',
+            parts: [{ text: message }]
         });
-    } else {
-        chat = model.startChat();
+
+        const requestBody = {
+            contents: contents,
+            system_instruction: {
+                parts: [{ text: SYSTEM_INSTRUCTION }]
+            },
+            generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 800,
+            }
+        };
+
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('Gemini API Error Response:', data);
+            return res.status(response.status).json({ 
+                error: 'Gemini API Error', 
+                details: data.error?.message || JSON.stringify(data) 
+            });
+        }
+
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (!text) {
+            console.error('No text in response:', data);
+            return res.status(500).json({ error: 'No response text from AI' });
+        }
+
+        return res.status(200).json({ text });
+
+    } catch (error) {
+        console.error('Server Error:', error);
+        return res.status(500).json({ error: error.message });
     }
-
-    const result = await chat.sendMessage(message);
-    const response = await result.response;
-    const text = response.text();
-
-    // The frontend expects { text: ... } based on previous code, but the prompt example returns { reply: ... }
-    // I should probably return { text: ... } to match frontend expectations or update frontend.
-    // Let's look at frontend: src/lib/gemini.js expects `data.text`.
-    // The prompt code returns `reply`. This will break frontend.
-    // I will return `text` to be compatible with existing frontend.
-    return res.status(200).json({ text: text });
-
-  } catch (error) {
-    console.error('Gemini API Error:', error);
-    return res.status(500).json({ 
-      error: 'Failed to process request', 
-      details: error.message 
-    });
-  }
-};
+}
