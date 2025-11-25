@@ -17,8 +17,8 @@ const PORT = process.env.PORT || 4000;
 app.use(cors({ origin: true })); // Allow all origins for dev; tighten in prod.
 app.use(express.json());
 
-const TERMINAL_KEY = process.env.TINKOFF_TERMINAL_KEY;
-const SECRET = process.env.TINKOFF_SECRET;
+const TERMINAL_KEY = process.env.TINKOFF_TERMINAL_KEY || process.env.VITE_TINKOFF_TERMINAL_KEY;
+const SECRET = process.env.TINKOFF_SECRET || process.env.TINKOFF_PASSWORD || process.env.VITE_TINKOFF_SECRET || process.env.VITE_TINKOFF_PASSWORD;
 const API_URL = 'https://securepay.tinkoff.ru/v2';
 
 // Helper to generate token string (concatenated values)

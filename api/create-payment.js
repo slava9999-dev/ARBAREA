@@ -19,8 +19,8 @@ module.exports = async (req, res) => {
 
     try {
         const { amount, orderId, description, customerEmail, customerPhone, receipt } = req.body;
-        const terminalKey = process.env.TINKOFF_TERMINAL_KEY;
-        const password = process.env.TINKOFF_PASSWORD;
+        const terminalKey = process.env.TINKOFF_TERMINAL_KEY || process.env.VITE_TINKOFF_TERMINAL_KEY;
+        const password = process.env.TINKOFF_PASSWORD || process.env.TINKOFF_SECRET || process.env.VITE_TINKOFF_PASSWORD || process.env.VITE_TINKOFF_SECRET;
 
         if (!terminalKey || !password) {
             console.error('Missing Tinkoff credentials');
