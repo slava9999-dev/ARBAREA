@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider, useCart } from './context/CartContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Header from './components/layout/Header';
+import CartDebugger from './components/debug/CartDebugger';
 import BottomNav from './components/layout/BottomNav';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 
@@ -103,8 +104,8 @@ const AppContent = () => {
                 setActiveTab={setActiveTab}
                 cartCount={cartItems.length}
             />
+            <CartDebugger />
         </div>
-    );
 };
 
 const App = () => (

@@ -48,9 +48,16 @@ export const CartProvider = ({ children }) => {
     }, [cartItems, user]);
 
     const addToCart = async (product) => {
-        console.log('🛒 addToCart called with product:', product);
+        console.log('═══════════════════════════════════════════');
+        console.log('[CART_DEBUG] 🛒 addToCart ВЫЗВАН');
+        console.log('[CART_DEBUG] 📦 Полученный product:', product);
+        console.log('[CART_DEBUG] 🔑 product.id:', product.id);
+        console.log('[CART_DEBUG] 💰 product.price:', product.price, typeof product.price);
+        console.log('[CART_DEBUG] 📛 product.name:', product.name);
+        console.log('[CART_DEBUG] 🎨 product.selectedSize:', product.selectedSize);
+        console.log('[CART_DEBUG] 🎨 product.selectedColor:', product.selectedColor);
         const cartItemId = `${product.id}-${product.selectedSize || 'default'}-${product.selectedColor || 'default'}`;
-        console.log('🆔 Generated cartItemId:', cartItemId);
+        console.log('[CART_DEBUG] 🆔 Generated cartItemId:', cartItemId);
 
         if (!user) {
             console.log('👤 Guest mode - using localStorage');
