@@ -52,11 +52,14 @@ export const PRODUCTS = [
         name: 'Панно "Зимние Горы"',
         category: 'Панно',
         price: 4900,
-        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1000&auto=format&fit=crop',
+        image: '/images/products/panno_winter_mountains_1.webp',
         gallery: [
-            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1000&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?q=80&w=1000&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?q=80&w=1000&auto=format&fit=crop'
+            '/images/products/panno_winter_mountains_1.webp',
+            '/images/products/panno_winter_mountains_2.webp',
+            '/images/products/panno_winter_mountains_3.webp',
+            '/images/products/panno_winter_mountains_4.webp',
+            '/images/products/panno_winter_mountains_5.webp',
+            '/images/products/panno_winter_mountains_6.webp'
         ],
         rating: 5.0,
         hasOptions: false,

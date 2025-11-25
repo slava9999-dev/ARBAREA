@@ -41,7 +41,10 @@ const AppContent = () => {
     const renderContent = () => {
         switch (activeTab) {
             case 'home':
-                return <Showcase onBuy={setSelectedProduct} />;
+                return <Showcase onBuy={(product) => {
+                    addToCart({ ...product, quantity: 1 });
+                    // Optional: show toast notification
+                }} />;
             case 'gallery':
                 return <Gallery />;
             case 'ai':
@@ -63,7 +66,9 @@ const AppContent = () => {
             case 'legal':
                 return <LegalInfo />;
             default:
-                return <Showcase onBuy={setSelectedProduct} />;
+                return <Showcase onBuy={(product) => {
+                    addToCart({ ...product, quantity: 1 });
+                }} />;
         }
     };
 
