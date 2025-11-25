@@ -1,0 +1,178 @@
+:root {
+  /* Primary palette (HSL) */
+  --color-primary-h: 220;
+  --color-primary-s: 90%;
+  --color-primary-l: 55%;
+  --color-primary: hsl(
+    var(--color-primary-h),
+    var(--color-primary-s),
+    var(--color-primary-l)
+  );
+  --color-primary-dark: hsl(
+    var(--color-primary-h),
+    var(--color-primary-s),
+    45%
+  );
+  --color-primary-light: hsl(
+    var(--color-primary-h),
+    var(--color-primary-s),
+    65%
+  );
+
+  /* Accent palette */
+  --color-accent-h: 340;
+  --color-accent-s: 80%;
+  --color-accent-l: 60%;
+  --color-accent: hsl(
+    var(--color-accent-h),
+    var(--color-accent-s),
+    var(--color-accent-l)
+  );
+
+  /* Neutral palette */
+  --color-bg: hsl(0, 0%, 100%);
+  --color-bg-dark: hsl(0, 0%, 10%);
+  --color-surface: hsl(0, 0%, 98%);
+  --color-surface-dark: hsl(0, 0%, 12%);
+  --color-text: hsl(0, 0%, 10%);
+  --color-text-dark: hsl(0, 0%, 90%);
+
+  /* Spacing */
+  --spacing-xxs: 0.25rem;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 3rem;
+
+  /* Border radius */
+  --radius-sm: 0.4rem;
+  --radius-md: 0.8rem;
+  --radius-lg: 1.2rem;
+}
+
+/* Dark mode overrides */
+html.dark {
+  --color-bg: var(--color-bg-dark);
+  --color-surface: var(--color-surface-dark);
+  --color-text: var(--color-text-dark);
+}
+
+/* Global resets using design tokens */
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+/* Utility classes */
+.bg-primary {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+.bg-primary-light {
+  background-color: var(--color-primary-light);
+  color: #fff;
+}
+
+.bg-primary-dark {
+  background-color: var(--color-primary-dark);
+  color: #fff;
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-accent {
+  color: var(--color-accent);
+}
+
+.rounded-sm {
+  border-radius: var(--radius-sm);
+}
+
+.rounded-md {
+  border-radius: var(--radius-md);
+}
+
+.rounded-lg {
+  border-radius: var(--radius-lg);
+}
+
+.px-sm {
+  padding-left: var(--spacing-sm);
+  padding-right: var(--spacing-sm);
+}
+
+.py-sm {
+  padding-top: var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
+}
+
+.mt-md {
+  margin-top: var(--spacing-md);
+}
+
+.mb-md {
+  margin-bottom: var(--spacing-md);
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+}
+
+/* Gradient utilities */
+.bg-gradient-primary {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-light)
+  );
+}
+
+/* Button base */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-accent {
+  background-color: var(--color-accent);
+  color: #fff;
+}
+
+.btn-accent:hover {
+  background-color: hsl(var(--color-accent-h), var(--color-accent-s), 50%);
+}

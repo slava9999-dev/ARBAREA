@@ -1,192 +1,134 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { db } from '../lib/firebase';
-import { useAuth } from './AuthContext';
-import { collection, doc, setDoc, deleteDoc, onSnapshot, query, getDocs, writeBatch } from 'firebase/firestore';
+import { createContext, useContext, useReducer, useEffect } from 'react';
 
 const CartContext = createContext();
 
-export const useCart = () => useContext(CartContext);
+const initialState = {
+  items: [],
+};
+
+const cartReducer = (state, action) => {
+  console.log('🛒 [Cart Action]:', action.type, action.payload);
+
+  switch (action.type) {
+    case 'SET_CART':
+      return {
+        ...state,
+        items: action.payload,
+      };
+
+    case 'ADD_ITEM': {
+      const newItem = action.payload;
+      const existingItemIndex = state.items.findIndex(
+        (item) => item.id === newItem.id
+      );
+
+      if (existingItemIndex > -1) {
+        const updatedItems = [...state.items];
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: (updatedItems[existingItemIndex].quantity || 1) + 1,
+        };
+        return { ...state, items: updatedItems };
+      }
+
+      return {
+        ...state,
+        items: [...state.items, { ...newItem, quantity: 1 }],
+      };
+    }
+
+    case 'REMOVE_ITEM':
+      return {
+        ...state,
+        items: state.items.filter((item) => item.id !== action.payload),
+      };
+
+    case 'UPDATE_QUANTITY': {
+      const { id, quantity } = action.payload;
+      if (quantity < 1) return state;
+
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === id ? { ...item, quantity } : item
+        ),
+      };
+    }
+
+    case 'CLEAR_CART':
+      return {
+        ...state,
+        items: [],
+      };
+
+    default:
+      return state;
+  }
+};
 
 export const CartProvider = ({ children }) => {
-    const [cartItems, setCartItems] = useState(() => {
-        try {
-            const localData = localStorage.getItem('guest_cart');
-            return localData ? JSON.parse(localData) : [];
-        } catch (e) {
-            console.error('Corrupted guest_cart, resetting.', e);
-            localStorage.removeItem('guest_cart');
-            return [];
-        }
-    });
-    const { user } = useAuth();
+  const [state, dispatch] = useReducer(cartReducer, initialState, () => {
+    try {
+      const localData = localStorage.getItem('arbarea_cart');
+      return localData ? { items: JSON.parse(localData) } : initialState;
+    } catch (error) {
+      console.error('Error reading cart from localStorage:', error);
+      return initialState;
+    }
+  });
 
-    // Sync with Firestore when user logs in
-    useEffect(() => {
-        if (!user) return;
+  useEffect(() => {
+    try {
+      localStorage.setItem('arbarea_cart', JSON.stringify(state.items));
+    } catch (error) {
+      console.error('Error saving cart to localStorage:', error);
+    }
+  }, [state.items]);
 
-        const cartRef = collection(db, 'users', user.uid, 'cart');
-        const q = query(cartRef);
+  // Derived state calculations
+  const totalItems = state.items.reduce(
+    (total, item) => total + (item.quantity || 1),
+    0
+  );
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const items = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setCartItems(items);
-        }, (error) => {
-            console.error("Error fetching cart:", error);
-        });
+  const totalPrice = state.items.reduce(
+    (total, item) => total + item.price * (item.quantity || 1),
+    0
+  );
 
-        return unsubscribe;
-    }, [user]);
+  const addToCart = (product) => {
+    dispatch({ type: 'ADD_ITEM', payload: product });
+  };
 
-    // Persist to LocalStorage for guests
-    useEffect(() => {
-        if (!user) {
-            localStorage.setItem('guest_cart', JSON.stringify(cartItems));
-        }
-    }, [cartItems, user]);
+  const removeFromCart = (productId) => {
+    dispatch({ type: 'REMOVE_ITEM', payload: productId });
+  };
 
-    const addToCart = async (product) => {
-        console.log('═══════════════════════════════════════════');
-        console.log('[CART_DEBUG] 🛒 addToCart ВЫЗВАН');
-        console.log('[CART_DEBUG] 📦 Полученный product:', product);
-        console.log('[CART_DEBUG] 🔑 product.id:', product.id);
-        console.log('[CART_DEBUG] 💰 product.price:', product.price, typeof product.price);
-        console.log('[CART_DEBUG] 📛 product.name:', product.name);
-        console.log('[CART_DEBUG] 🎨 product.selectedSize:', product.selectedSize);
-        console.log('[CART_DEBUG] 🎨 product.selectedColor:', product.selectedColor);
-        const cartItemId = `${product.id}-${product.selectedSize || 'default'}-${product.selectedColor || 'default'}`;
-        console.log('[CART_DEBUG] 🆔 Generated cartItemId:', cartItemId);
+  const updateQuantity = (productId, quantity) => {
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { id: productId, quantity } });
+  };
 
-        if (!user) {
-            console.log('👤 Guest mode - using localStorage');
-            // Guest Logic
-            setCartItems(prev => {
-                const existing = prev.find(item => item.id === cartItemId);
-                let newCart;
-                if (existing) {
-                    console.log('✅ Item exists, incrementing quantity');
-                    newCart = prev.map(item => item.id === cartItemId ? { ...item, quantity: (item.quantity || 1) + 1 } : item);
-                } else {
-                    console.log('➕ New item, adding to cart');
-                    newCart = [...prev, { ...product, id: cartItemId, quantity: 1 }];
-                }
-                localStorage.setItem('guest_cart', JSON.stringify(newCart));
-                console.log('💾 Cart saved to localStorage:', newCart);
-                return newCart;
-            });
-            return;
-        }
+  const clearCart = () => {
+    dispatch({ type: 'CLEAR_CART' });
+  };
 
-        // Auth Logic
-        console.log('🔐 Authenticated user - using Firestore');
-        const itemRef = doc(db, 'users', user.uid, 'cart', cartItemId);
-        try {
-            const existingItem = cartItems.find(item => item.id === cartItemId);
-            const quantity = existingItem ? (existingItem.quantity || 1) + 1 : 1;
-            console.log('📊 Quantity to save:', quantity);
+  const value = {
+    cartItems: state.items,
+    totalItems,
+    totalPrice,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+  };
 
-            await setDoc(itemRef, {
-                ...product,
-                id: cartItemId,
-                quantity,
-                updatedAt: new Date()
-            });
-            console.log('✅ Item saved to Firestore');
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+};
 
-            // Optimistically update local state
-            setCartItems(prev => {
-                const exists = prev.find(i => i.id === cartItemId);
-                if (exists) {
-                    return prev.map(i => i.id === cartItemId ? { ...i, quantity: (i.quantity || 1) + 1 } : i);
-                }
-                return [...prev, { ...product, id: cartItemId, quantity: 1 }];
-            });
-            console.log('🔄 Local state updated');
-        } catch (error) {
-            console.error("❌ Error adding to cart:", error);
-            alert('Ошибка добавления в корзину: ' + error.message);
-        }
-    };
-
-    const removeFromCart = async (id) => {
-        if (!user) {
-            setCartItems(prev => {
-                const newCart = prev.filter(item => item.id !== id);
-                localStorage.setItem('guest_cart', JSON.stringify(newCart));
-                return newCart;
-            });
-            return;
-        }
-
-        try {
-            await deleteDoc(doc(db, 'users', user.uid, 'cart', id));
-        } catch (error) {
-            console.error("Error removing from cart:", error);
-        }
-    };
-
-    const updateQuantity = async (id, quantity) => {
-        if (!user) {
-            setCartItems(prev => {
-                const newCart = prev.map(item => item.id === id ? { ...item, quantity } : item);
-                localStorage.setItem('guest_cart', JSON.stringify(newCart));
-                return newCart;
-            });
-            return;
-        }
-
-        try {
-            const itemRef = doc(db, 'users', user.uid, 'cart', id);
-            await setDoc(itemRef, { quantity }, { merge: true });
-        } catch (error) {
-            console.error("Error updating quantity:", error);
-        }
-    };
-
-    const clearCart = async () => {
-        if (!user) {
-            setCartItems([]);
-            localStorage.removeItem('guest_cart');
-            return;
-        }
-
-        try {
-            const batch = writeBatch(db);
-            cartItems.forEach(item => {
-                const itemRef = doc(db, 'users', user.uid, 'cart', item.id);
-                batch.delete(itemRef);
-            });
-            await batch.commit();
-        } catch (error) {
-            console.error("Error clearing cart:", error);
-        }
-    };
-
-    const subtotal = cartItems.reduce((total, item) => {
-        const price = typeof item.price === 'number' ? item.price : 0;
-        return total + price * (item.quantity || 1);
-    }, 0);
-
-    // 10% discount for registered users
-    const discount = user ? Math.round(subtotal * 0.10) : 0;
-    const cartTotal = subtotal - discount;
-
-    const value = {
-        cartItems,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        cartTotal,
-        subtotal,
-        discount
-    };
-
-    return (
-        <CartContext.Provider value={value}>
-            {children}
-        </CartContext.Provider>
-    );
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
 };
