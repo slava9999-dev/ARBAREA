@@ -18,7 +18,7 @@ const Diagnostics = lazy(() => import('./pages/Diagnostics'));
 const DebugPage = lazy(() => import('./pages/DebugPage'));
 const LegalInfo = lazy(() => import('./pages/LegalInfo'));
 
-// Lazy Load Modals (Optional, but good for performance)
+// Lazy Load Modals
 const BuyModal = lazy(() => import('./components/features/BuyModal'));
 const CheckoutModal = lazy(() => import('./components/features/CheckoutModal'));
 
@@ -42,10 +42,13 @@ const AppContent = () => {
     const renderContent = () => {
         switch (activeTab) {
             case 'home':
-                return <Showcase onBuy={(product) => {
-                    addToCart({ ...product, quantity: 1 });
-                    // Optional: show toast notification
-                }} />;
+                return (
+                    <Showcase
+                        onBuy={(product) => {
+                            addToCart({ ...product, quantity: 1 });
+                        }}
+                    />
+                );
             case 'gallery':
                 return <Gallery />;
             case 'ai':
@@ -67,9 +70,13 @@ const AppContent = () => {
             case 'legal':
                 return <LegalInfo />;
             default:
-                return <Showcase onBuy={(product) => {
-                    addToCart({ ...product, quantity: 1 });
-                }} />;
+                return (
+                    <Showcase
+                        onBuy={(product) => {
+                            addToCart({ ...product, quantity: 1 });
+                        }}
+                    />
+                );
         }
     };
 
@@ -78,9 +85,7 @@ const AppContent = () => {
             <div className="noise-overlay" />
             <Header />
             <main className="max-w-md mx-auto bg-white dark:bg-stone-900 min-h-screen shadow-2xl relative overflow-hidden">
-                <Suspense fallback={<LoadingSpinner />}>
-                    {renderContent()}
-                </Suspense>
+                <Suspense fallback={<LoadingSpinner />}>{renderContent()}</Suspense>
             </main>
 
             <Suspense fallback={null}>
@@ -91,21 +96,13 @@ const AppContent = () => {
                         onAddToCart={addToCart}
                     />
                 )}
-
-                {isCheckoutOpen && (
-                    <CheckoutModal
-                        onClose={() => setIsCheckoutOpen(false)}
-                    />
-                )}
+                {isCheckoutOpen && <CheckoutModal onClose={() => setIsCheckoutOpen(false)} />}
             </Suspense>
 
-            <BottomNav
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                cartCount={cartItems.length}
-            />
+            <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} cartCount={cartItems.length} />
             <CartDebugger />
         </div>
+    );
 };
 
 const App = () => (
