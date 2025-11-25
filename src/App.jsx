@@ -15,6 +15,7 @@ const Cart = lazy(() => import('./pages/Cart'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Diagnostics = lazy(() => import('./pages/Diagnostics'));
 const DebugPage = lazy(() => import('./pages/DebugPage'));
+const LegalInfo = lazy(() => import('./pages/LegalInfo'));
 
 // Lazy Load Modals (Optional, but good for performance)
 const BuyModal = lazy(() => import('./components/features/BuyModal'));
@@ -23,7 +24,7 @@ const CheckoutModal = lazy(() => import('./components/features/CheckoutModal'));
 const AppContent = () => {
     const { loading } = useAuth();
     const { cartItems, addToCart, removeFromCart, clearCart } = useCart();
-    const [activeTab, setActiveTab] = useState('debug');
+    const [activeTab, setActiveTab] = useState('home');
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
@@ -54,11 +55,13 @@ const AppContent = () => {
                     />
                 );
             case 'profile':
-                return <Profile />;
+                return <Profile setActiveTab={setActiveTab} />;
             case 'diagnostics':
                 return <Diagnostics />;
             case 'debug':
                 return <DebugPage />;
+            case 'legal':
+                return <LegalInfo />;
             default:
                 return <Showcase onBuy={setSelectedProduct} />;
         }

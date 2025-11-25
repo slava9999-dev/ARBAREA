@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { LogOut, Star, Coffee, User as UserIcon } from 'lucide-react';
+import { LogOut, Star, Coffee, User as UserIcon, FileText } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import IndividualOrderForm from './IndividualOrderForm';
 import OrderHistory from './OrderHistory';
 import SocialFooter from '../../layout/SocialFooter';
 import { initPayment } from '../../../lib/tinkoff';
 
-const ProfileView = () => {
+const ProfileView = ({ setActiveTab }) => {
     const { logout, user } = useAuth();
     const [isDonating, setIsDonating] = useState(false);
 
@@ -68,7 +68,6 @@ const ProfileView = () => {
             {/* Gamification Grid */}
             <div className="grid grid-cols-2 gap-3 mb-8">
                 {/* Карточка Клуба */}
-                {/* Карточка Клуба */}
                 <a
                     href="https://vk.com/arbarea_nn"
                     target="_blank"
@@ -93,6 +92,20 @@ const ProfileView = () => {
                             {isDonating ? 'Обработка...' : 'Донат 100₽'}
                         </div>
                         <div className="text-[10px] text-stone-400 mt-1">Угостить мастера</div>
+                    </div>
+                </button>
+
+                {/* Карточка О компании */}
+                <button
+                    onClick={() => setActiveTab('legal')}
+                    className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-4 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-800 text-left flex flex-col justify-between group hover:border-emerald-200 dark:hover:border-emerald-700 active:scale-95 transition-all"
+                >
+                    <FileText className="text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" size={24} />
+                    <div>
+                        <div className="font-bold text-stone-800 dark:text-stone-100 text-sm leading-tight">
+                            О компании
+                        </div>
+                        <div className="text-[10px] text-stone-500 dark:text-stone-400 mt-1">Реквизиты и доставка</div>
                     </div>
                 </button>
             </div>
