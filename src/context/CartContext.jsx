@@ -9,8 +9,14 @@ export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState(() => {
-        const localData = localStorage.getItem('guest_cart');
-        return localData ? JSON.parse(localData) : [];
+        try {
+            const localData = localStorage.getItem('guest_cart');
+            return localData ? JSON.parse(localData) : [];
+        } catch (e) {
+            console.error('Corrupted guest_cart, resetting.', e);
+            localStorage.removeItem('guest_cart');
+            return [];
+        }
     });
     const { user } = useAuth();
 
@@ -71,6 +77,15 @@ export const CartProvider = ({ children }) => {
                 id: cartItemId,
                 quantity,
                 updatedAt: new Date()
+            });
+
+            // Optimistically update local state
+            setCartItems(prev => {
+                const exists = prev.find(i => i.id === cartItemId);
+                if (exists) {
+                    return prev.map(i => i.id === cartItemId ? { ...i, quantity: (i.quantity || 1) + 1 } : i);
+                }
+                return [...prev, { ...product, id: cartItemId, quantity: 1 }];
             });
         } catch (error) {
             console.error("Error adding to cart:", error);

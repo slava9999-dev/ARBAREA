@@ -20,6 +20,11 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
     };
 
     const handleBuyNow = async () => {
+        // Если Tinkoff ключи ещё не заданы – показываем дружелюбное сообщение
+        if (!process.env.TINKOFF_TERMINAL_KEY) {
+            alert('Платёж пока недоступен – ключи Tinkoff ещё не настроены.');
+            return;
+        }
         setStep('processing');
         try {
             const orderId = `ORDER-${Date.now()}`;
