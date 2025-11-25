@@ -135,24 +135,24 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
                     {item.name} x{item.quantity}
                   </span>
                   <span className="font-medium dark:text-stone-200">
-                    {(item.price * item.quantity).toLocaleString()} ₽
+                    {((item.price || 0) * (item.quantity || 1)).toLocaleString()} ₽
                   </span>
                 </div>
               ))}
               <div className="border-t border-stone-100 dark:border-stone-800 pt-2 mt-2 space-y-1">
                 <div className="flex justify-between text-stone-500 dark:text-stone-400 text-sm">
                   <span>Сумма</span>
-                  <span>{subtotal.toLocaleString()} ₽</span>
+                  <span>{(subtotal || 0).toLocaleString()} ₽</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600 dark:text-green-400 text-sm">
                     <span>Скидка (10%)</span>
-                    <span>-{discount.toLocaleString()} ₽</span>
+                    <span>-{(discount || 0).toLocaleString()} ₽</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg dark:text-stone-100 pt-1">
                   <span>Итого</span>
-                  <span>{cartTotal.toLocaleString()} ₽</span>
+                  <span>{(cartTotal || 0).toLocaleString()} ₽</span>
                 </div>
               </div>
             </div>

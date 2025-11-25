@@ -55,8 +55,8 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
       const description = `Заказ ${orderId}: ${product.name}`;
 
       const paymentUrl = await initPayment(orderId, currentPrice, description, {
-        email: user?.email,
-        phone: user?.phoneNumber,
+        email: user?.email || '',
+        phone: user?.phoneNumber || '',
       });
 
       if (paymentUrl) {
@@ -178,7 +178,7 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
                   </div>
                 </div>
                 <div className="text-xl font-bold text-stone-800 dark:text-stone-100 bg-stone-100 dark:bg-stone-800 px-3 py-1 rounded-lg">
-                  {currentPrice.toLocaleString()} ₽
+                  {(currentPrice || 0).toLocaleString()} ₽
                 </div>
               </div>
 
