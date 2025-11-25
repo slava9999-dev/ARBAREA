@@ -5,3 +5,18 @@ export const COLORS = {
 };
 
 export const SIZES = ['60 см', '80 см', '100 см'];
+
+export const PAYMENT_STATUS = {
+    PENDING: 'pending',
+    SUCCESS: 'success',
+    FAILED: 'failed',
+    CANCELED: 'canceled'
+};
+
+export const CURRENCY = 'RUB';
+
+export const NOTIFICATION_TYPES = {
+    ORDER_NEW: 'order_new',
+    ORDER_STATUS: 'order_status',
+    PAYMENT_SUCCESS: 'payment_success'
+};

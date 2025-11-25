@@ -23,5 +23,13 @@ export default {
             }
         }
     },
-    plugins: []
+    plugins: [
+        function ({ addComponents }) {
+            addComponents({
+                '.glass-panel': {
+                    '@apply bg-stone-900/40 backdrop-blur-xl border border-white/10 shadow-xl': {},
+                },
+            });
+        },
+    ]
 };

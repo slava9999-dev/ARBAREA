@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
-    const { text } = req.body;
+    const { message } = req.body;
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -15,7 +15,7 @@ export default async function handler(req, res) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 chat_id: chatId,
-                text: text,
+                text: message, // Telegram API expects 'text', but our internal API expects 'message'
                 parse_mode: 'HTML'
             })
         });

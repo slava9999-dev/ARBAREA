@@ -1,80 +1,105 @@
-import crypto from 'crypto';
-import fetch from 'node-fetch';
+const crypto = require('crypto');
+const fetch = require('node-fetch');
 
-export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+module.exports = async (req, res) => {
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
-    const { amount, orderId, description, customerEmail, customerPhone } = req.body;
-
-    const terminalKey = process.env.TINKOFF_TERMINAL_KEY;
-    const secret = process.env.TINKOFF_SECRET;
-
-    if (!terminalKey || !secret) {
-        return res.status(500).json({ error: 'Tinkoff config missing' });
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
     }
 
-    // 1. Prepare data for Tinkoff
-    const data = {
-        TerminalKey: terminalKey,
-        Amount: Math.round(amount * 100), // Convert to kopecks
-        OrderId: orderId,
-        Description: description,
-        PayType: 'O', // One-stage payment
-        Language: 'ru'
-    };
-
-    // Add optional customer data if present (Tinkoff might require Receipt for this, 
-    // but for simple Init we can pass DATA object or just rely on Init params if supported.
-    // Standard Init doesn't take Email/Phone at root level, they go into Receipt or Data.
-    // For simplicity and passing tests, we stick to required fields + signature.
-    // If you need to pass email for receipt, you must form a Receipt object.
-    // Here we will just focus on getting the PaymentURL.
-
-    // 2. Signature Generation
-    // Algorithm:
-    // a) Add Password (secret) to the params
-    const paramsForSignature = { ...data, Password: secret };
-
-    // b) Sort keys alphabetically
-    const keys = Object.keys(paramsForSignature).sort();
-
-    // c) Concatenate values of sorted keys
-    let concatenatedValues = '';
-    for (const key of keys) {
-        // Exclude Token, Shops, Receipt, Data from signature
-        if (key !== 'Token' && key !== 'Shops' && key !== 'Receipt' && key !== 'Data') {
-            concatenatedValues += paramsForSignature[key];
-        }
+    if (req.method !== 'POST') {
+        return res.status(405).json({ success: false, error: 'Method Not Allowed' });
     }
-
-    // d) Hash using SHA-256
-    const signature = crypto.createHash('sha256').update(concatenatedValues).digest('hex');
-
-    // 3. Add Token to request body
-    const requestBody = { ...data, Token: signature };
 
     try {
+        const { amount, orderId, description, customerEmail, customerPhone, receipt } = req.body;
+        const terminalKey = process.env.TINKOFF_TERMINAL_KEY;
+        const password = process.env.TINKOFF_PASSWORD;
+
+        if (!terminalKey || !password) {
+            console.error('Missing Tinkoff credentials');
+            return res.status(500).json({ success: false, error: 'Server configuration error' });
+        }
+
+        // Prepare data for token generation
+        const params = {
+            TerminalKey: terminalKey,
+            Amount: amount,
+            OrderId: orderId,
+            Description: description,
+            Password: password
+        };
+
+        // Generate Token
+        const sortedKeys = Object.keys(params).sort();
+        const concatenatedValues = sortedKeys.map(key => params[key]).join('');
+        const token = crypto.createHash('sha256').update(concatenatedValues).digest('hex');
+
+        // Prepare request body
+        const requestBody = {
+            TerminalKey: terminalKey,
+            Amount: amount,
+            OrderId: orderId,
+            Description: description,
+            Token: token
+        };
+
+        // Construct Receipt if not provided but email/phone exists
+        if (receipt) {
+            requestBody.Receipt = receipt;
+        } else if (customerEmail || customerPhone) {
+            requestBody.Receipt = {
+                Email: customerEmail,
+                Phone: customerPhone,
+                Taxation: 'osn', // Default taxation system
+                Items: [
+                    {
+                        Name: description,
+                        Price: amount,
+                        Quantity: 1,
+                        Amount: amount,
+                        Tax: 'none'
+                    }
+                ]
+            };
+        }
+
         const response = await fetch('https://securepay.tinkoff.ru/v2/Init', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(requestBody)
         });
 
-        const result = await response.json();
+        const data = await response.json();
 
-        if (!result.Success) {
-            console.error('Tinkoff Init Error:', result);
-            return res.status(400).json(result);
+        if (!data.Success) {
+            console.error('Tinkoff API Error:', data);
+            return res.status(400).json({
+                success: false,
+                error: data.Message || 'Payment initialization failed',
+                details: data.Details
+            });
         }
 
-        // Return PaymentURL and PaymentId to frontend
-        res.status(200).json({
-            PaymentURL: result.PaymentURL,
-            PaymentId: result.PaymentId
+        return res.status(200).json({
+            success: true,
+            paymentUrl: data.PaymentURL,
+            paymentId: data.PaymentId
         });
 
-    } catch (e) {
-        console.error('Server Error:', e);
-        res.status(500).json({ error: e.message });
+    } catch (error) {
+        console.error('Payment processing error:', error);
+        return res.status(500).json({
+            success: false,
+            error: error.message || 'Internal Server Error'
+        });
     }
-}
+};

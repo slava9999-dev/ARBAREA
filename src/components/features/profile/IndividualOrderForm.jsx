@@ -4,6 +4,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc } from 'firebase/firestore';
 import { db, storage } from '../../../lib/firebase';
 import { useAuth } from '../../../context/AuthContext';
+import { sendTelegramNotification } from '../../../lib/telegram';
 
 const IndividualOrderForm = () => {
     const { user } = useAuth();
@@ -40,9 +41,8 @@ const IndividualOrderForm = () => {
         }
     };
 
-    const sendTelegramNotification = async (orderData) => {
-        try {
-            const message = `
+    const handleSendNotification = async (orderData) => {
+        const message = `
 🔔 <b>Новая заявка на индивидуальный заказ!</b>
 
 👤 <b>Клиент:</b> ${user.displayName || user.phoneNumber || user.email || 'Неизвестно'}
@@ -56,21 +56,9 @@ const IndividualOrderForm = () => {
 ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Файл не прикреплён'}
 
 🔗 <b>ID заявки:</b> ${orderData.orderId}
-            `.trim();
+        `.trim();
 
-            const response = await fetch('/api/telegram-notify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: message })
-            });
-
-            if (!response.ok) {
-                console.error('Failed to send Telegram notification');
-            }
-        } catch (error) {
-            console.error('Telegram notification error:', error);
-            // Не прерываем процесс, если Telegram не работает
-        }
+        await sendTelegramNotification(message);
     };
 
     const handleSubmit = async (e) => {
@@ -116,7 +104,7 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
             await addDoc(collection(db, 'individual-orders'), orderData);
 
             // Отправка уведомления в Telegram
-            await sendTelegramNotification(orderData);
+            await handleSendNotification(orderData);
 
             alert('Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.');
 

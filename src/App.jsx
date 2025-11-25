@@ -1,22 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider, useCart } from './context/CartContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Header from './components/layout/Header';
 import BottomNav from './components/layout/BottomNav';
-import Showcase from './pages/Showcase';
-import Gallery from './pages/Gallery';
-import AIChat from './pages/AIChat';
-import Cart from './pages/Cart';
-import Profile from './pages/Profile';
-import BuyModal from './components/features/BuyModal';
-import CheckoutModal from './components/features/CheckoutModal';
+import LoadingSpinner from './components/ui/LoadingSpinner';
+
+// Lazy Load Pages
+const Showcase = lazy(() => import('./pages/Showcase'));
+const Gallery = lazy(() => import('./pages/Gallery'));
+const AIChat = lazy(() => import('./pages/AIChat'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Diagnostics = lazy(() => import('./pages/Diagnostics'));
+
+// Lazy Load Modals (Optional, but good for performance)
+const BuyModal = lazy(() => import('./components/features/BuyModal'));
+const CheckoutModal = lazy(() => import('./components/features/CheckoutModal'));
 
 const AppContent = () => {
     const { loading } = useAuth();
     const { cartItems, addToCart, removeFromCart, clearCart } = useCart();
-    const [activeTab, setActiveTab] = useState('home');
+    const [activeTab, setActiveTab] = useState('diagnostics'); // Temporary debug
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
@@ -27,11 +33,7 @@ const AppContent = () => {
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="animate-spin" />
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     const renderContent = () => {
@@ -52,6 +54,8 @@ const AppContent = () => {
                 );
             case 'profile':
                 return <Profile />;
+            case 'diagnostics':
+                return <Diagnostics />;
             default:
                 return <Showcase onBuy={setSelectedProduct} />;
         }
@@ -59,24 +63,29 @@ const AppContent = () => {
 
     return (
         <div className="bg-stone-50 dark:bg-stone-950 min-h-screen font-sans pb-safe selection:bg-stone-200 dark:selection:bg-stone-700">
+            <div className="noise-overlay" />
             <Header />
             <main className="max-w-md mx-auto bg-white dark:bg-stone-900 min-h-screen shadow-2xl relative overflow-hidden">
-                {renderContent()}
+                <Suspense fallback={<LoadingSpinner />}>
+                    {renderContent()}
+                </Suspense>
             </main>
 
-            {selectedProduct && (
-                <BuyModal
-                    product={selectedProduct}
-                    onClose={() => setSelectedProduct(null)}
-                    onAddToCart={addToCart}
-                />
-            )}
+            <Suspense fallback={null}>
+                {selectedProduct && (
+                    <BuyModal
+                        product={selectedProduct}
+                        onClose={() => setSelectedProduct(null)}
+                        onAddToCart={addToCart}
+                    />
+                )}
 
-            {isCheckoutOpen && (
-                <CheckoutModal
-                    onClose={() => setIsCheckoutOpen(false)}
-                />
-            )}
+                {isCheckoutOpen && (
+                    <CheckoutModal
+                        onClose={() => setIsCheckoutOpen(false)}
+                    />
+                )}
+            </Suspense>
 
             <BottomNav
                 activeTab={activeTab}

@@ -30,7 +30,10 @@ const AuthScreen = () => {
     const [confirmationResult, setConfirmationResult] = useState(null);
 
     const getErrorMessage = (error) => {
-        console.error("Auth Error:", error);
+        console.error("Auth Error Details:", error);
+        console.error("Error Code:", error.code);
+        console.error("Error Message:", error.message);
+
         if (error.code === 'auth/operation-not-allowed') return 'Этот метод входа отключен в настройках Firebase Console.';
         if (error.code === 'auth/invalid-email') return 'Некорректный Email.';
         if (error.code === 'auth/user-disabled') return 'Пользователь заблокирован.';

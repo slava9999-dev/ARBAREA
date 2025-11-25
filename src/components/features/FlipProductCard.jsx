@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { RotateCw, ShoppingBag, Play } from 'lucide-react';
 import ProductCarousel from './ProductCarousel';
+import TactileButton from '../ui/TactileButton';
 
 const FlipProductCard = ({ product, onBuy }) => {
     const [isFlipped, setIsFlipped] = useState(false);
@@ -120,12 +121,13 @@ const FlipProductCard = ({ product, onBuy }) => {
                                 Продано
                             </button>
                         ) : (
-                            <button
+                            <TactileButton
                                 onClick={(e) => { e.stopPropagation(); onBuy(product); }}
-                                className="w-full bg-white text-stone-900 py-3 rounded-xl font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-lg hover:bg-stone-100"
+                                variant="primary"
+                                className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg bg-white text-stone-900 hover:bg-stone-100"
                             >
                                 В корзину <ShoppingBag size={16} />
-                            </button>
+                            </TactileButton>
                         )}
                     </div>
                 </div>

@@ -12,7 +12,8 @@
         "prepare:winter": "node scripts/prepare-winter-mountains.js",
         "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
         "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,html}\"",
-        "test": "jest"
+        "test": "jest",
+        "check": "node scripts/verify-integrity.js"
     },
     "dependencies": {
         "clsx": "^2.1.1",

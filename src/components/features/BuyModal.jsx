@@ -4,6 +4,7 @@ import { COLORS, SIZES } from '../../lib/constants';
 import OptimizedImage from '../ui/OptimizedImage';
 import { useAuth } from '../../context/AuthContext';
 import { initPayment } from '../../lib/tinkoff';
+import TactileButton from '../ui/TactileButton';
 
 const BuyModal = ({ product, onClose, onAddToCart }) => {
     const { user } = useAuth();
@@ -36,32 +37,25 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
             const orderId = `ORDER-${Date.now()}`;
             const description = `Заказ ${orderId}: ${product.name}`;
 
-            const response = await fetch('/api/create-payment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    amount: currentPrice,
-                    orderId: orderId,
-                    description: description,
-                    customerEmail: user?.email || '',
-                    customerPhone: user?.phoneNumber || ''
-                }),
-            });
+            const paymentUrl = await initPayment(
+                orderId,
+                currentPrice,
+                description,
+                {
+                    email: user?.email,
+                    phone: user?.phoneNumber
+                }
+            );
 
-            const data = await response.json();
-
-            if (data.PaymentURL) {
-                window.location.href = data.PaymentURL;
+            if (paymentUrl) {
+                window.location.href = paymentUrl;
             } else {
-                console.error('Payment Error:', data);
-                alert('Ошибка инициализации оплаты: ' + (data.Message || 'Неизвестная ошибка'));
+                alert('Ошибка: Ссылка на оплату не получена');
                 setStep('form');
             }
         } catch (error) {
-            console.error('Network Error:', error);
-            alert('Ошибка сети. Попробуйте позже.');
+            console.error('Payment Error:', error);
+            alert('Ошибка инициализации оплаты: ' + error.message);
             setStep('form');
         }
     };
@@ -186,29 +180,33 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
                             )}
 
                             <div className="space-y-3 pt-2">
-                                <button
-                                    onClick={handleBuyNow}
-                                    className="w-full p-4 border border-stone-200 dark:border-stone-700 rounded-xl flex justify-between items-center hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors group"
-                                >
-                                    <div className="flex gap-3 items-center">
-                                        <div className="w-10 h-10 bg-[#FFDD2D] rounded-lg flex items-center justify-center font-bold text-stone-900 text-sm shadow-sm">
-                                            T
+                                <div className="space-y-3 pt-2">
+                                    <TactileButton
+                                        onClick={handleBuyNow}
+                                        variant="secondary"
+                                        className="w-full p-4 border border-stone-200 dark:border-stone-700 rounded-xl flex justify-between items-center hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors group h-auto"
+                                    >
+                                        <div className="flex gap-3 items-center">
+                                            <div className="w-10 h-10 bg-[#FFDD2D] rounded-lg flex items-center justify-center font-bold text-stone-900 text-sm shadow-sm">
+                                                T
+                                            </div>
+                                            <div className="text-left">
+                                                <div className="font-bold text-stone-800 dark:text-stone-100 text-sm">Tinkoff Pay</div>
+                                                <div className="text-xs text-stone-500 dark:text-stone-400 font-normal">Быстрая оплата картой</div>
+                                            </div>
                                         </div>
-                                        <div className="text-left">
-                                            <div className="font-bold text-stone-800 dark:text-stone-100 text-sm">Tinkoff Pay</div>
-                                            <div className="text-xs text-stone-500 dark:text-stone-400">Быстрая оплата картой</div>
-                                        </div>
-                                    </div>
-                                    <ChevronRight size={20} className="text-stone-300 group-hover:text-stone-500 transition-colors" />
-                                </button>
+                                        <ChevronRight size={20} className="text-stone-300 group-hover:text-stone-500 transition-colors" />
+                                    </TactileButton>
 
-                                <button
-                                    onClick={handleAddToCart}
-                                    className="w-full py-4 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg hover:shadow-xl hover:bg-stone-800 dark:hover:bg-white"
-                                >
-                                    <ShoppingBag size={18} />
-                                    <span>Добавить в корзину</span>
-                                </button>
+                                    <TactileButton
+                                        onClick={handleAddToCart}
+                                        variant="primary"
+                                        className="w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg"
+                                    >
+                                        <ShoppingBag size={18} />
+                                        <span>Добавить в корзину</span>
+                                    </TactileButton>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -12,6 +12,14 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+// Validate Config
+const missingKeys = Object.keys(firebaseConfig).filter(key => !firebaseConfig[key]);
+if (missingKeys.length > 0) {
+    console.error(`❌ Firebase Config Error: Missing keys: ${missingKeys.join(', ')}. Check your .env file.`);
+} else {
+    console.log('✅ Firebase Configured Successfully');
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
