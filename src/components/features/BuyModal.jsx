@@ -25,24 +25,33 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
             const orderId = `ORDER-${Date.now()}`;
             const description = `Заказ ${orderId}: ${product.name}`;
 
-            const paymentUrl = await initPayment(
-                orderId,
-                currentPrice,
-                description,
-                {
-                    email: user?.email || '',
-                    phone: user?.phoneNumber || ''
-                }
-            );
+            const response = await fetch('/api/create-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    amount: currentPrice,
+                    orderId: orderId,
+                    description: description,
+                    customerEmail: user?.email || '',
+                    customerPhone: user?.phoneNumber || ''
+                }),
+            });
 
-            if (paymentUrl) {
-                window.location.href = paymentUrl;
+            const data = await response.json();
+
+            if (data.PaymentURL) {
+                window.location.href = data.PaymentURL;
             } else {
-                throw new Error("Payment URL not received");
+                console.error('Payment Error:', data);
+                alert('Ошибка инициализации оплаты: ' + (data.Message || 'Неизвестная ошибка'));
+                setStep('form');
             }
         } catch (error) {
-            console.error(error);
-            onClose();
+            console.error('Network Error:', error);
+            alert('Ошибка сети. Попробуйте позже.');
+            setStep('form');
         }
     };
 
