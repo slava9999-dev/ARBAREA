@@ -22,7 +22,7 @@ const CheckoutModal = lazy(() => import('./components/features/CheckoutModal'));
 const AppContent = () => {
     const { loading } = useAuth();
     const { cartItems, addToCart, removeFromCart, clearCart } = useCart();
-    const [activeTab, setActiveTab] = useState('diagnostics'); // Temporary debug
+    const [activeTab, setActiveTab] = useState('home');
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
