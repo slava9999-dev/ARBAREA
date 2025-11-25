@@ -124,7 +124,7 @@ const FlipProductCard = ({ product, onBuy }) => {
                             <TactileButton
                                 onClick={(e) => { e.stopPropagation(); onBuy(product); }}
                                 variant="primary"
-                                className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg bg-white text-stone-900 hover:bg-stone-100"
+                                className="w-full py-3"
                             >
                                 В корзину <ShoppingBag size={16} />
                             </TactileButton>
