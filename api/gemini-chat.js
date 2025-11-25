@@ -1,5 +1,5 @@
-import fetch from 'node-fetch';
-import { SYSTEM_INSTRUCTION } from '../src/data/systemInstruction.js'; // Note: Vercel path might need adjustment, usually src is available if configured correctly or we copy it. 
+// import fetch from 'node-fetch'; // Built-in in Node 18+
+// import { SYSTEM_INSTRUCTION } from '../src/data/systemInstruction.js'; // Removed to prevent path resolution errors in Vercel functions 
 // Actually, for Vercel Serverless Functions in /api, importing from ../src might be tricky depending on build.
 // Safer to duplicate instruction or move it to a shared lib.
 // Let's try importing. If it fails, we'll inline. 

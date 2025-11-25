@@ -39,7 +39,7 @@ function sha256(message) {
 }
 
 // Tinkoff payment initialization endpoint
-app.post('/api/init-payment', async (req, res) => {
+app.post('/api/create-payment', async (req, res) => {
     try {
         const { orderId, amount, description, customerData } = req.body;
         if (!TERMINAL_KEY || !SECRET) {

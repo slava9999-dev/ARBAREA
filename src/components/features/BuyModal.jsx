@@ -16,13 +16,15 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
     const currentPrice = selectedSize === '80 см' ? product.price + 1000 : (selectedSize === '100 см' ? product.price + 2000 : product.price);
 
     const handleAddToCart = () => {
-        onAddToCart({
+        const itemToAdd = {
             ...product,
             price: currentPrice,
             selectedSize,
-            selectedColor, // Pass the key (e.g., 'bronze') for ID generation
+            selectedColor,
             selectedColorName: selectedColor ? COLORS[selectedColor].name : null
-        });
+        };
+        console.log('🛍️ BuyModal: Adding to cart:', itemToAdd);
+        onAddToCart(itemToAdd);
         onClose();
     };
 
