@@ -36,7 +36,8 @@ const REQUIRED_KEYS = [
     'TINKOFF_TERMINAL_KEY',
     'TINKOFF_PASSWORD',
     'TELEGRAM_BOT_TOKEN',
-    'TELEGRAM_CHAT_ID'
+    'TELEGRAM_CHAT_ID',
+    'GEMINI_API_KEY'
 ];
 
 let hasError = false;

@@ -48,29 +48,37 @@ export const CartProvider = ({ children }) => {
     }, [cartItems, user]);
 
     const addToCart = async (product) => {
+        console.log('🛒 addToCart called with product:', product);
         const cartItemId = `${product.id}-${product.selectedSize || 'default'}-${product.selectedColor || 'default'}`;
+        console.log('🆔 Generated cartItemId:', cartItemId);
 
         if (!user) {
+            console.log('👤 Guest mode - using localStorage');
             // Guest Logic
             setCartItems(prev => {
                 const existing = prev.find(item => item.id === cartItemId);
                 let newCart;
                 if (existing) {
+                    console.log('✅ Item exists, incrementing quantity');
                     newCart = prev.map(item => item.id === cartItemId ? { ...item, quantity: (item.quantity || 1) + 1 } : item);
                 } else {
+                    console.log('➕ New item, adding to cart');
                     newCart = [...prev, { ...product, id: cartItemId, quantity: 1 }];
                 }
                 localStorage.setItem('guest_cart', JSON.stringify(newCart));
+                console.log('💾 Cart saved to localStorage:', newCart);
                 return newCart;
             });
             return;
         }
 
         // Auth Logic
+        console.log('🔐 Authenticated user - using Firestore');
         const itemRef = doc(db, 'users', user.uid, 'cart', cartItemId);
         try {
             const existingItem = cartItems.find(item => item.id === cartItemId);
             const quantity = existingItem ? (existingItem.quantity || 1) + 1 : 1;
+            console.log('📊 Quantity to save:', quantity);
 
             await setDoc(itemRef, {
                 ...product,
@@ -78,6 +86,7 @@ export const CartProvider = ({ children }) => {
                 quantity,
                 updatedAt: new Date()
             });
+            console.log('✅ Item saved to Firestore');
 
             // Optimistically update local state
             setCartItems(prev => {
@@ -87,8 +96,10 @@ export const CartProvider = ({ children }) => {
                 }
                 return [...prev, { ...product, id: cartItemId, quantity: 1 }];
             });
+            console.log('🔄 Local state updated');
         } catch (error) {
-            console.error("Error adding to cart:", error);
+            console.error("❌ Error adding to cart:", error);
+            alert('Ошибка добавления в корзину: ' + error.message);
         }
     };
 
