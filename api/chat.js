@@ -1,6 +1,6 @@
 // @vercel/node
 export const config = {
-  runtime: 'nodejs18.x'
+  runtime: 'nodejs'
 };
 
 export default async function handler(req, res) {
