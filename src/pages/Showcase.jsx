@@ -29,18 +29,18 @@ const Showcase = ({ onBuy }) => {
             Arbarea Studio
           </span>
           <h1 className="mb-6 font-serif text-5xl font-medium text-white drop-shadow-lg leading-tight">
-            Handcrafted <br /> <span className="italic text-stone-300">Luxury</span>
+            Искусство <br /> <span className="italic text-stone-300">Дерева</span>
           </h1>
           <p className="mb-8 max-w-md font-sans text-sm text-stone-200/90">
-            Nature's Finest. Your Home. <br/>
-            Exclusive wooden panels and interior masterpieces.
+            Природа в вашем доме. <br/>
+            Эксклюзивные панно и мебель ручной работы.
           </p>
           <button 
             type="button"
             onClick={() => document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })}
             className="btn-primary"
           >
-            Explore Collection
+            Смотреть коллекцию
           </button>
         </div>
       </div>

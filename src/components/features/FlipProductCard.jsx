@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { RotateCw, ShoppingBag, Play } from 'lucide-react';
 import ProductCarousel from './ProductCarousel';
 import TactileButton from '../ui/TactileButton';
+import { useToast } from '../../context/ToastContext';
 
 const FlipProductCard = ({ product, onBuy }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { showToast } = useToast();
   
   // Variant State
   const [selectedColor, setSelectedColor] = useState(product.variants?.colors?.[0]);
@@ -101,63 +103,51 @@ const FlipProductCard = ({ product, onBuy }) => {
 
         {/* Back */}
         <div
-          className="absolute inset-0 bg-stone-800 dark:bg-stone-800 rounded-2xl shadow-xl p-6 flex flex-col justify-between glass"
+          className="absolute inset-0 bg-stone-800 dark:bg-stone-800 rounded-2xl shadow-xl p-5 flex flex-col glass"
           style={{
             transform: 'rotateY(180deg)',
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
           }}
         >
-          <div>
-            <div className="flex justify-between items-start mb-2">
-              <div className="text-[10px] text-stone-400 uppercase tracking-widest">
-                Описание
-              </div>
-              <button
-                type="button"
-                onClick={handleFlip}
-                className="text-stone-400 hover:text-white transition-colors"
-              >
-                <RotateCw size={16} />
-              </button>
+          {/* Header */}
+          <div className="flex justify-between items-start mb-2 shrink-0">
+            <div className="text-[10px] text-stone-400 uppercase tracking-widest">
+              Описание
             </div>
-            <h3 className="text-white font-serif text-lg mb-3 line-clamp-2">
-              {product.name}
-            </h3>
-            <p className="text-stone-300 text-sm leading-relaxed font-light line-clamp-[10]">
-              {product.description}
-            </p>
-            {product.hasOptions && (
-              <div className="mt-4 flex gap-2">
-                <div className="px-2 py-1 bg-stone-700 rounded text-[10px] text-stone-300">
-                  Размеры
-                </div>
-                <div className="px-2 py-1 bg-stone-700 rounded text-[10px] text-stone-300">
-                  Цвета
-                </div>
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={handleFlip}
+              className="text-stone-400 hover:text-white transition-colors"
+            >
+              <RotateCw size={16} />
+            </button>
           </div>
 
-          {/* Button */}
-          {/* Button & Options */}
+          {/* Scrollable Content */}
+          <div className="flex-grow overflow-y-auto custom-scrollbar pr-2 mb-4">
+            <h3 className="text-white font-serif text-lg mb-2 leading-tight">
+              {product.name}
+            </h3>
+            <p className="text-stone-300 text-xs leading-relaxed font-light">
+              {product.description}
+            </p>
+          </div>
+
+          {/* Footer: Options & Button */}
           <div
-            className="relative z-10"
+            className="shrink-0 relative z-10 pt-2 border-t border-white/10"
             style={{ transform: 'translateZ(1px)' }}
           >
-            {/* Dynamic Price Display on Back */}
-            <div className="mb-4 text-right">
-               <span className="text-2xl font-serif text-amber-500 font-bold">
+            {/* Dynamic Price & Options */}
+            <div className="flex justify-between items-end mb-3">
+               <div className="text-xl font-serif text-amber-500 font-bold">
                  {currentPrice.toLocaleString()} ₽
-               </span>
-            </div>
-
-            {/* Options Selectors */}
-            {product.variants && (
-              <div className="mb-6 space-y-4">
-                {/* Colors */}
-                {product.variants.colors && (
-                  <div className="flex gap-3">
+               </div>
+               
+               {/* Colors (Compact) */}
+               {product.variants?.colors && (
+                  <div className="flex gap-2">
                     {product.variants.colors.map((color) => (
                       <button
                         key={color.id}
@@ -166,40 +156,38 @@ const FlipProductCard = ({ product, onBuy }) => {
                           e.stopPropagation();
                           setSelectedColor(color);
                         }}
-                        className={`w-8 h-8 rounded-full border-2 transition-all ${
+                        className={`w-6 h-6 rounded-full border transition-all ${
                           selectedColor?.id === color.id
-                            ? 'border-amber-500 scale-110'
-                            : 'border-stone-600 hover:border-stone-400'
+                            ? 'border-amber-500 scale-110 ring-1 ring-amber-500 ring-offset-1 ring-offset-stone-800'
+                            : 'border-stone-600'
                         }`}
                         style={{ backgroundColor: color.hex }}
-                        aria-label={color.name}
                       />
                     ))}
                   </div>
-                )}
+               )}
+            </div>
 
-                {/* Sizes */}
-                {product.variants.sizes && (
-                  <div className="flex gap-2">
-                    {product.variants.sizes.map((size) => (
-                      <button
-                        key={size.value}
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedSize(size);
-                        }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                          selectedSize?.value === size.value
-                            ? 'bg-stone-100 text-stone-900'
-                            : 'bg-stone-700 text-stone-400 hover:bg-stone-600'
-                        }`}
-                      >
-                        {size.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
+            {/* Sizes (Compact) */}
+            {product.variants?.sizes && (
+              <div className="flex gap-1 mb-3 overflow-x-auto pb-1 scrollbar-hide">
+                {product.variants.sizes.map((size) => (
+                  <button
+                    key={size.value}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedSize(size);
+                    }}
+                    className={`px-2 py-1 rounded text-[10px] font-bold transition-all whitespace-nowrap ${
+                      selectedSize?.value === size.value
+                        ? 'bg-stone-100 text-stone-900'
+                        : 'bg-stone-700 text-stone-400 hover:bg-stone-600'
+                    }`}
+                  >
+                    {size.label}
+                  </button>
+                ))}
               </div>
             )}
 
@@ -221,10 +209,10 @@ const FlipProductCard = ({ product, onBuy }) => {
                     name: `${product.name} ${selectedSize ? `(${selectedSize.label})` : ''} ${selectedColor ? `(${selectedColor.name})` : ''}`,
                     price: currentPrice
                   });
-                  alert('Товар добавлен в корзину!');
+                  showToast('Товар добавлен в корзину', 'success');
                 }}
                 variant="primary"
-                className="w-full py-3"
+                className="w-full py-3 text-sm"
               >
                 В корзину <ShoppingBag size={16} />
               </TactileButton>

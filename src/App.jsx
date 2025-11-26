@@ -2,6 +2,7 @@ import { useState, Suspense, lazy } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider, useCart } from './context/CartContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
 import Header from './components/layout/Header';
 
 import BottomNav from './components/layout/BottomNav';
@@ -107,11 +108,13 @@ const AppContent = () => {
 
 const App = () => (
   <ThemeProvider>
-    <AuthProvider>
-      <CartProvider>
-        <AppContent />
-      </CartProvider>
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
+      </AuthProvider>
+    </ToastProvider>
   </ThemeProvider>
 );
 
