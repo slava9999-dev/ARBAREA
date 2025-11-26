@@ -6,17 +6,5 @@
     "background_color": "#F5F5F4",
     "theme_color": "#292524",
     "orientation": "portrait",
-    "icons": [
-        {
-            "src": "https://via.placeholder.com/192/292524/FFFFFF?text=A",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "any maskable"
-        },
-        {
-            "src": "https://via.placeholder.com/512/292524/FFFFFF?text=Arbarea",
-            "sizes": "512x512",
-            "type": "image/png"
-        }
-    ]
+    "icons": []
 }

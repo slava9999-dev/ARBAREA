@@ -52,8 +52,11 @@ export default async function handler(req, res) {
         
         if (history && Array.isArray(history)) {
             history.forEach(msg => {
+                // Skip system messages if any, or handle them appropriately
+                // Gemini API expects 'user' or 'model' roles
+                const role = msg.sender === 'user' ? 'user' : 'model';
                 contents.push({
-                    role: msg.sender === 'user' ? 'user' : 'model',
+                    role: role,
                     parts: [{ text: msg.text }]
                 });
             });
@@ -85,6 +88,15 @@ export default async function handler(req, res) {
 
         if (!response.ok) {
             console.error('Gemini API Error Response:', data);
+            
+            // Check for specific error codes
+            if (data.error?.code === 404) {
+                 return res.status(404).json({ 
+                    error: 'Model not found', 
+                    details: 'The specified model gemini-1.5-flash is not available for your API key or region.' 
+                });
+            }
+
             return res.status(response.status).json({ 
                 error: 'Gemini API Error', 
                 details: data.error?.message || JSON.stringify(data) 

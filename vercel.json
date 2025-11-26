@@ -10,7 +10,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://vercel.com https://*.tinkoff.ru https://*.tbank.ru https://*.tcsbank.ru https://*.nspk.ru https://apis.google.com https://www.gstatic.com https://www.googleapis.com https://www.google.com https://telegram.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://vercel.live https://vercel.com https://*.tinkoff.ru https://*.tbank.ru https://securepay.tinkoff.ru https://identitytoolkit.googleapis.com https://firestore.googleapis.com https://www.googleapis.com https://generativelanguage.googleapis.com https://api.telegram.org;"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://vercel.com https://*.tinkoff.ru https://*.tbank.ru https://*.tcsbank.ru https://*.nspk.ru https://apis.google.com https://www.gstatic.com https://www.googleapis.com https://www.google.com https://telegram.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://vercel.live https://vercel.com https://*.tinkoff.ru https://*.tbank.ru https://securepay.tinkoff.ru https://identitytoolkit.googleapis.com https://firestore.googleapis.com https://www.googleapis.com https://generativelanguage.googleapis.com https://api.telegram.org; frame-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.google.com https://vercel.live;"
         }
       ]
     },
