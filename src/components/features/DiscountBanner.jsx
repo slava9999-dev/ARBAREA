@@ -13,7 +13,7 @@ const DiscountBanner = () => {
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-r from-primary-600 to-primary-500 text-white px-4 py-3 rounded-xl shadow-lg mb-4"
+      className="bg-gradient-to-r from-amber-600 to-amber-500 text-white px-4 py-3 rounded-xl shadow-lg mb-4"
     >
       <div className="flex items-center gap-3">
         <Sparkles size={24} className="flex-shrink-0 animate-pulse" />
