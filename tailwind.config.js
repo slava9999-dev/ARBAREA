@@ -8,20 +8,25 @@ export default {
     theme: {
         extend: {
             colors: {
-                primary: {
-                    50: '#eff6ff',
-                    100: '#dbeafe',
-                    200: '#bfdbfe',
-                    300: '#93c5fd',
-                    400: '#60a5fa',
-                    500: '#3b82f6',
-                    600: '#2563eb',
-                    700: '#1d4ed8',
-                    800: '#1e40af',
-                    900: '#1e3a8a'
-                }
+                // Палитра Arbarea
+                background: '#1c1917', // stone-900
+                surface: '#292524',    // stone-800
+                primary: '#d97706',    // amber-600 (Gold)
+                secondary: '#e7e5e4',  // stone-200 (Text)
+                muted: '#a8a29e',      // stone-400
+            },
+            fontFamily: {
+                serif: ['"Cormorant Garamond"', 'serif'],
+                sans: ['"Manrope"', 'sans-serif'],
+            },
+            backgroundImage: {
+                'noise': "url('/assets/noise.png')", // Если будем использовать текстуру
+            },
+            boxShadow: {
+                'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+                'glow': '0 0 20px rgba(217, 119, 6, 0.3)', // Золотое свечение
             }
-        }
+        },
     },
     plugins: [
         function ({ addComponents }) {

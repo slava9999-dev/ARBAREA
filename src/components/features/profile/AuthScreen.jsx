@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, Mail, Phone, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
-import TelegramLoginButton from '../TelegramLoginButton';
+
 
 const AuthScreen = () => {
   const {
@@ -206,15 +206,7 @@ const AuthScreen = () => {
             </button>
           </div>
 
-          <TelegramLoginButton
-            onSuccess={() => {
-              setError('');
-              // User will be redirected automatically by AuthContext
-            }}
-            onError={(err) => {
-              setError(getErrorMessage(err));
-            }}
-          />
+
         </div>
       )}
 

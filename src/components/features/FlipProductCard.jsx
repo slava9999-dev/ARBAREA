@@ -7,6 +7,14 @@ import TactileButton from '../ui/TactileButton';
 const FlipProductCard = ({ product, onBuy }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  
+  // Variant State
+  const [selectedColor, setSelectedColor] = useState(product.variants?.colors?.[0]);
+  const [selectedSize, setSelectedSize] = useState(product.variants?.sizes?.[0]);
+
+  // Dynamic Price Calculation
+  const basePrice = product.basePrice || product.price;
+  const currentPrice = basePrice + (selectedSize?.priceMod || 0);
 
   const images =
     product.gallery && product.gallery.length > 0
@@ -132,10 +140,69 @@ const FlipProductCard = ({ product, onBuy }) => {
           </div>
 
           {/* Button */}
+          {/* Button & Options */}
           <div
             className="relative z-10"
             style={{ transform: 'translateZ(1px)' }}
           >
+            {/* Dynamic Price Display on Back */}
+            <div className="mb-4 text-right">
+               <span className="text-2xl font-serif text-amber-500 font-bold">
+                 {currentPrice.toLocaleString()} ₽
+               </span>
+            </div>
+
+            {/* Options Selectors */}
+            {product.variants && (
+              <div className="mb-6 space-y-4">
+                {/* Colors */}
+                {product.variants.colors && (
+                  <div className="flex gap-3">
+                    {product.variants.colors.map((color) => (
+                      <button
+                        key={color.id}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedColor(color);
+                        }}
+                        className={`w-8 h-8 rounded-full border-2 transition-all ${
+                          selectedColor?.id === color.id
+                            ? 'border-amber-500 scale-110'
+                            : 'border-stone-600 hover:border-stone-400'
+                        }`}
+                        style={{ backgroundColor: color.hex }}
+                        aria-label={color.name}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Sizes */}
+                {product.variants.sizes && (
+                  <div className="flex gap-2">
+                    {product.variants.sizes.map((size) => (
+                      <button
+                        key={size.value}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedSize(size);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          selectedSize?.value === size.value
+                            ? 'bg-stone-100 text-stone-900'
+                            : 'bg-stone-700 text-stone-400 hover:bg-stone-600'
+                        }`}
+                      >
+                        {size.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {product.isSold ? (
               <button
                 type="button"
@@ -148,7 +215,12 @@ const FlipProductCard = ({ product, onBuy }) => {
               <TactileButton
                 onClick={(e) => {
                   e.stopPropagation();
-                  onBuy(product);
+                  onBuy({
+                    ...product,
+                    id: `${product.id}-${selectedColor?.id || 'def'}-${selectedSize?.value || 'def'}`,
+                    name: `${product.name} ${selectedSize ? `(${selectedSize.label})` : ''} ${selectedColor ? `(${selectedColor.name})` : ''}`,
+                    price: currentPrice
+                  });
                   alert('Товар добавлен в корзину!');
                 }}
                 variant="primary"

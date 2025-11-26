@@ -1,57 +1,62 @@
 import { useState } from 'react';
-import { ChevronRight, Zap } from 'lucide-react';
 import { PRODUCTS } from '../data/products';
-import { CATEGORIES } from '../data/mockData';
 import FlipProductCard from '../components/features/FlipProductCard';
 import SocialFooter from '../components/layout/SocialFooter';
-import HeroSection from '../components/layout/HeroSection';
 
 const Showcase = ({ onBuy }) => {
-  const [activeCategory, setActiveCategory] = useState('Все');
-  const filtered =
-    activeCategory === 'Все'
-      ? PRODUCTS
-      : PRODUCTS.filter((p) => p.category === activeCategory);
+  const [activeCategory] = useState('Все');
+  
+  // Filter logic (can be expanded later)
+  const filtered = activeCategory === 'Все' 
+    ? PRODUCTS 
+    : PRODUCTS.filter((p) => p.category === activeCategory);
+
   return (
-    <div className="pb-24 pt-20 px-4">
-      <HeroSection />
-      <div className="mb-6">
-        <h2 className="text-2xl font-serif text-stone-800 mb-2">Коллекция</h2>
-      </div>
-      <div className="mb-8 relative overflow-hidden rounded-2xl shadow-xl group cursor-pointer">
-        <div className="absolute inset-0 bg-gradient-to-r from-stone-800 to-stone-900" />
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10" />
-        <div className="relative p-6 flex justify-between items-center text-white">
-          <div>
-            <div className="flex items-center gap-2 font-bold text-lg mb-1">
-              <Zap className="text-yellow-400 fill-yellow-400" size={20} /> 
-              Покупка в 1 клик
-            </div>
-            <p className="text-stone-400 text-xs">Быстрый заказ без регистрации</p>
-          </div>
-          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-            <ChevronRight className="text-white" />
-          </div>
+    <div className="min-h-screen bg-background pb-24">
+      {/* 1. Hero Section (Cinematic) */}
+      <div className="relative h-[85vh] w-full overflow-hidden">
+        {/* Background Image */}
+        <img 
+          src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000&auto=format&fit=crop" 
+          className="absolute inset-0 h-full w-full object-cover opacity-60 animate-scale-up"
+          alt="Arbarea Interior" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-stone-900/20 to-stone-900" />
+
+        {/* Content */}
+        <div className="relative z-10 flex h-full flex-col items-center justify-center text-center px-4 animate-fade-in">
+          <span className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-amber-500">
+            Arbarea Studio
+          </span>
+          <h1 className="mb-6 font-serif text-5xl font-medium text-white drop-shadow-lg leading-tight">
+            Handcrafted <br /> <span className="italic text-stone-300">Luxury</span>
+          </h1>
+          <p className="mb-8 max-w-md font-sans text-sm text-stone-200/90">
+            Nature's Finest. Your Home. <br/>
+            Exclusive wooden panels and interior masterpieces.
+          </p>
+          <button 
+            type="button"
+            onClick={() => document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })}
+            className="btn-primary"
+          >
+            Explore Collection
+          </button>
         </div>
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-4 mb-2 scrollbar-hide">
-        {CATEGORIES.map((c) => (
-          <button
-            type="button"
-            key={c}
-            onClick={() => setActiveCategory(c)}
-            className={`px-5 py-2.5 rounded-full text-sm whitespace-nowrap ${activeCategory === c ? 'bg-stone-800 text-white' : 'bg-white border'}`}
-          >
-            {c}
-          </button>
-        ))}
+
+      {/* 2. Catalog (Overlapping Grid) */}
+      <div id="catalog" className="-mt-20 relative z-10 px-4 pb-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {filtered.map((p) => (
+            <div key={p.id} className="glass-panel p-2 transition-transform duration-300 hover:scale-[1.02]">
+              <FlipProductCard product={p} onBuy={onBuy} />
+            </div>
+          ))}
+        </div>
+        
+        <SocialFooter />
       </div>
-      <div id="product-grid" className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {filtered.map((p) => (
-          <FlipProductCard key={p.id} product={p} onBuy={onBuy} />
-        ))}
-      </div>
-      <SocialFooter />
     </div>
   );
 };

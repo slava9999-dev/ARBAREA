@@ -67,15 +67,37 @@ export const AuthProvider = ({ children }) => {
     return await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
   };
 
-  const loginWithTelegram = async () => {
-    // Mock implementation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        alert('Telegram Auth is mocked! (Requires Backend)');
-        resolve({
-          user: { displayName: 'Telegram User (Mock)', photoURL: null },
-        });
-      }, 1000);
+  const loginWithTelegram = () => {
+    return new Promise((resolve, reject) => {
+      // Проверяем, загружен ли скрипт
+      if (window.Telegram?.Login) {
+        window.Telegram.Login.auth(
+          { bot_id: '7686564619', request_access: true },
+          (data) => {
+            if (!data) {
+              reject(new Error('Telegram Auth Failed'));
+            } else {
+              // Здесь мы должны создать/обновить пользователя в Firebase
+              // Но так как Firebase не поддерживает Telegram Auth напрямую,
+              // мы используем Custom Token (требует бэкенда) или просто сохраняем данные локально
+              // Для MVP сохраним данные как "пользователя"
+              const user = {
+                uid: `tg_${data.id}`,
+                displayName: `${data.first_name} ${data.last_name || ''}`.trim(),
+                photoURL: data.photo_url,
+                providerId: 'telegram',
+              };
+              setUser(user); // Временно устанавливаем пользователя в контекст
+              resolve({ user });
+            }
+          }
+        );
+      } else {
+        // Если скрипт не загружен, открываем виджет в новом окне (fallback)
+        // Но лучше просто показать инструкцию или кнопку
+        alert('Для входа через Telegram используйте виджет на странице входа.');
+        reject(new Error('Telegram Widget not loaded'));
+      }
     });
   };
 
