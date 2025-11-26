@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+// Native fetch is available in Node.js 18+
 
 // System instruction for the AI
 const SYSTEM_INSTRUCTION = `
