@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 /**
  * HeroSection – премиальная верхняя часть главной страницы.
- * Изысканный, современный дизайн с живой анимацией фона.
+ * Стиль "Тихая роскошь" (Quiet Luxury).
  */
 const HeroSection = () => {
   const scrollToProducts = () => {
@@ -14,81 +14,79 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative w-full h-[550px] rounded-[2rem] overflow-hidden mb-12 group isolate">
-      {/* Dynamic Animated Background */}
-      <div className="absolute inset-0 bg-stone-900">
-        {/* Animated Gradient Orbs */}
+    <section className="relative w-full h-[600px] rounded-[2.5rem] overflow-hidden mb-16 group isolate shadow-2xl">
+      {/* Background: Deep, rich, animated */}
+      <div className="absolute inset-0 bg-[#1a1816]">
+        {/* Animated Light Beams */}
         <motion.div 
           animate={{ 
-            scale: [1, 1.2, 1],
+            opacity: [0.4, 0.6, 0.4],
+            rotate: [0, 5, 0],
+            scale: [1, 1.05, 1]
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-[50%] -left-[20%] w-[150%] h-[150%] bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_50%,#3d342b_100%)] blur-[120px] opacity-50"
+        />
+        
+        <motion.div 
+          animate={{ 
             opacity: [0.3, 0.5, 0.3],
-            x: [0, 50, 0],
-            y: [0, -30, 0]
+            x: [0, 20, 0]
           }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary-900/40 rounded-full blur-[100px]"
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute bottom-0 right-0 w-[800px] h-[600px] bg-gradient-to-t from-[#2c241b] to-transparent blur-[100px] opacity-30"
         />
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.1, 1],
-            opacity: [0.2, 0.4, 0.2],
-            x: [0, -30, 0],
-            y: [0, 50, 0]
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-stone-700/30 rounded-full blur-[80px]"
-        />
-        
-        {/* Noise Texture Overlay for "Material" feel */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-        
-        {/* Subtle Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)]" />
+
+        {/* Grain Texture */}
+        <div className="absolute inset-0 opacity-[0.07] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
       </div>
 
       {/* Content */}
       <div className="relative h-full flex flex-col items-center justify-center text-center px-6 z-10">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* Badge */}
+          {/* Elegant Badge */}
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl text-stone-300 text-[10px] font-medium mb-8 uppercase tracking-[0.2em]"
+            initial={{ opacity: 0, letterSpacing: "0.1em" }}
+            animate={{ opacity: 1, letterSpacing: "0.3em" }}
+            transition={{ delay: 0.5, duration: 1.5 }}
+            className="text-[#8a8175] text-[10px] uppercase font-medium mb-8 tracking-[0.3em]"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-            Premium Woodworking
+            Est. 2024 • Handcrafted in Russia
           </motion.div>
           
           {/* Main Title */}
-          <h1 className="text-5xl md:text-7xl font-serif text-white mb-6 leading-[1.1] tracking-tight">
-            <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70">
-              Эстетика
-            </span>
-            <span className="block font-light italic text-stone-400">
-              природы
-            </span>
+          <h1 className="text-5xl md:text-7xl font-serif text-[#e8e6e3] mb-8 leading-[1.1] tracking-tight">
+            <span className="block">Искусство</span>
+            <span className="block italic font-light text-[#b0a89e]">живого дерева</span>
           </h1>
           
+          {/* Divider */}
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: 60 }}
+            transition={{ delay: 0.8, duration: 1 }}
+            className="h-[1px] bg-[#5c544a] mx-auto mb-8"
+          />
+
           {/* Description */}
-          <p className="text-stone-400 max-w-lg mx-auto mb-10 text-sm md:text-base font-light leading-relaxed tracking-wide">
-            Создаем предметы интерьера, где каждая линия <br className="hidden md:block"/>
-            подчеркивает уникальный характер живого дерева.
+          <p className="text-[#9c948a] max-w-md mx-auto mb-12 text-sm md:text-base font-light leading-relaxed tracking-wide">
+            Создаем предметы интерьера, которые становятся <br className="hidden md:block"/>
+            частью истории вашего дома.
           </p>
 
           {/* CTA Button */}
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, backgroundColor: "#f0efed" }}
             whileTap={{ scale: 0.98 }}
             onClick={scrollToProducts}
-            className="group relative px-8 py-4 bg-white text-stone-950 rounded-full font-bold text-xs uppercase tracking-widest overflow-hidden transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.5)]"
+            className="group relative px-10 py-5 bg-[#e8e6e3] text-[#1a1816] rounded-full font-bold text-xs uppercase tracking-[0.15em] overflow-hidden transition-all shadow-[0_20px_40px_-15px_rgba(255,255,255,0.1)]"
           >
-            <span className="relative z-10 flex items-center gap-2">
-              Перейти в каталог <ArrowDown size={14} />
+            <span className="relative z-10 flex items-center gap-3">
+              Смотреть коллекцию <ArrowDown size={14} className="opacity-60 group-hover:translate-y-1 transition-transform" />
             </span>
           </motion.button>
         </motion.div>
