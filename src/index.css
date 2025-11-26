@@ -32,6 +32,19 @@
            shadow-glow transition-all duration-300 
            active:scale-95 hover:bg-amber-500;
   }
+
+  /* Поля ввода - улучшенная читаемость */
+  input, textarea {
+    @apply text-stone-900 dark:text-stone-100;
+  }
+
+  input::placeholder, textarea::placeholder {
+    @apply text-stone-400 dark:text-stone-500;
+  }
+
+  input:focus, textarea:focus {
+    @apply outline-none ring-2 ring-amber-500/50;
+  }
 }
 
 #root {
