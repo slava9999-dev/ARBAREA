@@ -13,54 +13,64 @@ const Showcase = ({ onBuy }) => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* 1. Hero Section (Premium Wood Texture) */}
-      <div className="relative h-[85vh] w-full overflow-hidden">
-        {/* 1. TEXTURE LAYER with Slow Zoom Animation */}
+      {/* HERO SECTION: Oiled Walnut Concept */}
+      <div className="relative h-[88vh] w-full overflow-hidden bg-stone-900">
+        
+        {/* 1. BACKGROUND TEXTURE (Animated) */}
         <div className="absolute inset-0 animate-slow-zoom">
           <img 
-            src="https://images.unsplash.com/photo-1543425626-4b63897d23d9?q=80&w=2574&auto=format&fit=crop" 
-            alt="Arbarea Texture" 
-            className="h-full w-full object-cover opacity-80"
+            src="https://images.unsplash.com/photo-1619983081563-430f63602796?q=80&w=2574&auto=format&fit=crop" 
+            alt="Premium Walnut Texture" 
+            className="h-full w-full object-cover opacity-90"
           />
         </div>
 
-        {/* 2. ATMOSPHERE LAYERS (Gradients) */}
-        {/* Затемнение всего фона для читаемости */}
-        <div className="absolute inset-0 bg-stone-900/40" />
-        {/* Плавный переход в контент снизу */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1c1917] via-[#1c1917]/60 to-transparent" />
-        {/* Виньетка по краям */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(28,25,23,0.8)_100%)]" />
+        {/* 2. LIGHTING & ATMOSPHERE (Overlays) */}
+        {/* Общее затемнение для контраста текста */}
+        <div className="absolute inset-0 bg-stone-950/50" />
+        
+        {/* Градиент снизу: Плавный переход в основной фон приложения */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1c1917] via-[#1c1917]/40 to-transparent" />
+        
+        {/* Радиальный свет по центру (Spotlight effect) */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(217,119,6,0.15),transparent_70%)] pointer-events-none" />
+
 
         {/* 3. CONTENT */}
-        <div className="relative z-10 flex h-full flex-col items-center justify-center text-center px-6">
+        <div className="relative z-10 flex h-full flex-col items-center justify-center text-center px-6 pt-20">
           
-          {/* Декоративная линия */}
-          <div className="h-16 w-[1px] bg-gradient-to-b from-transparent to-amber-500/50 mb-6" />
+          {/* Тонкая золотая линия */}
+          <div className="w-[1px] h-20 bg-gradient-to-b from-transparent via-amber-500/80 to-transparent mb-8 animate-fade-in-up" />
 
-          <span className="mb-4 text-xs font-bold uppercase tracking-[0.4em] text-amber-500 drop-shadow-lg">
-            Est. 2024
+          {/* Надзаголовок */}
+          <span className="mb-6 text-[10px] md:text-xs font-bold uppercase tracking-[0.5em] text-amber-500 drop-shadow-lg animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+            Authorial Studio
           </span>
           
-          <h1 className="mb-6 font-serif text-5xl md:text-7xl font-light text-white leading-[1.1] drop-shadow-2xl">
-            Arbarea <br />
-            <span className="italic text-stone-400">Tactile</span>
+          {/* Главный заголовок */}
+          <h1 className="mb-6 font-serif text-5xl md:text-7xl font-light text-white leading-[1.05] drop-shadow-2xl animate-fade-in-up" style={{animationDelay: '0.4s'}}>
+            Living <br />
+            <span className="italic text-stone-300">Texture</span>
           </h1>
           
-          <p className="mb-10 max-w-sm font-sans text-sm text-stone-300/80 leading-relaxed font-light">
-            Искусство видеть форму в хаосе природы. 
-            Премиальные изделия из массива для тех, кто понимает тишину.
+          {/* Подпись */}
+          <p className="mb-12 max-w-sm font-sans text-sm md:text-base text-stone-200/90 font-light leading-relaxed animate-fade-in-up" style={{animationDelay: '0.6s'}}>
+            Тактильная эстетика натурального дерева. <br/>
+            Создано вручную, чтобы стать частью вашей истории.
           </p>
 
+          {/* Кнопка с эффектом стекла */}
           <button 
             type="button"
             onClick={() => document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })}
-            className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-full border border-white/20 transition-all hover:border-amber-500/50"
+            className="group relative overflow-hidden rounded-full px-10 py-4 backdrop-blur-md bg-white/5 border border-white/20 transition-all duration-300 hover:bg-white/10 hover:border-amber-500/50 animate-fade-in-up" 
+            style={{animationDelay: '0.8s'}}
           >
-            <div className="absolute inset-0 w-0 bg-amber-600/20 transition-all duration-[250ms] ease-out group-hover:w-full" />
-            <span className="relative text-sm font-bold tracking-widest uppercase text-white group-hover:text-amber-100">
-              Коллекция
+            <span className="relative z-10 text-xs font-bold tracking-[0.2em] uppercase text-white group-hover:text-amber-100 transition-colors">
+              Смотреть каталог
             </span>
+            {/* Glow effect on hover */}
+            <div className="absolute inset-0 -z-10 bg-amber-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
           </button>
         </div>
       </div>
