@@ -20,7 +20,7 @@ const cartReducer = (state, action) => {
     case 'ADD_ITEM': {
       const newItem = action.payload;
       const existingItemIndex = state.items.findIndex(
-        (item) => item.id === newItem.id
+        (item) => item.id === newItem.id,
       );
 
       if (existingItemIndex > -1) {
@@ -51,7 +51,7 @@ const cartReducer = (state, action) => {
       return {
         ...state,
         items: state.items.map((item) =>
-          item.id === id ? { ...item, quantity } : item
+          item.id === id ? { ...item, quantity } : item,
         ),
       };
     }
@@ -89,16 +89,16 @@ export const CartProvider = ({ children }) => {
   // Derived state calculations
   const totalItems = state.items.reduce(
     (total, item) => total + (item.quantity || 1),
-    0
+    0,
   );
 
   // Calculate Subtotal, Discount, and Total
   const { user } = useAuth();
   const subtotal = state.items.reduce(
     (total, item) => total + item.price * (item.quantity || 1),
-    0
+    0,
   );
-  
+
   // 10% discount for authorized users
   const discount = user ? Math.round(subtotal * 0.1) : 0;
   const cartTotal = subtotal - discount;
@@ -122,9 +122,9 @@ export const CartProvider = ({ children }) => {
   const value = {
     cartItems: state.items,
     totalItems,
-    subtotal,      // Raw total
-    discount,      // Calculated discount
-    cartTotal,     // Final total to pay
+    subtotal, // Raw total
+    discount, // Calculated discount
+    cartTotal, // Final total to pay
     addToCart,
     removeFromCart,
     updateQuantity,

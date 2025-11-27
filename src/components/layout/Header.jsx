@@ -9,16 +9,18 @@ const Header = () => {
   return (
     <div className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md z-40 px-6 py-4 flex justify-between items-center border-b border-stone-100 dark:border-stone-800 transition-colors duration-300">
       <div className="flex items-center gap-3">
-        <motion.div 
+        <motion.div
           initial={{ rotate: -90, opacity: 0 }}
           animate={{ rotate: 0, opacity: 1 }}
-          transition={{ duration: 0.8, ease: "backOut" }}
+          transition={{ duration: 0.8, ease: 'backOut' }}
           className="w-10 h-10 bg-stone-900 dark:bg-stone-100 rounded-xl flex items-center justify-center shadow-lg"
         >
-          <span className="text-white dark:text-stone-900 font-serif font-bold text-xl">A</span>
+          <span className="text-white dark:text-stone-900 font-serif font-bold text-xl">
+            A
+          </span>
         </motion.div>
         <div className="flex flex-col">
-          <motion.h1 
+          <motion.h1
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -26,7 +28,7 @@ const Header = () => {
           >
             RBAREA
           </motion.h1>
-          <motion.span 
+          <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.5 }}

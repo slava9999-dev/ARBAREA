@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { RotateCw, ShoppingBag, Play } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import ProductCarousel from './ProductCarousel';
 import TactileButton from '../ui/TactileButton';
 import { useToast } from '../../context/ToastContext';
@@ -9,10 +10,15 @@ const FlipProductCard = ({ product, onBuy }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const { showToast } = useToast();
-  
+  const navigate = useNavigate();
+
   // Variant State
-  const [selectedColor, setSelectedColor] = useState(product.variants?.colors?.[0]);
-  const [selectedSize, setSelectedSize] = useState(product.variants?.sizes?.[0]);
+  const [selectedColor, setSelectedColor] = useState(
+    product.variants?.colors?.[0],
+  );
+  const [selectedSize, setSelectedSize] = useState(
+    product.variants?.sizes?.[0],
+  );
 
   // Dynamic Price Calculation
   const basePrice = product.basePrice || product.price;
@@ -28,6 +34,11 @@ const FlipProductCard = ({ product, onBuy }) => {
     if (isAnimating) return;
     setIsFlipped(!isFlipped);
     if (window.navigator?.vibrate) window.navigator.vibrate(10);
+  };
+
+  const handleDetailsClick = (e) => {
+    e.stopPropagation();
+    navigate(`/product/${product.id}`);
   };
 
   return (
@@ -81,7 +92,7 @@ const FlipProductCard = ({ product, onBuy }) => {
           <div className="p-4 flex flex-col justify-between flex-grow bg-white dark:bg-stone-900 relative z-10">
             <button
               type="button"
-              onClick={handleFlip}
+              onClick={handleDetailsClick}
               className="cursor-pointer w-full text-left"
             >
               <div className="text-[10px] text-stone-400 mb-1 uppercase tracking-widest font-bold">
@@ -93,7 +104,7 @@ const FlipProductCard = ({ product, onBuy }) => {
             </button>
             <button
               type="button"
-              onClick={handleFlip}
+              onClick={handleDetailsClick}
               className="w-full py-2 text-center text-stone-400 text-xs border-t border-stone-100 dark:border-stone-800 mt-2 cursor-pointer hover:text-stone-600 transition-colors"
             >
               Подробнее о товаре
@@ -141,31 +152,31 @@ const FlipProductCard = ({ product, onBuy }) => {
           >
             {/* Dynamic Price & Options */}
             <div className="flex justify-between items-end mb-3">
-               <div className="text-xl font-serif text-amber-500 font-bold">
-                 {currentPrice.toLocaleString()} ₽
-               </div>
-               
-               {/* Colors (Compact) */}
-               {product.variants?.colors && (
-                  <div className="flex gap-2">
-                    {product.variants.colors.map((color) => (
-                      <button
-                        key={color.id}
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedColor(color);
-                        }}
-                        className={`w-6 h-6 rounded-full border transition-all ${
-                          selectedColor?.id === color.id
-                            ? 'border-amber-500 scale-110 ring-1 ring-amber-500 ring-offset-1 ring-offset-stone-800'
-                            : 'border-stone-600'
-                        }`}
-                        style={{ backgroundColor: color.hex }}
-                      />
-                    ))}
-                  </div>
-               )}
+              <div className="text-xl font-serif text-amber-500 font-bold">
+                {currentPrice.toLocaleString()} ₽
+              </div>
+
+              {/* Colors (Compact) */}
+              {product.variants?.colors && (
+                <div className="flex gap-2">
+                  {product.variants.colors.map((color) => (
+                    <button
+                      key={color.id}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedColor(color);
+                      }}
+                      className={`w-6 h-6 rounded-full border transition-all ${
+                        selectedColor?.id === color.id
+                          ? 'border-amber-500 scale-110 ring-1 ring-amber-500 ring-offset-1 ring-offset-stone-800'
+                          : 'border-stone-600'
+                      }`}
+                      style={{ backgroundColor: color.hex }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Sizes (Compact) */}
@@ -207,7 +218,7 @@ const FlipProductCard = ({ product, onBuy }) => {
                     ...product,
                     id: `${product.id}-${selectedColor?.id || 'def'}-${selectedSize?.value || 'def'}`,
                     name: `${product.name} ${selectedSize ? `(${selectedSize.label})` : ''} ${selectedColor ? `(${selectedColor.name})` : ''}`,
-                    price: currentPrice
+                    price: currentPrice,
                   });
                   showToast('Товар добавлен в корзину', 'success');
                 }}

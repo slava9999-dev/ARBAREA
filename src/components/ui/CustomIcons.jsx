@@ -1,5 +1,3 @@
-
-
 export const VKIcon = ({ size = 24 }) => (
   <svg
     width={size}

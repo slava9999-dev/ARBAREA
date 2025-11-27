@@ -103,10 +103,10 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
   if (cartItems.length === 0 && step === 'form') return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4">
-      <div className="bg-white dark:bg-stone-900 w-full sm:w-[400px] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
-        <div className="p-4 flex justify-between items-center border-b border-stone-100 dark:border-stone-800 shrink-0">
-          <h3 className="font-serif font-bold text-lg text-stone-800 dark:text-stone-100">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+      <div className="bg-[#1c1917] w-full sm:w-[400px] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-slide-up flex flex-col max-h-[90vh] border border-white/5">
+        <div className="p-4 flex justify-between items-center border-b border-white/5 shrink-0">
+          <h3 className="font-serif font-bold text-lg text-white">
             {step === 'form'
               ? 'Оформление заказа'
               : step === 'success'
@@ -117,7 +117,7 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
             <button
               type="button"
               onClick={onClose}
-              className="p-1 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"
+              className="p-1 hover:bg-white/5 rounded-full"
             >
               <X className="text-stone-400" size={20} />
             </button>
@@ -131,26 +131,29 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
             <div className="mb-6 space-y-2">
               {cartItems.map((item) => (
                 <div key={item.id} className="flex justify-between text-sm">
-                  <span className="text-stone-600 dark:text-stone-400 truncate max-w-[200px]">
+                  <span className="text-stone-400 truncate max-w-[200px]">
                     {item.name} x{item.quantity}
                   </span>
-                  <span className="font-medium dark:text-stone-200">
-                    {((item.price || 0) * (item.quantity || 1)).toLocaleString()} ₽
+                  <span className="font-medium text-stone-200">
+                    {(
+                      (item.price || 0) * (item.quantity || 1)
+                    ).toLocaleString()}{' '}
+                    ₽
                   </span>
                 </div>
               ))}
-              <div className="border-t border-stone-100 dark:border-stone-800 pt-2 mt-2 space-y-1">
-                <div className="flex justify-between text-stone-500 dark:text-stone-400 text-sm">
+              <div className="border-t border-white/5 pt-2 mt-2 space-y-1">
+                <div className="flex justify-between text-stone-400 text-sm">
                   <span>Сумма</span>
                   <span>{(subtotal || 0).toLocaleString()} ₽</span>
                 </div>
                 {discount > 0 && (
-                  <div className="flex justify-between text-green-600 dark:text-green-400 text-sm">
+                  <div className="flex justify-between text-green-400 text-sm">
                     <span>Скидка (10%)</span>
                     <span>-{(discount || 0).toLocaleString()} ₽</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-lg dark:text-stone-100 pt-1">
+                <div className="flex justify-between font-bold text-lg text-white pt-1">
                   <span>Итого</span>
                   <span>{(cartTotal || 0).toLocaleString()} ₽</span>
                 </div>
@@ -159,7 +162,7 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="p-3 bg-red-50 text-red-500 text-sm rounded-xl">
+                <div className="p-3 bg-red-500/10 text-red-500 text-sm rounded-xl border border-red-500/20">
                   {error}
                 </div>
               )}
@@ -170,7 +173,7 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-full p-4 bg-stone-50 dark:bg-stone-800 dark:text-stone-100 rounded-xl outline-none focus:ring-1 focus:ring-primary-300"
+                className="w-full p-4 bg-transparent border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-none px-0 py-3"
               />
               <input
                 required
@@ -180,7 +183,7 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-                className="w-full p-4 bg-stone-50 dark:bg-stone-800 dark:text-stone-100 rounded-xl outline-none focus:ring-1 focus:ring-primary-300"
+                className="w-full p-4 bg-transparent border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-none px-0 py-3"
               />
               <input
                 type="email"
@@ -189,7 +192,7 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="w-full p-4 bg-stone-50 dark:bg-stone-800 dark:text-stone-100 rounded-xl outline-none focus:ring-1 focus:ring-primary-300"
+                className="w-full p-4 bg-transparent border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-none px-0 py-3"
               />
               <input
                 required
@@ -198,17 +201,17 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
                 }
-                className="w-full p-4 bg-stone-50 dark:bg-stone-800 dark:text-stone-100 rounded-xl outline-none focus:ring-1 focus:ring-primary-300"
+                className="w-full p-4 bg-transparent border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-none px-0 py-3"
               />
 
               <button
                 type="submit"
-                className="w-full bg-stone-800 dark:bg-primary-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-4 hover:bg-stone-700 dark:hover:bg-primary-500 transition-colors"
+                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-4 hover:bg-amber-500 transition-colors shadow-[0_0_20px_rgba(217,119,6,0.3)]"
               >
                 <CreditCard size={18} />
                 <span>Оплатить (Карта / СБП)</span>
               </button>
-              <div className="text-center text-xs text-stone-400 mt-2">
+              <div className="text-center text-xs text-stone-500 mt-2">
                 Безопасная оплата через Тинькофф
               </div>
             </form>
@@ -219,12 +222,10 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
           <div className="p-12 text-center">
             <Loader2
               size={32}
-              className="text-stone-800 dark:text-stone-100 animate-spin mx-auto mb-4"
+              className="text-amber-500 animate-spin mx-auto mb-4"
             />
-            <h3 className="font-bold text-stone-800 dark:text-stone-100">
-              Обработка платежа...
-            </h3>
-            <p className="text-stone-500 dark:text-stone-400 text-sm mt-2">
+            <h3 className="font-bold text-white">Обработка платежа...</h3>
+            <p className="text-stone-400 text-sm mt-2">
               Пожалуйста, не закрывайте окно
             </p>
           </div>
@@ -232,19 +233,19 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
 
         {step === 'success' && (
           <div className="p-8 text-center">
-            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/20">
               <Check size={32} />
             </div>
-            <h3 className="font-bold text-xl mb-2 dark:text-stone-100">
+            <h3 className="font-bold text-xl mb-2 text-white">
               Заказ оформлен!
             </h3>
-            <p className="text-stone-500 dark:text-stone-400 text-sm mb-6">
+            <p className="text-stone-400 text-sm mb-6">
               Мы свяжемся с вами в ближайшее время для подтверждения деталей.
             </p>
             <button
               type="button"
               onClick={onClose}
-              className="w-full bg-stone-800 dark:bg-primary-600 text-white py-3 rounded-xl font-bold hover:bg-stone-700 dark:hover:bg-primary-500 transition-colors"
+              className="w-full bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-500 transition-colors shadow-[0_0_20px_rgba(217,119,6,0.3)]"
             >
               Отлично
             </button>

@@ -1,4 +1,3 @@
-
 import { useAuth } from '../../context/AuthContext';
 import { Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';

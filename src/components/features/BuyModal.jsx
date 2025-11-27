@@ -1,11 +1,5 @@
 import { useState } from 'react';
-import {
-  X,
-  ShoppingBag,
-  Loader2,
-  Check,
-  Play,
-} from 'lucide-react';
+import { X, ShoppingBag, Loader2, Check, Play } from 'lucide-react';
 import { COLORS, SIZES } from '../../lib/constants';
 import OptimizedImage from '../ui/OptimizedImage';
 import { useAuth } from '../../context/AuthContext';

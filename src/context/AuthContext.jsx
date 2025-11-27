@@ -83,14 +83,15 @@ export const AuthProvider = ({ children }) => {
               // Для MVP сохраним данные как "пользователя"
               const user = {
                 uid: `tg_${data.id}`,
-                displayName: `${data.first_name} ${data.last_name || ''}`.trim(),
+                displayName:
+                  `${data.first_name} ${data.last_name || ''}`.trim(),
                 photoURL: data.photo_url,
                 providerId: 'telegram',
               };
               setUser(user); // Временно устанавливаем пользователя в контекст
               resolve({ user });
             }
-          }
+          },
         );
       } else {
         // Если скрипт не загружен, открываем виджет в новом окне (fallback)

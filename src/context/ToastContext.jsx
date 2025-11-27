@@ -36,9 +36,15 @@ export const ToastProvider = ({ children }) => {
               exit={{ opacity: 0, y: -20, scale: 0.9 }}
               className="bg-stone-900/90 backdrop-blur-md border border-white/10 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 min-w-[280px]"
             >
-              {toast.type === 'success' && <CheckCircle className="text-green-400 shrink-0" size={20} />}
-              {toast.type === 'error' && <XCircle className="text-red-400 shrink-0" size={20} />}
-              {toast.type === 'info' && <Info className="text-blue-400 shrink-0" size={20} />}
+              {toast.type === 'success' && (
+                <CheckCircle className="text-green-400 shrink-0" size={20} />
+              )}
+              {toast.type === 'error' && (
+                <XCircle className="text-red-400 shrink-0" size={20} />
+              )}
+              {toast.type === 'info' && (
+                <Info className="text-blue-400 shrink-0" size={20} />
+              )}
               <span className="text-sm font-medium">{toast.message}</span>
             </motion.div>
           ))}

@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 

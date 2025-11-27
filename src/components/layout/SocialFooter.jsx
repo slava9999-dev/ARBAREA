@@ -1,4 +1,3 @@
-
 import { Send, Instagram, Youtube } from 'lucide-react';
 import { VKIcon, PinterestIcon } from '../ui/CustomIcons';
 

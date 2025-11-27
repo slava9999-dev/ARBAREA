@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/biome.json",
   "formatter": {
     "indentStyle": "space",
     "indentWidth": 2,
@@ -18,5 +17,16 @@
     "formatter": {
       "quoteStyle": "single"
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/index.css"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      }
+    }
+  ]
 }

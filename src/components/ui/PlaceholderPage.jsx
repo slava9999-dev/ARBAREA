@@ -1,5 +1,3 @@
-
-
 const PlaceholderPage = ({ title }) => (
   <div className="container mx-auto px-6 py-20 min-h-[60vh] flex items-center justify-center">
     <div className="text-center">

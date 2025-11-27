@@ -1,4 +1,3 @@
-
 import { INTERIORS } from '../data/mockData';
 import SocialFooter from '../components/layout/SocialFooter';
 

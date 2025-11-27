@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Phone, Send, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, Loader2 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
-
+import TelegramLoginButton from '../../TelegramLoginButton';
 
 const AuthScreen = () => {
   const {
@@ -9,13 +9,21 @@ const AuthScreen = () => {
     loginWithEmail,
     registerWithEmail,
     loginWithPhone,
-    loginWithTelegram,
     loginWithYandex,
     setupRecaptcha,
     clearRecaptcha,
   } = useAuth();
   const [method, setMethod] = useState('main'); // main, email, phone
-  // ...
+  const [emailMode, setEmailMode] = useState('login'); // login, register
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Form states
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState(null);
 
   useEffect(() => {
     return () => {
@@ -28,22 +36,9 @@ const AuthScreen = () => {
       clearRecaptcha();
     }
   }, [method, clearRecaptcha]);
-  const [emailMode, setEmailMode] = useState('login'); // login, register
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  // Form states
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState(null);
 
   const getErrorMessage = (error) => {
     console.error('Auth Error Details:', error);
-    console.error('Error Code:', error.code);
-    console.error('Error Message:', error.message);
-
     if (error.code === 'auth/operation-not-allowed')
       return 'Этот метод входа отключен в настройках Firebase Console.';
     if (error.code === 'auth/invalid-email') return 'Некорректный Email.';
@@ -115,18 +110,6 @@ const AuthScreen = () => {
     }
   };
 
-  const handleTelegram = async () => {
-    setError('');
-    setLoading(true);
-    try {
-      await loginWithTelegram();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col justify-center px-6 pb-32 text-center animate-fade-in">
       <div className="w-24 h-24 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -165,28 +148,27 @@ const AuthScreen = () => {
             )}
           </button>
 
-          <div className="pt-4 grid grid-cols-4 gap-3">
+          <div className="pt-4 grid grid-cols-4 gap-3 items-center">
             <button
               type="button"
               onClick={() => setMethod('phone')}
-              className="bg-white border border-stone-100 text-stone-600 py-3 rounded-xl flex items-center justify-center hover:bg-stone-50 active:scale-95 transition-all"
+              className="bg-white border border-stone-100 text-stone-600 py-3 rounded-xl flex items-center justify-center hover:bg-stone-50 active:scale-95 transition-all h-14"
             >
               <Phone size={20} />
             </button>
             <button
               type="button"
               onClick={() => setMethod('email')}
-              className="bg-white border border-stone-100 text-stone-600 py-3 rounded-xl flex items-center justify-center hover:bg-stone-50 active:scale-95 transition-all"
+              className="bg-white border border-stone-100 text-stone-600 py-3 rounded-xl flex items-center justify-center hover:bg-stone-50 active:scale-95 transition-all h-14"
             >
               <Mail size={20} />
             </button>
-            <button
-              type="button"
-              onClick={handleTelegram}
-              className="bg-[#229ED9]/10 border border-[#229ED9]/20 text-[#229ED9] py-3 rounded-xl flex items-center justify-center hover:bg-[#229ED9]/20 active:scale-95 transition-all"
-            >
-              <Send size={20} />
-            </button>
+
+            {/* Telegram Widget Button */}
+            <div className="flex items-center justify-center h-14 w-full overflow-hidden">
+              <TelegramLoginButton botName="ArbareaBot" />
+            </div>
+
             <button
               type="button"
               onClick={async () => {
@@ -200,13 +182,11 @@ const AuthScreen = () => {
                   setLoading(false);
                 }
               }}
-              className="bg-[#FC3F1D]/10 border border-[#FC3F1D]/20 text-[#FC3F1D] py-3 rounded-xl flex items-center justify-center hover:bg-[#FC3F1D]/20 active:scale-95 transition-all font-bold text-lg"
+              className="bg-[#FC3F1D]/10 border border-[#FC3F1D]/20 text-[#FC3F1D] py-3 rounded-xl flex items-center justify-center hover:bg-[#FC3F1D]/20 active:scale-95 transition-all font-bold text-lg h-14"
             >
               Я
             </button>
           </div>
-
-
         </div>
       )}
 

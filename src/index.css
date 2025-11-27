@@ -13,7 +13,7 @@
 @layer components {
   /* Базовый фон приложения */
   body {
-    @apply bg-background text-secondary font-sans antialiased;
+    @apply bg-[#1c1917] text-[#e7e5e4] font-sans antialiased selection:bg-amber-500/30;
   }
 
   /* Заголовки */
@@ -23,27 +23,19 @@
 
   /* Премиальное Стекло (Карточки) */
   .glass-panel {
-    @apply bg-stone-900/60 backdrop-blur-xl border border-white/5 shadow-glass rounded-2xl;
+    @apply bg-[#1c1917]/60 backdrop-blur-xl border border-white/5 shadow-glass rounded-2xl;
   }
 
   /* Кнопка действия (Золотая) */
   .btn-primary {
-    @apply bg-primary text-white font-sans font-semibold py-3 px-6 rounded-xl 
-           shadow-glow transition-all duration-300 
-           active:scale-95 hover:bg-amber-500;
+    @apply bg-amber-600 text-white font-sans font-semibold py-3 px-6 rounded-xl 
+           shadow-[0_0_20px_rgba(217,119,6,0.3)] transition-all duration-300 
+           active:scale-95 hover:bg-amber-500 border border-amber-500/50;
   }
 
   /* Поля ввода - улучшенная читаемость */
   input, textarea {
-    @apply text-stone-900 dark:text-stone-100;
-  }
-
-  input::placeholder, textarea::placeholder {
-    @apply text-stone-400 dark:text-stone-500;
-  }
-
-  input:focus, textarea:focus {
-    @apply outline-none ring-2 ring-amber-500/50;
+    @apply bg-transparent border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-none px-0 py-3;
   }
 }
 
@@ -52,21 +44,21 @@
 }
 
 /* Custom scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
+::-webkit-scrollbar-track {
+  background: #1c1917;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #d6d3d1;
+::-webkit-scrollbar-thumb {
+  background: #44403c;
   border-radius: 4px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #a8a29e;
+::-webkit-scrollbar-thumb:hover {
+  background: #57534e;
 }
 
 /* Animations */

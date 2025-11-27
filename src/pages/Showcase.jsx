@@ -1,90 +1,175 @@
 import { useState } from 'react';
+import { Search } from 'lucide-react';
 import { PRODUCTS } from '../data/products';
 import FlipProductCard from '../components/features/FlipProductCard';
 import SocialFooter from '../components/layout/SocialFooter';
+import { SearchOverlay } from '../components/SearchOverlay';
 
 const Showcase = ({ onBuy }) => {
-  const [activeCategory] = useState('Все');
-  
-  // Filter logic (can be expanded later)
-  const filtered = activeCategory === 'Все' 
-    ? PRODUCTS 
-    : PRODUCTS.filter((p) => p.category === activeCategory);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Filter logic
+  const filtered =
+    activeCategory === 'all'
+      ? PRODUCTS
+      : PRODUCTS.filter((p) => {
+          if (activeCategory === 'wall-panels') return p.category === 'Панно';
+          if (activeCategory === 'bathroom') return p.category === 'Для ванной';
+          if (activeCategory === 'kitchen')
+            return p.category === 'Для кухни' || p.category === 'accessories';
+          if (activeCategory === 'light') return p.category === 'Свет';
+          return true;
+        });
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* HERO SECTION: Oiled Walnut Concept */}
-      <div className="relative h-[88vh] w-full overflow-hidden bg-stone-900">
-        
-        {/* 1. BACKGROUND TEXTURE (Animated) */}
-        <div className="absolute inset-0 animate-slow-zoom">
-          <img 
-            src="https://images.unsplash.com/photo-1543425626-4b63897d23d9?q=80&w=2574&auto=format&fit=crop" 
-            alt="Premium Walnut Texture" 
-            className="h-full w-full object-cover opacity-90"
-          />
-        </div>
+      <SearchOverlay
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
 
-        {/* 2. LIGHTING & ATMOSPHERE (Overlays) */}
-        {/* Общее затемнение для контраста текста */}
-        <div className="absolute inset-0 bg-stone-950/50" />
-        
-        {/* Градиент снизу: Плавный переход в основной фон приложения */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1c1917] via-[#1c1917]/40 to-transparent" />
-        
-        {/* Радиальный свет по центру (Spotlight effect) */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(217,119,6,0.15),transparent_70%)] pointer-events-none" />
+      <div className="relative w-full overflow-hidden bg-[#1c1917]">
+        {/* 1. TEXTURE LAYER: DARK LINEN/BURLAP */}
+        {/* Бесшовный переход текстуры ткани в фон приложения */}
+        <div
+          className="absolute inset-0 z-0 h-[95vh] w-full opacity-50 pointer-events-none"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1599692994061-0e1c27e85295?q=80&w=2670&auto=format&fit=crop')`, // Текстура грубой ткани
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            // CSS MASKING: Плавное исчезновение вниз
+            maskImage:
+              'linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)',
+            WebkitMaskImage:
+              'linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)',
+          }}
+        />
 
+        {/* 2. ATMOSPHERE OVERLAYS */}
+        {/* Легкая виньетка для акцента на центре */}
+        <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(28,25,23,0.6)_100%)]" />
 
-        {/* 3. CONTENT */}
-        <div className="relative z-10 flex h-full flex-col items-center justify-center text-center px-6 pt-20">
-          
-          {/* Тонкая золотая линия */}
-          <div className="w-[1px] h-20 bg-gradient-to-b from-transparent via-amber-500/80 to-transparent mb-8 animate-fade-in-up" />
+        {/* 3. CONTENT LAYER */}
+        <div className="relative z-10 flex h-[85vh] flex-col items-center justify-center text-center px-4 pt-12">
+          {/* Декоративный элемент: Вертикальная линия */}
+          <div className="h-12 w-[1px] bg-amber-500/50 mb-6"></div>
 
-          {/* Надзаголовок */}
-          <span className="mb-6 text-[10px] md:text-xs font-bold uppercase tracking-[0.5em] text-amber-500 drop-shadow-lg animate-fade-in-up" style={{animationDelay: '0.2s'}}>
-            Авторская Студия
-          </span>
-          
-          {/* Главный заголовок */}
-          <h1 className="mb-6 font-serif text-5xl md:text-7xl font-light text-white leading-[1.05] drop-shadow-2xl animate-fade-in-up" style={{animationDelay: '0.4s'}}>
-            Живая <br />
-            <span className="italic text-stone-300">Текстура</span>
+          {/* LOGO (English) */}
+          <h1 className="mb-3 font-serif text-6xl md:text-8xl text-[#e5e5e5] tracking-tight drop-shadow-2xl">
+            Arbarea
           </h1>
-          
-          {/* Подпись */}
-          <p className="mb-12 max-w-sm font-sans text-sm md:text-base text-stone-200/90 font-light leading-relaxed animate-fade-in-up" style={{animationDelay: '0.6s'}}>
-            Тактильная эстетика натурального дерева. <br/>
-            Создано вручную, чтобы стать частью вашей истории.
+
+          {/* DESCRIPTOR (Russian) */}
+          <div className="flex items-center gap-4 mb-8">
+            <div className="h-[1px] w-8 bg-stone-500/50"></div>
+            <span className="font-sans text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-amber-500/90">
+              Авторская столярная мастерская
+            </span>
+            <div className="h-[1px] w-8 bg-stone-500/50"></div>
+          </div>
+
+          {/* DESCRIPTION (Russian) */}
+          <p className="mb-12 max-w-sm font-sans text-stone-300 font-light leading-relaxed opacity-90">
+            Живая фактура дерева, тепло натурального льна и бескомпромиссное
+            качество.
+            <br className="hidden md:block" />
+            Мебель, у которой есть душа.
           </p>
 
-          {/* Кнопка с эффектом стекла */}
-          <button 
+          {/* ACTION BUTTON */}
+          <button
             type="button"
-            onClick={() => document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })}
-            className="group relative overflow-hidden rounded-full px-10 py-4 backdrop-blur-md bg-white/5 border border-white/20 transition-all duration-300 hover:bg-white/10 hover:border-amber-500/50 animate-fade-in-up" 
-            style={{animationDelay: '0.8s'}}
+            onClick={() =>
+              document
+                .getElementById('catalog')
+                ?.scrollIntoView({ behavior: 'smooth' })
+            }
+            className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-xl border border-white/10 transition-all hover:border-amber-500/40 backdrop-blur-sm"
           >
-            <span className="relative z-10 text-xs font-bold tracking-[0.2em] uppercase text-white group-hover:text-amber-100 transition-colors">
-              Смотреть каталог
+            <div className="absolute inset-0 w-0 bg-stone-800 transition-all duration-[250ms] ease-out group-hover:w-full"></div>
+            <span className="relative z-10 flex items-center gap-3 text-sm font-medium tracking-wide text-white">
+              <span>Перейти в каталог</span>
+              {/* Стрелка вниз */}
+              <svg
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="group-hover:translate-y-1 transition-transform"
+              >
+                <path d="M12 5v14M19 12l-7 7-7-7" />
+              </svg>
             </span>
-            {/* Glow effect on hover */}
-            <div className="absolute inset-0 -z-10 bg-amber-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
           </button>
         </div>
       </div>
 
       {/* 2. Catalog (Overlapping Grid) */}
       <div id="catalog" className="-mt-20 relative z-10 px-4 pb-24">
+        {/* STICKY CATEGORY NAV */}
+        <div className="sticky top-0 z-40 w-full -mx-4 px-4 mb-6 border-b border-white/5 bg-[#1c1917]/80 backdrop-blur-xl transition-all duration-300">
+          <div className="flex items-center justify-between py-4">
+            <div className="flex w-full overflow-x-auto scrollbar-hide">
+              <div className="flex gap-3">
+                {[
+                  { id: 'all', label: 'Все товары' },
+                  { id: 'wall-panels', label: 'Панно' },
+                  { id: 'bathroom', label: 'Для ванной' },
+                  { id: 'kitchen', label: 'Для кухни' },
+                  { id: 'light', label: 'Свет' },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`
+                      relative whitespace-nowrap rounded-full px-6 py-2.5 text-sm font-medium tracking-wide transition-all duration-300
+                      ${
+                        activeCategory === cat.id
+                          ? 'bg-amber-600 text-white shadow-[0_0_20px_rgba(217,119,6,0.3)] border border-amber-500'
+                          : 'bg-white/5 text-stone-300 border border-white/10 hover:bg-white/10 hover:border-white/20'
+                      }
+                    `}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Search Button (Icon only) */}
+            <button
+              type="button"
+              onClick={() => setIsSearchOpen(true)}
+              className="ml-4 p-2.5 text-stone-400 hover:text-white bg-white/5 rounded-full border border-white/10 hover:bg-white/10 transition-colors"
+              aria-label="Поиск"
+            >
+              <Search size={20} />
+            </button>
+          </div>
+
+          {/* Декоративная линия градиента снизу панели */}
+          <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filtered.map((p) => (
-            <div key={p.id} className="glass-panel p-2 transition-transform duration-300 hover:scale-[1.02]">
+            <div
+              key={p.id}
+              className="glass-panel p-2 transition-transform duration-300 hover:scale-[1.02]"
+            >
               <FlipProductCard product={p} onBuy={onBuy} />
             </div>
           ))}
         </div>
-        
+
         <SocialFooter />
       </div>
     </div>
