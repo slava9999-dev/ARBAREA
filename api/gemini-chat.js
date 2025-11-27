@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
     
     // Инициализация модели с системной инструкцией
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.5-flash", // Версия 2.5 Flash
+      model: "gemini-2.5-flash", // Gemini 2.5 Flash (подтверждено доступна)
       systemInstruction: SYSTEM_INSTRUCTION
     });
 
