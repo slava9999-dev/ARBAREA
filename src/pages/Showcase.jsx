@@ -55,26 +55,25 @@ const Showcase = ({ onBuy }) => {
           {/* Декоративный элемент: Вертикальная линия */}
           <div className="h-12 w-[1px] bg-amber-500/50 mb-6"></div>
 
-          {/* LOGO (English) */}
-          <h1 className="mb-3 font-serif text-6xl md:text-8xl text-[#e5e5e5] tracking-tight drop-shadow-2xl">
+          {/* LOGO */}
+          <h1 className="mb-4 font-serif text-6xl md:text-8xl text-[#e5e5e5] tracking-tight drop-shadow-2xl">
             Arbarea
           </h1>
 
-          {/* DESCRIPTOR (Russian) */}
-          <div className="flex items-center gap-4 mb-8">
-            <div className="h-[1px] w-8 bg-stone-500/50"></div>
-            <span className="font-sans text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-amber-500/90">
-              Авторская столярная мастерская
+          {/* DESCRIPTOR (Золотой акцент) */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="h-[1px] w-6 md:w-12 bg-amber-500/50"></div>
+            <span className="font-sans text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-amber-500 text-center">
+              Эстетика, к которой хочется прикоснуться
             </span>
-            <div className="h-[1px] w-8 bg-stone-500/50"></div>
+            <div className="h-[1px] w-6 md:w-12 bg-amber-500/50"></div>
           </div>
 
-          {/* DESCRIPTION (Russian) */}
-          <p className="mb-12 max-w-sm font-sans text-stone-300 font-light leading-relaxed opacity-90">
-            Живая фактура дерева, тепло натурального льна и бескомпромиссное
-            качество.
+          {/* DESCRIPTION (Спокойный текст) */}
+          <p className="mb-10 max-w-md mx-auto font-sans text-stone-300 font-light leading-relaxed opacity-90 px-4">
+            Глубина натурального дерева и тишина идеальной формы.
             <br className="hidden md:block" />
-            Мебель, у которой есть душа.
+            Предметы интерьера, создающие атмосферу.
           </p>
 
           {/* ACTION BUTTON */}
