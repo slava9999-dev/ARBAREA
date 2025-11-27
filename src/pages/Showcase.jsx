@@ -44,13 +44,13 @@ const Showcase = ({ onBuy }) => {
 
           {/* Надзаголовок */}
           <span className="mb-6 text-[10px] md:text-xs font-bold uppercase tracking-[0.5em] text-amber-500 drop-shadow-lg animate-fade-in-up" style={{animationDelay: '0.2s'}}>
-            Authorial Studio
+            Авторская Студия
           </span>
           
           {/* Главный заголовок */}
           <h1 className="mb-6 font-serif text-5xl md:text-7xl font-light text-white leading-[1.05] drop-shadow-2xl animate-fade-in-up" style={{animationDelay: '0.4s'}}>
-            Living <br />
-            <span className="italic text-stone-300">Texture</span>
+            Живая <br />
+            <span className="italic text-stone-300">Текстура</span>
           </h1>
           
           {/* Подпись */}
