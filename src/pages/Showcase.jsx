@@ -19,7 +19,7 @@ const Showcase = ({ onBuy }) => {
         {/* 1. BACKGROUND TEXTURE (Animated) */}
         <div className="absolute inset-0 animate-slow-zoom">
           <img 
-            src="https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?q=80&w=2574&auto=format&fit=crop" 
+            src="https://images.unsplash.com/photo-1543425626-4b63897d23d9?q=80&w=2574&auto=format&fit=crop" 
             alt="Premium Walnut Texture" 
             className="h-full w-full object-cover opacity-90"
           />
