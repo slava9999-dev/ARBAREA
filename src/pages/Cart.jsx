@@ -4,6 +4,8 @@ import DiscountBanner from '../components/features/DiscountBanner';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
+import { PaymentTrustBlock } from '../components/ui/PaymentTrustBlock';
+
 const Cart = ({ cart, onRemove, onCheckout }) => {
   const { cartTotal, subtotal, discount } = useCart();
   const { user } = useAuth();
@@ -53,6 +55,9 @@ const Cart = ({ cart, onRemove, onCheckout }) => {
         >
           <Lock size={18} /> Оформить заказ
         </button>
+        <div className="mt-6">
+          <PaymentTrustBlock variant="compact" />
+        </div>
       </div>
     </div>
   );

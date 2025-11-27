@@ -1,5 +1,6 @@
 import { Send, Instagram, Youtube } from 'lucide-react';
 import { VKIcon, PinterestIcon } from '../ui/CustomIcons';
+import { PaymentTrustBlock } from '../ui/PaymentTrustBlock';
 
 const socialLinks = [
   {
@@ -82,7 +83,7 @@ const SocialFooter = () => (
     </div>
 
     {/* Копирайт */}
-    <div className="text-center space-y-1">
+    <div className="text-center space-y-1 mb-8">
       <p className="text-xs text-stone-600 dark:text-stone-400 font-bold tracking-wider">
         ARBAREA
       </p>
@@ -93,6 +94,9 @@ const SocialFooter = () => (
         © 2025 Все права защищены
       </p>
     </div>
+
+    {/* Блок доверия к оплате */}
+    <PaymentTrustBlock variant="full" />
   </div>
 );
 

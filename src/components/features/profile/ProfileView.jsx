@@ -6,8 +6,11 @@ import OrderHistory from './OrderHistory';
 import SocialFooter from '../../layout/SocialFooter';
 import { initPayment } from '../../../lib/tinkoff';
 
-const ProfileView = ({ setActiveTab }) => {
+import { useNavigate } from 'react-router-dom';
+
+const ProfileView = () => {
   const { logout, user } = useAuth();
+  const navigate = useNavigate();
   const [isDonating, setIsDonating] = useState(false);
 
   const handleDonate = async () => {
@@ -115,7 +118,7 @@ const ProfileView = ({ setActiveTab }) => {
         {/* Карточка О компании */}
         <button
           type="button"
-          onClick={() => setActiveTab('legal')}
+          onClick={() => navigate('/legal')}
           className="bg-white/5 p-4 rounded-2xl shadow-lg border border-white/10 text-left flex flex-col justify-between group hover:border-emerald-500/50 active:scale-95 transition-all"
         >
           <FileText

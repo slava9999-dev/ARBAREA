@@ -1,6 +1,6 @@
 export const sendMessageToGemini = async (history, newMessage) => {
   try {
-    const response = await fetch('/api/chat', {
+    const response = await fetch('/api/gemini-chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -18,7 +18,7 @@ export const sendMessageToGemini = async (history, newMessage) => {
       return 'Простите, сейчас я не могу ответить. Попробуйте позже.';
     }
 
-    return data.text || 'Хм, я задумался. Спросите еще раз?';
+    return data.reply || 'Хм, я задумался. Спросите еще раз?';
   } catch (error) {
     console.error('Network Error:', error);
     return 'Ошибка соединения. Проверьте интернет.';
