@@ -3,9 +3,18 @@ export const CATEGORIES = ['Все', 'Панно', 'Для кухни', 'Для 
 
 // Interior gallery images
 export const INTERIORS = [
-  'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=800&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1615875605825-5eb9bb5d52ac?q=80&w=800&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=800&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=800&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=800&auto=format&fit=crop',
+  '/images/gallery/5278555742577299985.webp',
+  '/images/gallery/5278555742577299986.webp',
+  '/images/gallery/5278555742577299987.webp',
+  '/images/gallery/5278555742577299988.webp',
+  '/images/gallery/5278555742577299990.webp',
+  '/images/gallery/5278555742577299994.webp',
+  '/images/gallery/5278555742577299995.webp',
+  '/images/gallery/5278555742577299998.webp',
+  '/images/gallery/5278555742577300002.webp',
+  '/images/gallery/5278555742577300003.webp',
+  '/images/gallery/5278555742577300005.webp',
+  '/images/gallery/5278555742577300008.webp',
+  '/images/gallery/5278555742577300016.webp',
+  '/images/gallery/5278555742577300019.webp',
 ];

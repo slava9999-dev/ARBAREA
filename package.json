@@ -9,6 +9,7 @@
         "preview": "vite preview",
         "server": "node server/index.js",
         "optimize": "node scripts/optimize-images.js",
+        "optimize:gallery": "node scripts/optimize-gallery.js",
         "prepare:winter": "node scripts/prepare-winter-mountains.js",
         "lint": "biome lint src",
         "format": "biome format --write src",
