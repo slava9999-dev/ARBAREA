@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import { PRODUCTS } from '../data/products';
 import FlipProductCard from '../components/features/FlipProductCard';
