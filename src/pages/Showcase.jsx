@@ -47,7 +47,6 @@ const Showcase = ({ onBuy }) => {
           {/* LOGO */}
           <motion.h1
             className="font-serif text-7xl md:text-9xl bg-gradient-to-r from-amber-200 via-amber-500 to-amber-700 bg-clip-text text-transparent mb-6 drop-shadow-2xl"
-            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
           >
@@ -57,7 +56,6 @@ const Showcase = ({ onBuy }) => {
           {/* DESCRIPTOR */}
           <motion.p
             className="font-sans text-amber-600 text-lg md:text-xl mb-8 tracking-wide font-medium"
-            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
@@ -67,7 +65,6 @@ const Showcase = ({ onBuy }) => {
           {/* DESCRIPTION */}
           <motion.p
             className="font-sans text-stone-300 max-w-2xl leading-relaxed mb-12 text-base md:text-lg font-light opacity-90"
-            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
           >
@@ -87,7 +84,6 @@ const Showcase = ({ onBuy }) => {
             className="bg-amber-600 text-white hover:bg-amber-500 active:scale-95 transition-all duration-300 rounded-lg px-8 py-4 font-medium tracking-wide shadow-[0_0_20px_rgba(217,119,6,0.3)]"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.5 }}
           >
