@@ -1,14 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { RotateCw, ShoppingBag, Play } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import ProductCarousel from './ProductCarousel';
-import TactileButton from '../ui/TactileButton';
 import { useToast } from '../../context/ToastContext';
 
 const FlipProductCard = ({ product, onBuy }) => {
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -24,164 +20,94 @@ const FlipProductCard = ({ product, onBuy }) => {
   const basePrice = product.basePrice || product.price;
   const currentPrice = basePrice + (selectedSize?.priceMod || 0);
 
-  const images =
-    product.gallery && product.gallery.length > 0
-      ? product.gallery
-      : [product.image];
-
-  const handleFlip = (e) => {
-    e.stopPropagation();
-    if (isAnimating) return;
-    setIsFlipped(!isFlipped);
-    if (window.navigator?.vibrate) window.navigator.vibrate(10);
-  };
-
   const handleDetailsClick = (e) => {
     e.stopPropagation();
     navigate(`/product/${product.id}`);
   };
 
+  const handleBuy = (e) => {
+    e.stopPropagation();
+    onBuy({
+      ...product,
+      id: `${product.id}-${selectedColor?.id || 'def'}-${selectedSize?.value || 'def'}`,
+      name: `${product.name} ${selectedSize ? `(${selectedSize.label})` : ''} ${selectedColor ? `(${selectedColor.name})` : ''}`,
+      price: currentPrice,
+    });
+    showToast('Товар добавлен в корзину', 'success');
+  };
+
   return (
-    <div className="h-[420px] w-full perspective-1000 group">
-      <motion.div
-        className="relative w-full h-full"
-        initial={false}
-        animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-        onAnimationStart={() => setIsAnimating(true)}
-        onAnimationComplete={() => setIsAnimating(false)}
-        style={{
-          transformStyle: 'preserve-3d',
-          willChange: 'transform',
-          pointerEvents: isAnimating ? 'none' : 'auto',
-        }}
-      >
-        {/* Front */}
-        <div
-          className="absolute inset-0 bg-white dark:bg-stone-900 rounded-2xl shadow-md border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col glass animate-fade-in"
-          style={{
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-          }}
-        >
-          <div className="relative h-72 bg-stone-200 dark:bg-stone-800">
-            <ProductCarousel images={images} productName={product.name} />
-            {product.video && (
-              <div className="absolute top-3 left-3 bg-black/60 backdrop-blur px-2 py-1 rounded-lg text-xs font-bold text-white flex items-center gap-1 z-20 pointer-events-none">
-                <Play size={10} fill="currentColor" /> Видео
-              </div>
-            )}
-            <div className="absolute top-3 right-12 bg-white/90 dark:bg-stone-800/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-stone-800 dark:text-stone-100 shadow-sm z-20 pointer-events-none">
-              {product.price.toLocaleString()} ₽
-            </div>
-            {product.isSold && (
-              <div className="absolute bottom-3 left-3 bg-stone-900/80 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-lg z-20 pointer-events-none border border-stone-700">
-                ПРОДАНО
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={handleFlip}
-              className="absolute bottom-3 right-3 bg-stone-800/80 backdrop-blur p-2 rounded-full text-white hover:bg-stone-700 transition-colors z-30 shadow-lg"
-              aria-label="Перевернуть карточку"
-            >
-              <RotateCw size={16} />
-            </button>
+    <motion.div
+      className={`
+        relative group rounded-xl overflow-hidden
+        bg-stone-800/40 backdrop-blur-md
+        border border-white/10
+        shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]
+        transition-all duration-300 ease-out
+        h-full flex flex-col
+      `}
+      whileHover={{
+        y: -4,
+        boxShadow: '0 20px 30px rgba(217, 119, 6, 0.15)', // amber-glow
+      }}
+      onClick={handleDetailsClick}
+    >
+      {/* Image Container */}
+      <div className="relative h-64 overflow-hidden bg-stone-900">
+        <motion.img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+        />
+        {product.isSold && (
+          <div className="absolute bottom-3 left-3 bg-stone-900/80 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-white border border-stone-700">
+            ПРОДАНО
           </div>
-
-          <div className="p-4 flex flex-col justify-between flex-grow bg-white dark:bg-stone-900 relative z-10">
-            <button
-              type="button"
-              onClick={handleDetailsClick}
-              className="cursor-pointer w-full text-left"
-            >
-              <div className="text-[10px] text-stone-400 mb-1 uppercase tracking-widest font-bold">
-                {product.category}
-              </div>
-              <h3 className="text-lg font-medium text-stone-800 dark:text-stone-100 leading-tight font-serif line-clamp-2">
-                {product.name}
-              </h3>
-            </button>
-            <button
-              type="button"
-              onClick={handleDetailsClick}
-              className="w-full py-2 text-center text-stone-400 text-xs border-t border-stone-100 dark:border-stone-800 mt-2 cursor-pointer hover:text-stone-600 transition-colors"
-            >
-              Подробнее о товаре
-            </button>
-          </div>
+        )}
+        <div className="absolute top-3 right-3 bg-stone-900/60 backdrop-blur px-2 py-1 rounded text-xs font-bold text-amber-500 border border-amber-500/20">
+          {currentPrice.toLocaleString()} ₽
         </div>
+      </div>
 
-        {/* Back */}
-        <div
-          className="absolute inset-0 bg-stone-800 dark:bg-stone-800 rounded-2xl shadow-xl p-5 flex flex-col glass"
-          style={{
-            transform: 'rotateY(180deg)',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-          }}
-        >
-          {/* Header */}
-          <div className="flex justify-between items-start mb-2 shrink-0">
-            <div className="text-[10px] text-stone-400 uppercase tracking-widest">
-              Описание
-            </div>
-            <button
-              type="button"
-              onClick={handleFlip}
-              className="text-stone-400 hover:text-white transition-colors"
-            >
-              <RotateCw size={16} />
-            </button>
-          </div>
+      {/* Content */}
+      <div className="p-4 flex flex-col flex-grow bg-stone-900/30 backdrop-blur-sm">
+        <div className="text-[10px] text-stone-400 mb-1 uppercase tracking-widest font-bold">
+          {product.category}
+        </div>
+        <h3 className="font-serif text-xl text-amber-600 leading-tight mb-2">
+          {product.name}
+        </h3>
+        <p className="font-sans text-sm text-stone-300 line-clamp-2 mb-4 flex-grow">
+          {product.description}
+        </p>
 
-          {/* Scrollable Content */}
-          <div className="flex-grow overflow-y-auto custom-scrollbar pr-2 mb-4">
-            <h3 className="text-white font-serif text-lg mb-2 leading-tight">
-              {product.name}
-            </h3>
-            <p className="text-stone-300 text-xs leading-relaxed font-light">
-              {product.description}
-            </p>
-          </div>
-
-          {/* Footer: Options & Button */}
-          <div
-            className="shrink-0 relative z-10 pt-2 border-t border-white/10"
-            style={{ transform: 'translateZ(1px)' }}
-          >
-            {/* Dynamic Price & Options */}
-            <div className="flex justify-between items-end mb-3">
-              <div className="text-xl font-serif text-amber-500 font-bold">
-                {currentPrice.toLocaleString()} ₽
+        {/* Variants (Compact) */}
+        {(product.variants?.colors || product.variants?.sizes) && (
+          <div className="flex flex-wrap gap-3 mb-4">
+            {product.variants?.colors && (
+              <div className="flex gap-2">
+                {product.variants.colors.map((color) => (
+                  <button
+                    key={color.id}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedColor(color);
+                    }}
+                    className={`w-5 h-5 rounded-full border transition-all ${
+                      selectedColor?.id === color.id
+                        ? 'border-amber-500 scale-110 ring-1 ring-amber-500 ring-offset-1 ring-offset-stone-900'
+                        : 'border-stone-600'
+                    }`}
+                    style={{ backgroundColor: color.hex }}
+                    aria-label={`Select color ${color.name}`}
+                  />
+                ))}
               </div>
+            )}
 
-              {/* Colors (Compact) */}
-              {product.variants?.colors && (
-                <div className="flex gap-2">
-                  {product.variants.colors.map((color) => (
-                    <button
-                      key={color.id}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedColor(color);
-                      }}
-                      className={`w-6 h-6 rounded-full border transition-all ${
-                        selectedColor?.id === color.id
-                          ? 'border-amber-500 scale-110 ring-1 ring-amber-500 ring-offset-1 ring-offset-stone-800'
-                          : 'border-stone-600'
-                      }`}
-                      style={{ backgroundColor: color.hex }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Sizes (Compact) */}
             {product.variants?.sizes && (
-              <div className="flex gap-1 mb-3 overflow-x-auto pb-1 scrollbar-hide">
+              <div className="flex gap-1">
                 {product.variants.sizes.map((size) => (
                   <button
                     key={size.value}
@@ -190,10 +116,10 @@ const FlipProductCard = ({ product, onBuy }) => {
                       e.stopPropagation();
                       setSelectedSize(size);
                     }}
-                    className={`px-2 py-1 rounded text-[10px] font-bold transition-all whitespace-nowrap ${
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all border ${
                       selectedSize?.value === size.value
-                        ? 'bg-stone-100 text-stone-900'
-                        : 'bg-stone-700 text-stone-400 hover:bg-stone-600'
+                        ? 'bg-stone-700 text-white border-stone-500'
+                        : 'bg-transparent text-stone-500 border-stone-700 hover:border-stone-500'
                     }`}
                   >
                     {size.label}
@@ -201,37 +127,28 @@ const FlipProductCard = ({ product, onBuy }) => {
                 ))}
               </div>
             )}
-
-            {product.isSold ? (
-              <button
-                type="button"
-                disabled
-                className="w-full bg-stone-600 text-stone-300 py-3 rounded-xl font-bold text-sm cursor-not-allowed flex items-center justify-center gap-2 shadow-none opacity-80"
-              >
-                Продано
-              </button>
-            ) : (
-              <TactileButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onBuy({
-                    ...product,
-                    id: `${product.id}-${selectedColor?.id || 'def'}-${selectedSize?.value || 'def'}`,
-                    name: `${product.name} ${selectedSize ? `(${selectedSize.label})` : ''} ${selectedColor ? `(${selectedColor.name})` : ''}`,
-                    price: currentPrice,
-                  });
-                  showToast('Товар добавлен в корзину', 'success');
-                }}
-                variant="primary"
-                className="w-full py-3 text-sm"
-              >
-                В корзину <ShoppingBag size={16} />
-              </TactileButton>
-            )}
           </div>
-        </div>
-      </motion.div>
-    </div>
+        )}
+
+        {product.isSold ? (
+          <button
+            type="button"
+            disabled
+            className="w-full bg-stone-700 text-stone-400 py-3 rounded-lg font-medium tracking-wide cursor-not-allowed"
+          >
+            Продано
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleBuy}
+            className="w-full bg-amber-600 text-white hover:bg-amber-500 active:scale-95 transition-all duration-300 rounded-lg py-3 font-medium tracking-wide flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(217,119,6,0.3)]"
+          >
+            В корзину <ShoppingBag size={16} />
+          </button>
+        )}
+      </div>
+    </motion.div>
   );
 };
 

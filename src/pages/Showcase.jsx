@@ -29,84 +29,70 @@ const Showcase = ({ onBuy }) => {
         onClose={() => setIsSearchOpen(false)}
       />
 
-      <div className="relative w-full overflow-hidden bg-[#1c1917]">
-        {/* 1. TEXTURE LAYER: DARK LINEN/BURLAP */}
-        {/* Бесшовный переход текстуры ткани в фон приложения */}
+      <div className="relative w-full overflow-hidden bg-linen-dark min-h-screen flex items-center justify-center">
+        {/* 1. BACKGROUND IMAGE (Optional, can be removed if CSS pattern is enough) */}
+        {/* Keeping it as a subtle overlay if needed, but reducing opacity */}
         <div
-          className="absolute inset-0 z-0 h-[95vh] w-full opacity-50 pointer-events-none"
+          className="absolute inset-0 z-0 h-full w-full opacity-20 pointer-events-none mix-blend-overlay"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1599692994061-0e1c27e85295?q=80&w=2670&auto=format&fit=crop')`, // Текстура грубой ткани
+            backgroundImage: `url('https://images.unsplash.com/photo-1599692994061-0e1c27e85295?q=80&w=2670&auto=format&fit=crop')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            // CSS MASKING: Плавное исчезновение вниз
-            maskImage:
-              'linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)',
-            WebkitMaskImage:
-              'linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)',
           }}
         />
+        <div className="absolute inset-0 z-0 bg-gradient-to-t from-stone-900 via-stone-900/50 to-transparent pointer-events-none" />
 
-        {/* 2. ATMOSPHERE OVERLAYS */}
-        {/* Легкая виньетка для акцента на центре */}
-        <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(28,25,23,0.6)_100%)]" />
-
-        {/* 3. CONTENT LAYER */}
-        <div className="relative z-10 flex h-[85vh] flex-col items-center justify-center text-center px-4 pt-12">
-          {/* Декоративный элемент: Вертикальная линия */}
-          <div className="h-12 w-[1px] bg-amber-500/50 mb-6"></div>
-
+        {/* 2. CONTENT LAYER */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-24">
           {/* LOGO */}
-          <h1 className="mb-4 font-serif text-6xl md:text-8xl text-[#e5e5e5] tracking-tight drop-shadow-2xl">
+          <motion.h1
+            className="font-serif text-7xl md:text-9xl bg-gradient-to-r from-amber-200 via-amber-500 to-amber-700 bg-clip-text text-transparent mb-6 drop-shadow-2xl"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          >
             Arbarea
-          </h1>
+          </motion.h1>
 
-          {/* DESCRIPTOR (Золотой акцент) */}
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="h-[1px] w-6 md:w-12 bg-amber-500/50"></div>
-            <span className="font-sans text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-amber-500 text-center">
-              Эстетика, к которой хочется прикоснуться
-            </span>
-            <div className="h-[1px] w-6 md:w-12 bg-amber-500/50"></div>
-          </div>
+          {/* DESCRIPTOR */}
+          <motion.p
+            className="font-sans text-amber-600 text-lg md:text-xl mb-8 tracking-wide font-medium"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            Эстетика, к которой хочется прикоснуться
+          </motion.p>
 
-          {/* DESCRIPTION (Спокойный текст) */}
-          <p className="mb-10 max-w-md mx-auto font-sans text-stone-300 font-light leading-relaxed opacity-90 px-4">
+          {/* DESCRIPTION */}
+          <motion.p
+            className="font-sans text-stone-300 max-w-2xl leading-relaxed mb-12 text-base md:text-lg font-light opacity-90"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          >
             Глубина натурального дерева и тишина идеальной формы.
             <br className="hidden md:block" />
             Предметы интерьера, создающие атмосферу.
-          </p>
+          </motion.p>
 
           {/* ACTION BUTTON */}
-          <button
+          <motion.button
             type="button"
             onClick={() =>
               document
                 .getElementById('catalog')
                 ?.scrollIntoView({ behavior: 'smooth' })
             }
-            className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-xl border border-white/10 transition-all hover:border-amber-500/40 backdrop-blur-sm"
+            className="bg-amber-600 text-white hover:bg-amber-500 active:scale-95 transition-all duration-300 rounded-lg px-8 py-4 font-medium tracking-wide shadow-[0_0_20px_rgba(217,119,6,0.3)]"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
           >
-            <div className="absolute inset-0 w-0 bg-stone-800 transition-all duration-[250ms] ease-out group-hover:w-full"></div>
-            <span className="relative z-10 flex items-center gap-3 text-sm font-medium tracking-wide text-white">
-              <span>Перейти в каталог</span>
-              {/* Стрелка вниз */}
-              <svg
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="group-hover:translate-y-1 transition-transform"
-              >
-                <path d="M12 5v14M19 12l-7 7-7-7" />
-              </svg>
-            </span>
-          </button>
+            Перейти в каталог
+          </motion.button>
         </div>
       </div>
 
