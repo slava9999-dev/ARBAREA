@@ -36,31 +36,14 @@ export default async function handler(req, res) {
             '101': 3500, // Рейлинг Ясень (60см base)
             '102': 3000, // Держатель Ясень (60см base)
             'railing-premium-01': 4500,
+            
             // Fixed price products
-            'prod-1': 45000,
-            'prod-2': 32000,
-            'prod-3': 28000,
-            'prod-4': 18000,
-            'prod-5': 12000,
-            'prod-6': 8500,
-            'prod-7': 15000,
-            'prod-8': 22000,
             '103': 8500, // Панно Эхо Леса
             '104': 4900, // Панно Зимние Горы
-            '1': 8900,
-            '2': 7500,
-            '3': 9500,
-            '5': 4200,
-            '6': 5500,
-            '7': 2800,
-            '9': 4800,
-            '10': 2200,
-            '11': 3800,
-            '12': 6500,
-            '13': 12500,
-            '14': 5800,
-            '15': 9200,
-            'donate-100': 100, // Донат
+            '105': 100,  // Подставка Малый Дом
+            
+            // Donation fallback
+            'donate-100': 100, 
         };
 
         // Variant price modifiers
@@ -77,6 +60,15 @@ export default async function handler(req, res) {
         };
 
         function calculateProductPrice(itemId) {
+            // Check if it's a donation (format: "donate-500")
+            if (itemId.startsWith('donate-')) {
+                const amount = parseInt(itemId.split('-')[1]);
+                if (amount && amount >= 10 && amount <= 100000) {
+                    return amount;
+                }
+                return null; // Invalid donation amount
+            }
+
             // Check if it's a variant ID (format: "101-bronze-600")
             const parts = itemId.split('-');
             const baseId = parts[0];

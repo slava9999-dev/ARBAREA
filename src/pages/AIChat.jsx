@@ -41,7 +41,7 @@ const AIChat = () => {
 
   return (
     <div className="pt-20 pb-24 px-4 h-screen flex flex-col bg-stone-50">
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto space-y-4 pb-32 custom-scrollbar">
         {messages.map((m, i) => (
           <div
             // biome-ignore lint/suspicious/noArrayIndexKey: messages list is append-only
@@ -73,7 +73,8 @@ const AIChat = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="fixed bottom-20 left-0 right-0 p-4 bg-stone-50/90 backdrop-blur z-10 max-w-md mx-auto">
+      <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-stone-50 via-stone-50 to-transparent z-10">
+        <div className="max-w-md mx-auto">
         <div className="flex bg-white p-2 rounded-2xl border border-stone-200 shadow-lg">
           <input
             value={input}
@@ -91,6 +92,7 @@ const AIChat = () => {
           >
             <Send size={18} />
           </button>
+        </div>
         </div>
       </div>
     </div>

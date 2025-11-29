@@ -4,48 +4,14 @@ import { useAuth } from '../../../context/AuthContext';
 import IndividualOrderForm from './IndividualOrderForm';
 import OrderHistory from './OrderHistory';
 import SocialFooter from '../../layout/SocialFooter';
-import { initPayment } from '../../../lib/tinkoff';
+import DonateModal from './DonateModal';
 
 import { useNavigate } from 'react-router-dom';
 
 const ProfileView = () => {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
-  const [isDonating, setIsDonating] = useState(false);
-
-  const handleDonate = async () => {
-    setIsDonating(true);
-    try {
-      const orderId = `DONATE-${Date.now()}`;
-      const description = 'Донат мастеру Arbarea';
-
-      // ✅ SECURITY: Send items for server-side price calculation
-      // Для доната используем специальный ID или обрабатываем на сервере
-      const items = [
-        {
-          id: 'donate-100', // Специальный ID для доната
-          name: 'Донат мастеру',
-          quantity: 1,
-        },
-      ];
-
-      const paymentUrl = await initPayment(orderId, items, description, {
-        email: user?.email || '',
-        phone: user?.phoneNumber || '',
-      });
-
-      if (paymentUrl) {
-        window.location.href = paymentUrl;
-      } else {
-        alert('Ошибка инициализации оплаты');
-      }
-    } catch (error) {
-      console.error('Donation error:', error);
-      alert('Не удалось инициировать донат. Попробуйте позже.');
-    } finally {
-      setIsDonating(false);
-    }
-  };
+  const [showDonateModal, setShowDonateModal] = useState(false);
 
   return (
     <div className="pb-32 pt-20 px-4 animate-slide-up">
@@ -106,9 +72,8 @@ const ProfileView = () => {
         {/* Карточка Доната */}
         <button
           type="button"
-          onClick={handleDonate}
-          disabled={isDonating}
-          className="bg-white/5 p-4 rounded-2xl shadow-lg border border-white/10 text-left flex flex-col justify-between group hover:border-amber-500/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={() => setShowDonateModal(true)}
+          className="bg-white/5 p-4 rounded-2xl shadow-lg border border-white/10 text-left flex flex-col justify-between group hover:border-amber-500/50 active:scale-95 transition-all"
         >
           <Coffee
             className="text-stone-400 group-hover:text-amber-500 transition-colors"
@@ -116,7 +81,7 @@ const ProfileView = () => {
           />
           <div>
             <div className="font-bold text-white text-sm leading-tight font-serif">
-              {isDonating ? 'Обработка...' : 'Донат 100₽'}
+              Поддержать
             </div>
             <div className="text-[10px] text-stone-400 mt-1">
               Угостить мастера
@@ -151,6 +116,8 @@ const ProfileView = () => {
       <div className="mt-8">
         <SocialFooter />
       </div>
+
+      {showDonateModal && <DonateModal onClose={() => setShowDonateModal(false)} />}
     </div>
   );
 };
