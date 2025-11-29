@@ -19,7 +19,7 @@ const Cart = ({ cart, onRemove, onCheckout }) => {
   }
 
   return (
-    <div className="pb-32 pt-20 px-4">
+    <div className="pb-96 pt-20 px-4">
       <h2 className="text-2xl font-serif text-white mb-6">Ваша корзина</h2>
 
       <DiscountBanner />
