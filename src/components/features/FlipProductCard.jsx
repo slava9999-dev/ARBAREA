@@ -56,7 +56,7 @@ const FlipProductCard = ({ product, onBuy }) => {
     <motion.div
       className={`
         relative group rounded-xl overflow-hidden
-        bg-stone-800/40 backdrop-blur-md
+        bg-stone-800/40 backdrop-blur-sm
         border border-white/10
         shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]
         transition-all duration-300 ease-out
@@ -78,7 +78,7 @@ const FlipProductCard = ({ product, onBuy }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
-          drag="x"
+          drag={images.length > 1 ? 'x' : false}
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.2}
           onDragEnd={(_e, { offset, velocity }) => {
@@ -89,11 +89,7 @@ const FlipProductCard = ({ product, onBuy }) => {
               paginate(-1);
             }
           }}
-          onClick={(e) => {
-             // If we are here, it means drag didn't prevent click (short tap)
-             // We should trigger the parent's click handler
-             handleDetailsClick(e);
-          }}
+
           style={{ cursor: 'pointer' }}
         />
         

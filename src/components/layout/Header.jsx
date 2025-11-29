@@ -7,7 +7,7 @@ const Header = () => {
   const { dark, setDark } = useContext(ThemeContext);
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md z-40 px-6 py-4 flex justify-between items-center border-b border-stone-100 dark:border-stone-800 transition-colors duration-300">
+    <div className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-stone-900/90 backdrop-blur-sm z-40 px-6 py-4 flex justify-between items-center border-b border-stone-100 dark:border-stone-800 transition-colors duration-300">
       <div className="flex items-center gap-3">
         <motion.div
           initial={{ rotate: -90, opacity: 0 }}

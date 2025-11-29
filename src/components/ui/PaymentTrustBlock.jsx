@@ -7,7 +7,7 @@ export const PaymentTrustBlock = ({ variant = 'full' }) => {
       ${variant === 'compact' ? 'py-3' : 'py-5'}
       w-full rounded-xl
       bg-gradient-to-br from-stone-800 to-stone-900
-      text-stone-300 p-4 backdrop-blur-xl
+      text-stone-300 p-4 backdrop-blur-sm
       border border-white/5
     `}
     >

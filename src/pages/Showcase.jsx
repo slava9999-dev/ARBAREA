@@ -33,14 +33,7 @@ const Showcase = ({ onBuy }) => {
       <div className="relative w-full overflow-hidden bg-linen-dark min-h-screen flex items-center justify-center">
         {/* 1. BACKGROUND IMAGE (Optional, can be removed if CSS pattern is enough) */}
         {/* Keeping it as a subtle overlay if needed, but reducing opacity */}
-        <div
-          className="absolute inset-0 z-0 h-full w-full opacity-20 pointer-events-none mix-blend-overlay"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1599692994061-0e1c27e85295?q=80&w=2670&auto=format&fit=crop')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
+
         <div className="absolute inset-0 z-0 bg-gradient-to-t from-stone-900 via-stone-900/50 to-transparent pointer-events-none" />
 
         {/* 2. CONTENT LAYER */}
@@ -145,7 +138,7 @@ const Showcase = ({ onBuy }) => {
           {filtered.map((p) => (
             <div
               key={p.id}
-              className="glass-panel p-2 transition-transform duration-300 hover:scale-[1.02]"
+              className="h-full transition-transform duration-300 hover:scale-[1.02]"
             >
               <FlipProductCard product={p} onBuy={onBuy} />
             </div>
