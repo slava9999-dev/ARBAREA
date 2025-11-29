@@ -89,7 +89,9 @@ const AuthScreen = () => {
     try {
       setupRecaptcha('recaptcha-container');
       const appVerifier = window.recaptchaVerifier;
-      const confirmation = await loginWithPhone(phone, appVerifier);
+      // Sanitize phone number: remove spaces, dashes, parentheses
+      const formattedPhone = phone.replace(/[\s()-]/g, '');
+      const confirmation = await loginWithPhone(formattedPhone, appVerifier);
       setConfirmationResult(confirmation);
     } catch (e) {
       setError(getErrorMessage(e));
@@ -193,14 +195,14 @@ const AuthScreen = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            className="w-full p-4 bg-stone-50 rounded-xl outline-none border focus:border-stone-300"
+            className="w-full p-4 bg-stone-50 text-stone-900 rounded-xl outline-none border focus:border-stone-300"
           />
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Пароль"
-            className="w-full p-4 bg-stone-50 rounded-xl outline-none border focus:border-stone-300"
+            className="w-full p-4 bg-stone-50 text-stone-900 rounded-xl outline-none border focus:border-stone-300"
           />
           <button
             type="button"
@@ -245,7 +247,7 @@ const AuthScreen = () => {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+7 (999) 000-00-00"
-                className="w-full p-4 bg-stone-50 rounded-xl outline-none border focus:border-stone-300"
+                className="w-full p-4 bg-stone-50 text-stone-900 rounded-xl outline-none border focus:border-stone-300"
               />
               <div id="recaptcha-container"></div>
               <button
@@ -267,7 +269,7 @@ const AuthScreen = () => {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 placeholder="Код из SMS"
-                className="w-full p-4 bg-stone-50 rounded-xl outline-none border focus:border-stone-300 text-center tracking-widest text-xl"
+                className="w-full p-4 bg-stone-50 text-stone-900 rounded-xl outline-none border focus:border-stone-300 text-center tracking-widest text-xl"
               />
               <button
                 type="button"
