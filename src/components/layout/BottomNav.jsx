@@ -20,7 +20,7 @@ const BottomNav = ({ cartCount }) => (
         key={tab.path}
         to={tab.path}
         className={({ isActive }) =>
-          `relative flex flex-col items-center space-y-1 transition-colors duration-300 ${isActive ? 'text-primary' : 'text-stone-400 hover:text-stone-200'}`
+          `relative flex flex-col items-center justify-center space-y-1 transition-colors duration-300 w-full h-full ${isActive ? 'text-primary' : 'text-stone-400 hover:text-stone-200'}`
         }
       >
         {({ isActive }) => (
