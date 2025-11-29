@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { auth } from '../../lib/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
-import Input from '../ui/Input';
+import { useEffect, useRef, useState } from 'react';
+import { auth } from '../../lib/firebase';
 import Button from '../ui/Button';
+import Input from '../ui/Input';
 
 /**
  * Phone authentication component using Firebase Auth.

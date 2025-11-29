@@ -1,5 +1,5 @@
-import { ArrowDown } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ArrowDown } from 'lucide-react';
 
 /**
  * HeroSection – премиальная верхняя часть главной страницы.

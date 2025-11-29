@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { User, Mail, Phone, Loader2 } from 'lucide-react';
+import { Loader2, Mail, Phone, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import TelegramLoginButton from '../../TelegramLoginButton';
 

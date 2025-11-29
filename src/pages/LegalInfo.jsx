@@ -1,12 +1,12 @@
-import {
-  Package,
-  Truck,
-  MapPin,
-  FileText,
-  Shield,
-  Building2,
-} from 'lucide-react';
 import { motion } from 'framer-motion';
+import {
+  Building2,
+  FileText,
+  MapPin,
+  Package,
+  Shield,
+  Truck,
+} from 'lucide-react';
 
 const LegalInfo = () => {
   return (

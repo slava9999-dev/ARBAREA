@@ -1,7 +1,7 @@
+import { Coffee, Loader2, X } from 'lucide-react';
 import { useState } from 'react';
-import { X, Coffee, Loader2 } from 'lucide-react';
-import { initPayment } from '../../../lib/tinkoff';
 import { useAuth } from '../../../context/AuthContext';
+import { initPayment } from '../../../lib/tinkoff';
 
 const DonateModal = ({ onClose }) => {
   const { user } = useAuth();
@@ -12,8 +12,8 @@ const DonateModal = ({ onClose }) => {
   const quickAmounts = [100, 300, 500, 1000];
 
   const handleDonate = async () => {
-    const donateAmount = parseInt(amount);
-    
+    const donateAmount = parseInt(amount, 10);
+
     if (!donateAmount || donateAmount < 10) {
       setError('Минимальная сумма доната — 10₽');
       return;
@@ -87,7 +87,7 @@ const DonateModal = ({ onClose }) => {
               key={amt}
               type="button"
               onClick={() => setAmount(amt.toString())}
-              className={`p-3 rounded-xl border transition-all ${ 
+              className={`p-3 rounded-xl border transition-all ${
                 amount === amt.toString()
                   ? 'bg-amber-500 border-amber-500 text-white'
                   : 'bg-stone-800 border-stone-700 text-stone-300 hover:border-amber-500/50'
@@ -99,11 +99,15 @@ const DonateModal = ({ onClose }) => {
         </div>
 
         <div className="mb-6">
-          <label className="block text-sm text-stone-400 mb-2">
+          <label
+            htmlFor="donate-amount"
+            className="block text-sm text-stone-400 mb-2"
+          >
             Или введите свою сумму:
           </label>
           <div className="relative">
             <input
+              id="donate-amount"
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
@@ -116,9 +120,7 @@ const DonateModal = ({ onClose }) => {
               ₽
             </span>
           </div>
-          {error && (
-            <p className="mt-2 text-red-400 text-sm">{error}</p>
-          )}
+          {error && <p className="mt-2 text-red-400 text-sm">{error}</p>}
         </div>
 
         <button

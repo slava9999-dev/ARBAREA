@@ -1,12 +1,12 @@
+import { addDoc, collection } from 'firebase/firestore';
+import { Check, CreditCard, Loader2, X } from 'lucide-react';
 import { useState } from 'react';
-import { X, Loader2, Check, CreditCard } from 'lucide-react';
-import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import DiscountBanner from './DiscountBanner';
-import { initPayment } from '../../lib/tinkoff';
-import { collection, addDoc } from 'firebase/firestore';
+import { useCart } from '../../context/CartContext';
 import { db } from '../../lib/firebase';
 import { sendTelegramNotification } from '../../lib/telegram';
+import { initPayment } from '../../lib/tinkoff';
+import DiscountBanner from './DiscountBanner';
 
 const CheckoutModal = ({ onClose }) => {
   const { cartItems, cartTotal, subtotal, discount } = useCart();

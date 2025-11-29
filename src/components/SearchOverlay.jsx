@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronRight, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight } from 'lucide-react';
 import { PRODUCTS } from '../data/products';
 
 export const SearchOverlay = ({ isOpen, onClose }) => {

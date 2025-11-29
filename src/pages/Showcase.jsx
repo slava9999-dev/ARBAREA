@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
-import { PRODUCTS } from '../data/products';
+import { useState } from 'react';
 import FlipProductCard from '../components/features/FlipProductCard';
 import SocialFooter from '../components/layout/SocialFooter';
 import { SearchOverlay } from '../components/SearchOverlay';
+import { PRODUCTS } from '../data/products';
 
 const Showcase = ({ onBuy }) => {
   const [activeCategory, setActiveCategory] = useState('all');

@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
-  ShoppingBag,
-  Star,
-  Share2,
   Check,
   Heart,
+  Share2,
+  ShoppingBag,
+  Star,
 } from 'lucide-react';
-import { PRODUCTS } from '../data/products';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import ProductCarousel from '../components/features/ProductCarousel';
+import TactileButton from '../components/ui/TactileButton';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useWishlist } from '../context/WishlistContext';
-import ProductCarousel from '../components/features/ProductCarousel';
-import TactileButton from '../components/ui/TactileButton';
+import { PRODUCTS } from '../data/products';
 
 const ProductDetails = () => {
   const { id } = useParams();

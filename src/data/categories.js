@@ -1,4 +1,4 @@
-import { Table, Armchair, Hammer, Trees } from 'lucide-react';
+import { Armchair, Hammer, Table, Trees } from 'lucide-react';
 
 export const CATEGORIES = [
   { id: 'all', name: 'Все', icon: Trees },

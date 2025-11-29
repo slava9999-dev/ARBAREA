@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { INTERIORS } from '../data/mockData';
 import SocialFooter from '../components/layout/SocialFooter';
+import { INTERIORS } from '../data/mockData';
 
 const Gallery = () => (
   <section className="pb-24 pt-20 px-4 bg-linen-dark min-h-screen">

@@ -1,39 +1,31 @@
-    *   Исправлен `z-index` для кликабельности ссылок.
-*   **ProfileView:**
-    *   Кнопка "Вступить в клуб" теперь ведет на `https://vk.com/arbarea_nn`.
+# Checkpoint 7: Audit & Stabilization
 
-### 2. Работа с контентом
-*   **Скрипты:**
-    *   `scripts/optimize-images.js`: Сжатие и конвертация в WebP.
-    *   `scripts/prepare-files.js`: Переименование и сортировка файлов.
-*   **Добавленные товары:**
-    *   `id: 101`: Рейлинг Ясень (Категория: Для кухни) + Видео.
-    *   `id: 102`: Держатель Ясень (Категория: Для ванной).
-    *   `id: 103`: Панно "Эхо Леса" (Категория: Панно) + Видео + Галерея.
+## Status
 
-### 3. Инфраструктура
-*   Проект успешно собирается (`npm run build`) и деплоится (`firebase deploy`).
+- **Date**: 2025-11-29
+- **Build Status**: ✅ Success
+- **Audit**: ✅ Passed (Major issues fixed)
 
----
+## Changes
 
-## ⚠️ Текущие проблемы / Задачи на следующий этап
+1.  **Product Catalog**:
+    - Restored "Подставка «Малый Дом»" (8 images optimized).
+    - Removed "Solid Brass" railing.
+    - Cleaned up catalog to 5 core products.
+2.  **Payment API**:
+    - Updated price map (removed deleted products).
+    - Implemented 10% discount for authenticated users (excluding donations).
+    - Fixed `parseInt` radix and imports.
+3.  **Code Quality**:
+    - Fixed linter errors in API and Components.
+    - Improved accessibility in `DonateModal`.
+    - Sorted imports.
+4.  **Features**:
+    - AI Chat restored (OpenAI gpt-4o-mini).
+    - Donations restored with custom amount.
+    - Product Gallery: Swipe & Fullscreen confirmed working.
 
-1.  **Firebase Functions (Backend):**
-    *   При деплое возникает предупреждение: `Unable to find a valid endpoint for function api`.
-    *   Необходимо проверить экспорт функции в `functions/index.js` и версию Node.js.
-    *   **Важно:** Нужно установить ключи конфигурации:
-        ```bash
-        firebase functions:config:set telegram.bot_token="..." telegram.chat_id="..." tinkoff.terminal_key="..." tinkoff.secret="..."
-        ```
-    *   После этого сделать `firebase deploy --only functions`.
+## Next Steps
 
-2.  **Наполнение каталога:**
-    *   Продолжить добавление товаров по отработанной схеме:
-        1. Фото в `raw_images`.
-        2. `npm run optimize`.
-        3. Добавление в `src/data/products.js`.
-
-## 📂 Структура файлов контента
-*   `raw_images/`: Сюда кидать исходники.
-*   `public/images/products/`: Здесь лежат готовые WebP.
-*   `public/videos/`: Здесь лежат видео (MP4).
+- Deploy to Vercel.
+- Verify production functionality.

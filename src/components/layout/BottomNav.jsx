@@ -1,4 +1,3 @@
-import { NavLink } from 'react-router-dom';
 import {
   Home,
   Image as ImageIcon,
@@ -6,6 +5,7 @@ import {
   ShoppingBag,
   User,
 } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 
 const BottomNav = ({ cartCount }) => (
   <div className="fixed bottom-4 left-4 right-4 glass-panel px-6 py-4 flex justify-between items-center z-50">

@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useContext, useEffect, useReducer } from 'react';
 import { useAuth } from './AuthContext';
 
 const CartContext = createContext();

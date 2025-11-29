@@ -1,10 +1,9 @@
-import { ShoppingBag, Lock } from 'lucide-react';
+import { Lock, ShoppingBag } from 'lucide-react';
 import CartItem from '../components/features/cart/CartItem';
 import DiscountBanner from '../components/features/DiscountBanner';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-
 import { PaymentTrustBlock } from '../components/ui/PaymentTrustBlock';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 const Cart = ({ cart, onRemove, onCheckout }) => {
   const { cartTotal, subtotal, discount } = useCart();

@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 const OptimizedImage = ({ src, alt, className, width = 400 }) => {
   const [isLoaded, setIsLoaded] = useState(false);

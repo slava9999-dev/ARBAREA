@@ -1,12 +1,11 @@
+import { Coffee, FileText, LogOut, Star, User as UserIcon } from 'lucide-react';
 import { useState } from 'react';
-import { LogOut, Star, Coffee, User as UserIcon, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import IndividualOrderForm from './IndividualOrderForm';
-import OrderHistory from './OrderHistory';
 import SocialFooter from '../../layout/SocialFooter';
 import DonateModal from './DonateModal';
-
-import { useNavigate } from 'react-router-dom';
+import IndividualOrderForm from './IndividualOrderForm';
+import OrderHistory from './OrderHistory';
 
 const ProfileView = () => {
   const { logout, user } = useAuth();
@@ -117,7 +116,9 @@ const ProfileView = () => {
         <SocialFooter />
       </div>
 
-      {showDonateModal && <DonateModal onClose={() => setShowDonateModal(false)} />}
+      {showDonateModal && (
+        <DonateModal onClose={() => setShowDonateModal(false)} />
+      )}
     </div>
   );
 };

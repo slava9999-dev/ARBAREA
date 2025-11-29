@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, User, Bot } from 'lucide-react';
+import { Bot, Loader2, Send, User } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { sendMessageToGemini } from '../lib/gemini';
 
 const AIChat = () => {
@@ -75,24 +75,24 @@ const AIChat = () => {
 
       <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-stone-50 via-stone-50 to-transparent z-10">
         <div className="max-w-md mx-auto">
-        <div className="flex bg-white p-2 rounded-2xl border border-stone-200 shadow-lg">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            className="flex-1 px-4 outline-none text-stone-800 placeholder:text-stone-400 bg-transparent"
-            placeholder="Спросите про мебель..."
-            disabled={isLoading}
-          />
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={isLoading || !input.trim()}
-            className="p-3 bg-stone-800 text-white rounded-xl hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <Send size={18} />
-          </button>
-        </div>
+          <div className="flex bg-white p-2 rounded-2xl border border-stone-200 shadow-lg">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              className="flex-1 px-4 outline-none text-stone-800 placeholder:text-stone-400 bg-transparent"
+              placeholder="Спросите про мебель..."
+              disabled={isLoading}
+            />
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={isLoading || !input.trim()}
+              className="p-3 bg-stone-800 text-white rounded-xl hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Send size={18} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

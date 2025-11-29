@@ -1,9 +1,9 @@
+import { Check, Loader2, Play, ShoppingBag, X } from 'lucide-react';
 import { useState } from 'react';
-import { X, ShoppingBag, Loader2, Check, Play } from 'lucide-react';
-import { COLORS, SIZES } from '../../lib/constants';
-import OptimizedImage from '../ui/OptimizedImage';
 import { useAuth } from '../../context/AuthContext';
+import { COLORS, SIZES } from '../../lib/constants';
 import { initPayment } from '../../lib/tinkoff';
+import OptimizedImage from '../ui/OptimizedImage';
 import TactileButton from '../ui/TactileButton';
 
 const BuyModal = ({ product, onClose, onAddToCart }) => {

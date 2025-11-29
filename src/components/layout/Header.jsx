@@ -1,6 +1,6 @@
-import { useContext } from 'react';
-import { Menu, Sun, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Menu, Moon, Sun } from 'lucide-react';
+import { useContext } from 'react';
 import { ThemeContext } from '../../context/ThemeContext';
 
 const Header = () => {

@@ -1,6 +1,6 @@
+import { AnimatePresence, motion } from 'framer-motion';
+import { Loader2, Send, X } from 'lucide-react';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
 const CustomOrderModal = ({ isOpen, onClose }) => {

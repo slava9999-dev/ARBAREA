@@ -1,5 +1,5 @@
-import { PRODUCTS } from '../data/products';
 import { CATEGORIES } from '../data/categories';
+import { PRODUCTS } from '../data/products';
 
 const DELAY = 800;
 

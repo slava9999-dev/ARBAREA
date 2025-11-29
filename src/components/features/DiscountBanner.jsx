@@ -1,6 +1,6 @@
-import { useAuth } from '../../context/AuthContext';
-import { Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Sparkles } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const DiscountBanner = () => {
   const { user } = useAuth();

@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
 import { signInWithCustomToken } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { useEffect, useRef } from 'react';
 import { useToast } from '../context/ToastContext';
+import { auth } from '../lib/firebase';
 
 const TelegramLoginButton = ({ botName = 'ArbareaBot', onAuthSuccess }) => {
   const containerRef = useRef(null);

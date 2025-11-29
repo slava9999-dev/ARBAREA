@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import admin from './_firebase-admin.js';
 
 export default async function handler(req, res) {
@@ -20,7 +20,9 @@ export default async function handler(req, res) {
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
 
     if (!botToken) {
-      return res.status(500).json({ error: 'Telegram bot token not configured' });
+      return res
+        .status(500)
+        .json({ error: 'Telegram bot token not configured' });
     }
 
     // Verify Telegram data authenticity
@@ -42,7 +44,7 @@ export default async function handler(req, res) {
     }
 
     // Check if data is not too old (5 minutes)
-    const authDate = parseInt(telegramData.auth_date);
+    const authDate = parseInt(telegramData.auth_date, 10);
     const now = Math.floor(Date.now() / 1000);
     if (now - authDate > 300) {
       return res.status(403).json({ error: 'Telegram data is too old' });

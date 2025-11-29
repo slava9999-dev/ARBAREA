@@ -52,16 +52,14 @@ export default async function handler(req, res) {
     }
 
     // Конвертируем историю из формата {text, sender} в формат OpenAI
-    const messages = [
-      { role: 'system', content: SYSTEM_PROMPT }
-    ];
+    const messages = [{ role: 'system', content: SYSTEM_PROMPT }];
 
     // Добавляем историю диалога (пропускаем приветственное сообщение)
     if (history && Array.isArray(history) && history.length > 1) {
-      history.slice(1).forEach(msg => {
+      history.slice(1).forEach((msg) => {
         messages.push({
           role: msg.sender === 'user' ? 'user' : 'assistant',
-          content: msg.text
+          content: msg.text,
         });
       });
     }
@@ -69,7 +67,7 @@ export default async function handler(req, res) {
     // Добавляем текущее сообщение пользователя
     messages.push({
       role: 'user',
-      content: message
+      content: message,
     });
 
     // Вызов OpenAI API
@@ -77,33 +75,34 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini', // Быстрая и дешевая модель
         messages: messages,
         temperature: 0.7, // Баланс между креативностью и точностью
         max_tokens: 300, // Ограничение длины ответа
-      })
+      }),
     });
 
     if (!response.ok) {
       const error = await response.json();
       console.error('OpenAI API Error:', error);
-      return res.status(response.status).json({ 
-        error: error.error?.message || 'Failed to get response from AI'
+      return res.status(response.status).json({
+        error: error.error?.message || 'Failed to get response from AI',
       });
     }
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || 'Извините, не могу ответить на этот вопрос.';
+    const reply =
+      data.choices?.[0]?.message?.content ||
+      'Извините, не могу ответить на этот вопрос.';
 
     return res.status(200).json({ reply });
-
   } catch (error) {
     console.error('Assistant Error:', error.message);
-    return res.status(500).json({ 
-      error: 'Извините, произошла ошибка. Попробуйте позже.'
+    return res.status(500).json({
+      error: 'Извините, произошла ошибка. Попробуйте позже.',
     });
   }
-};
+}

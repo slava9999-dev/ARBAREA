@@ -1,6 +1,6 @@
+import { signInWithCustomToken } from 'firebase/auth';
 import { useEffect, useRef } from 'react';
 import { auth } from '../../lib/firebase';
-import { signInWithCustomToken } from 'firebase/auth';
 
 const TelegramLoginButton = ({ onSuccess, onError }) => {
   const containerRef = useRef(null);

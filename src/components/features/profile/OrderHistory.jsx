@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Package, Clock, CheckCircle, XCircle, Truck } from 'lucide-react';
 import {
   collection,
+  onSnapshot,
+  orderBy,
   query,
   where,
-  orderBy,
-  onSnapshot,
 } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { CheckCircle, Clock, Package, Truck, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import { db } from '../../../lib/firebase';
 
 const OrderHistory = () => {
   const { user } = useAuth();

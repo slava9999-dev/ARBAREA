@@ -1,5 +1,5 @@
-import { Send, Instagram, Youtube } from 'lucide-react';
-import { VKIcon, PinterestIcon } from '../ui/CustomIcons';
+import { Instagram, Send, Youtube } from 'lucide-react';
+import { PinterestIcon, VKIcon } from '../ui/CustomIcons';
 import { PaymentTrustBlock } from '../ui/PaymentTrustBlock';
 
 const socialLinks = [

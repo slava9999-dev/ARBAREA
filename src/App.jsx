@@ -1,13 +1,12 @@
-import { useState, Suspense, lazy } from 'react';
+import { lazy, Suspense, useState } from 'react';
+import BottomNav from './components/layout/BottomNav';
+import Header from './components/layout/Header';
+import LoadingSpinner from './components/ui/LoadingSpinner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider, useCart } from './context/CartContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { WishlistProvider } from './context/WishlistContext';
-import Header from './components/layout/Header';
-
-import BottomNav from './components/layout/BottomNav';
-import LoadingSpinner from './components/ui/LoadingSpinner';
 
 // Lazy Load Pages
 const Showcase = lazy(() => import('./pages/Showcase'));
@@ -23,8 +22,8 @@ const BuyModal = lazy(() => import('./components/features/BuyModal'));
 const CheckoutModal = lazy(() => import('./components/features/CheckoutModal'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 
-import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { Route, Routes, useLocation } from 'react-router-dom';
 
 const AppContent = () => {
   const { loading } = useAuth();

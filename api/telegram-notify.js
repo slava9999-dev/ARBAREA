@@ -47,12 +47,12 @@ export default async function handler(req, res) {
           text: message,
           parse_mode: 'HTML',
         }),
-      }
+      },
     );
     const data = await response.json();
-    
+
     if (!data.ok) {
-        throw new Error(data.description || 'Telegram API Error');
+      throw new Error(data.description || 'Telegram API Error');
     }
 
     return res.status(200).json({ success: true, data });

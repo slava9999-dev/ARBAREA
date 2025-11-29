@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
+import { useState } from 'react';
 
 const ProductCarousel = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
