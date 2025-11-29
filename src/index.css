@@ -23,7 +23,7 @@
 
   /* Премиальное Стекло (Карточки) */
   .glass-panel {
-    @apply bg-[#1c1917]/60 backdrop-blur-xl border border-white/5 shadow-glass rounded-2xl;
+    @apply bg-[#1c1917]/80 backdrop-blur-md border border-white/5 shadow-glass rounded-2xl;
   }
 
   /* Кнопка действия (Золотая) */

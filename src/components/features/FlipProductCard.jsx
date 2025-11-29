@@ -89,9 +89,12 @@ const FlipProductCard = ({ product, onBuy }) => {
               paginate(-1);
             }
           }}
-          onClick={() => {
-             // Allow click to propagate to parent unless dragging happened
+          onClick={(e) => {
+             // If we are here, it means drag didn't prevent click (short tap)
+             // We should trigger the parent's click handler
+             handleDetailsClick(e);
           }}
+          style={{ cursor: 'pointer' }}
         />
         
         {/* Navigation Dots */}
