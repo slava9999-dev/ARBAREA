@@ -41,6 +41,16 @@ pnpm-debug.log*
 # OS
 Thumbs.db
 
+# Firebase Admin SDK
 service-account.json
-
 *firebase-adminsdk*.json
+
+# Vercel internal cache
+.vercel
+
+# Firebase & System Logs
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+npm-debug.log
+yarn-error.log

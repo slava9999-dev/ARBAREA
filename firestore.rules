@@ -1,12 +1,13 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Public products catalog
+    // ✅ Public products catalog (READ-ONLY)
     match /products/{productId} {
       allow read: if true;
+      allow write: if false; // Явный запрет записи
     }
 
-    // User specific data
+    // ✅ User specific data
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
 

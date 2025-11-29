@@ -18,19 +18,73 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { amount, orderId, description, customerEmail, customerPhone, receipt } = req.body;
-        const terminalKey = process.env.TINKOFF_TERMINAL_KEY || process.env.VITE_TINKOFF_TERMINAL_KEY;
-        const password = process.env.TINKOFF_PASSWORD || process.env.TINKOFF_SECRET || process.env.VITE_TINKOFF_PASSWORD || process.env.VITE_TINKOFF_SECRET;
+        const { items, orderId, description, customerEmail, customerPhone, receipt } = req.body;
+        
+        // ✅ SECURITY: Get credentials ONLY from server-side env vars
+        const terminalKey = process.env.TINKOFF_TERMINAL_KEY;
+        const password = process.env.TINKOFF_PASSWORD || process.env.TINKOFF_SECRET;
 
         if (!terminalKey || !password) {
-            console.error('Missing Tinkoff credentials');
+            // ❌ DO NOT log credentials
             return res.status(500).json({ success: false, error: 'Server configuration error' });
         }
+
+        // ✅ CRITICAL: Calculate total amount on SERVER (not trusting client)
+        // TODO: Replace this with actual database lookup when products are in Firestore
+        const PRODUCTS_PRICE_MAP = {
+            // Временная карта цен (заменить на запрос к БД)
+            'prod-1': 45000,
+            'prod-2': 32000,
+            'prod-3': 28000,
+            'prod-4': 18000,
+            'prod-5': 12000,
+            'prod-6': 8500,
+            'prod-7': 15000,
+            'prod-8': 22000,
+        };
+
+        let calculatedAmount = 0;
+        const receiptItems = [];
+
+        if (items && Array.isArray(items)) {
+            for (const item of items) {
+                const serverPrice = PRODUCTS_PRICE_MAP[item.id];
+                if (!serverPrice) {
+                    return res.status(400).json({ 
+                        success: false, 
+                        error: `Invalid product ID: ${item.id}` 
+                    });
+                }
+                const itemTotal = serverPrice * (item.quantity || 1);
+                calculatedAmount += itemTotal;
+
+                receiptItems.push({
+                    Name: item.name || 'Товар',
+                    Price: serverPrice * 100, // Копейки
+                    Quantity: item.quantity || 1,
+                    Amount: itemTotal * 100,
+                    Tax: 'none'
+                });
+            }
+        } else {
+            // Fallback: если items не передан, используем description (НЕ РЕКОМЕНДУЕТСЯ для продакшна)
+            // TODO: REMOVE THIS FALLBACK IN PRODUCTION
+            calculatedAmount = 1000; // Минимальная сумма для теста
+            receiptItems.push({
+                Name: description || 'Заказ',
+                Price: calculatedAmount * 100,
+                Quantity: 1,
+                Amount: calculatedAmount * 100,
+                Tax: 'none'
+            });
+        }
+
+        const amountInKopecks = calculatedAmount * 100; // Т-Банк требует копейки
 
         // Prepare data for token generation
         const params = {
             TerminalKey: terminalKey,
-            Amount: amount,
+            Amount: amountInKopecks,
             OrderId: orderId,
             Description: description,
             Password: password
@@ -44,29 +98,21 @@ module.exports = async (req, res) => {
         // Prepare request body
         const requestBody = {
             TerminalKey: terminalKey,
-            Amount: amount,
+            Amount: amountInKopecks,
             OrderId: orderId,
             Description: description,
             Token: token
         };
 
-        // Construct Receipt if not provided but email/phone exists
+        // Construct Receipt
         if (receipt) {
             requestBody.Receipt = receipt;
         } else if (customerEmail || customerPhone) {
             requestBody.Receipt = {
                 Email: customerEmail,
                 Phone: customerPhone,
-                Taxation: 'osn', // Default taxation system
-                Items: [
-                    {
-                        Name: description,
-                        Price: amount,
-                        Quantity: 1,
-                        Amount: amount,
-                        Tax: 'none'
-                    }
-                ]
+                Taxation: 'osn',
+                Items: receiptItems
             };
         }
 
@@ -81,11 +127,10 @@ module.exports = async (req, res) => {
         const data = await response.json();
 
         if (!data.Success) {
-            console.error('Tinkoff API Error:', data);
+            // ❌ DO NOT log full response (may contain sensitive data)
             return res.status(400).json({
                 success: false,
-                error: data.Message || 'Payment initialization failed',
-                details: data.Details
+                error: data.Message || 'Payment initialization failed'
             });
         }
 
@@ -95,11 +140,11 @@ module.exports = async (req, res) => {
             paymentId: data.PaymentId
         });
 
-    } catch (error) {
-        console.error('Payment processing error:', error);
+    } catch {
+        // ❌ DO NOT log error details (may contain secrets)
         return res.status(500).json({
             success: false,
-            error: error.message || 'Internal Server Error'
+            error: 'Internal Server Error'
         });
     }
 };
