@@ -62,7 +62,7 @@ const CheckoutModal = ({ onClose }) => {
       const description = `Заказ ${orderId} в Arbarea`;
 
       // ✅ SECURITY: Send items for server-side price calculation
-      const items = cart.map((item) => ({
+      const items = cartItems.map((item) => ({
         id: item.id,
         name: item.name,
         quantity: item.quantity || 1,
