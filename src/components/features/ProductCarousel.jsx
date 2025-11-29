@@ -88,7 +88,7 @@ const ProductCarousel = ({ images }) => {
           <>
             <button
               type="button"
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-black/50 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
+              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-black/50 rounded-full opacity-70 hover:opacity-100 transition-opacity z-10"
               onClick={(e) => {
                 e.stopPropagation();
                 paginate(-1);
@@ -98,7 +98,7 @@ const ProductCarousel = ({ images }) => {
             </button>
             <button
               type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-black/50 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-black/50 rounded-full opacity-70 hover:opacity-100 transition-opacity z-10"
               onClick={(e) => {
                 e.stopPropagation();
                 paginate(1);
@@ -126,7 +126,7 @@ const ProductCarousel = ({ images }) => {
         <button
           type="button"
           onClick={openLightbox}
-          className="absolute top-3 right-3 p-1.5 bg-black/30 backdrop-blur rounded-full text-white opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10 hover:bg-black/50"
+          className="absolute top-3 right-3 p-1.5 bg-black/30 backdrop-blur rounded-full text-white opacity-70 hover:opacity-100 transition-opacity z-10 hover:bg-black/50"
         >
           <Maximize2 size={16} />
         </button>
