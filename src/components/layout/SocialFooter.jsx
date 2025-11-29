@@ -71,7 +71,7 @@ const SocialFooter = () => (
       <p className="text-xs text-stone-400 font-bold tracking-wider font-serif">
         ARBAREA
       </p>
-      <p className="text-[10px] text-stone-500">Столярная мастерская</p>
+      <p className="text-[10px] text-stone-500">Авторская столярная мастерская</p>
       <p className="text-[10px] text-stone-600">© 2025 Все права защищены</p>
     </div>
 
