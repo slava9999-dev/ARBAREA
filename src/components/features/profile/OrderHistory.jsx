@@ -24,8 +24,7 @@ const OrderHistory = () => {
     const ordersRef = collection(db, 'orders');
     const q = query(
       ordersRef,
-      where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc'),
+      where('userId', '==', user.uid)
     );
 
     const unsubscribe = onSnapshot(
@@ -36,6 +35,10 @@ const OrderHistory = () => {
           ...doc.data(),
           createdAt: doc.data().createdAt?.toDate(),
         }));
+        
+        // Sort client-side to avoid needing a composite index immediately
+        ordersData.sort((a, b) => b.createdAt - a.createdAt);
+        
         setOrders(ordersData);
         setLoading(false);
       },
