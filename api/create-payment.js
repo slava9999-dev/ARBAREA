@@ -41,6 +41,9 @@ export default async function handler(req, res) {
             'prod-6': 8500,
             'prod-7': 15000,
             'prod-8': 22000,
+            '101-bronze-600': 12000, // Примерная цена, уточните актуальную
+            '102-brass-600': 12500,
+            '103-ash-600': 8500,
             'donate-100': 100, // Донат
         };
 
