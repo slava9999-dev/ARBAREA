@@ -28,21 +28,35 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    const { message, history } = req.body; // history - массив предыдущих сообщений (если есть)
+    const { message, history } = req.body;
 
-    if (!process.env.GEMINI_API_KEY) throw new Error('No API Key');
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not configured');
+    }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     
     // Инициализация модели с системной инструкцией
     const model = genAI.getGenerativeModel({ 
-      model: "models/gemini-2.0-flash", // Полное имя модели с префиксом
+      model: "gemini-1.5-flash",
       systemInstruction: SYSTEM_INSTRUCTION
     });
 
+    // Конвертируем историю из формата {text, sender} в формат Gemini {role, parts}
+    let geminiHistory = [];
+    if (history && Array.isArray(history) && history.length > 0) {
+      // Пропускаем первое приветственное сообщение от AI
+      geminiHistory = history
+        .slice(1) // Убираем приветствие
+        .map(msg => ({
+          role: msg.sender === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.text }]
+        }));
+    }
+
     // Формируем чат
     const chat = model.startChat({
-      history: history || [], // Поддержка контекста диалога
+      history: geminiHistory,
     });
 
     const result = await chat.sendMessage(message);
@@ -52,7 +66,10 @@ export default async function handler(req, res) {
     return res.status(200).json({ reply: text });
 
   } catch (error) {
-    console.error('Gemini Error:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('Gemini Error:', error.message, error.stack);
+    return res.status(500).json({ 
+      error: error.message || 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
