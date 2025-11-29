@@ -129,7 +129,7 @@ export const PRODUCTS = [
     id: 105,
     name: 'Подставка «Малый Дом» из термоясеня',
     category: 'Для кухни',
-    price: 100,
+    price: 600,
     image: '/images/products/5285080811512204613.webp',
     gallery: [
       '/images/products/5285080811512204613.webp',
