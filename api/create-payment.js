@@ -35,7 +35,6 @@ export default async function handler(req, res) {
             // Products with variants (base price)
             '101': 3500, // Рейлинг Ясень (60см base)
             '102': 3000, // Держатель Ясень (60см base)
-            'railing-premium-01': 4500,
             
             // Fixed price products
             '103': 8500, // Панно Эхо Леса
@@ -94,6 +93,7 @@ export default async function handler(req, res) {
         const receiptItems = [];
 
         if (items && Array.isArray(items)) {
+            let hasDonation = false;
             for (const item of items) {
                 const serverPrice = calculateProductPrice(item.id);
                 if (!serverPrice) {
@@ -102,6 +102,11 @@ export default async function handler(req, res) {
                         error: `Invalid product ID: ${item.id}` 
                     });
                 }
+                
+                if (item.id.startsWith('donate-')) {
+                    hasDonation = true;
+                }
+
                 const itemTotal = serverPrice * (item.quantity || 1);
                 calculatedAmount += itemTotal;
 
@@ -113,6 +118,37 @@ export default async function handler(req, res) {
                     Tax: 'none'
                 });
             }
+
+            // Apply 10% discount for authorized users (if not a donation)
+            // Донаты не скидываются
+            if (req.body.isAuth && !hasDonation) {
+                const discount = Math.floor(calculatedAmount * 0.1);
+                calculatedAmount -= discount;
+                
+                // Add discount info to receipt (optional, but good for transparency)
+                // Note: Tinkoff receipt structure is strict, so we just adjust the total amount
+                // Or we could add a discount line item with negative price, but that's complex with taxes.
+                // Simpler: just reduce the total amount passed to Init. 
+                // However, Receipt items sum MUST match Total Amount.
+                // So we need to adjust receipt items prices proportionally or add a discount.
+                // Tinkoff Reciept API is tricky with discounts.
+                // Let's try to adjust the last item or distribute discount?
+                // EASIEST WAY: Recalculate receipt items with discount.
+                
+                // Re-calculating receipt items with discount
+                let currentTotal = 0;
+                receiptItems.forEach((item, index) => {
+                    const itemPrice = item.Price;
+                    const discountedPrice = Math.floor(itemPrice * 0.9); // 10% off
+                    item.Price = discountedPrice;
+                    item.Amount = discountedPrice * item.Quantity;
+                    currentTotal += item.Amount;
+                });
+                
+                // Adjust calculatedAmount to match the sum of discounted items exactly to avoid rounding errors
+                calculatedAmount = currentTotal / 100;
+            }
+
         } else {
             // Fallback: если items не передан, используем description (НЕ РЕКОМЕНДУЕТСЯ для продакшна)
             // TODO: REMOVE THIS FALLBACK IN PRODUCTION

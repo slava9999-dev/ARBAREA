@@ -72,6 +72,7 @@ const CheckoutModal = ({ onClose }) => {
       const paymentUrl = await initPayment(orderId, items, description, {
         email: formData.email,
         phone: formData.phone,
+        isAuth: !!user,
       });
 
       if (paymentUrl) {

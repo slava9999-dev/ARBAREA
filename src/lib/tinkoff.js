@@ -9,6 +9,7 @@ export async function initPayment(orderId, items, description, customerData) {
         description,
         customerEmail: customerData?.email || '',
         customerPhone: customerData?.phone || '',
+        isAuth: customerData?.isAuth || false,
       }),
     });
     const data = await response.json();

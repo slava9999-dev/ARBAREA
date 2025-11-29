@@ -134,50 +134,16 @@ export const PRODUCTS = [
     gallery: [
       '/images/products/5285080811512204613.webp',
       '/images/products/5285080811512204614.webp',
-      '/images/products/5285080811512204615.webp',
       '/images/products/5285080811512204616.webp',
-      '/images/products/5285080811512204617.webp',
       '/images/products/5285080811512204618.webp',
-      '/images/products/5285080811512204619.webp',
-      '/images/products/5285080811512204620.webp',
+      '/images/products/5194921725614227006.webp',
+      '/images/products/5194921725614227007.webp',
+      '/images/products/5194921725614227008.webp',
+      '/images/products/5194921725614227009.webp',
     ],
     rating: 5.0,
     hasOptions: false,
     description:
       'Эта подставка — больше, чем просто аксессуар для сервировки. Это архитектурная миниатюра на вашем столе. Она выполнена из термоясеня — материала с глубоким, благородным цветом и выразительной текстурой, которая раскрывается благодаря нашей натуральной пропитке из премиального масла.\n\nМы бережно сохраняем «подпись природы», поэтому каждая подставка уникальна и имеет свой неповторимый рисунок. Лаконичная форма домика символизирует уют и тепло домашнего очага, а компактные размеры позволяют ей гармонично вписаться в любую сервировку, не перегружая ее.\n\nХарактеристики:\n• Материал: 100% натуральный термоясень\n• Покрытие: Премиальное масло, подчеркивающее текстуру\n• Размеры: 7 × 7,5 × 4,5 см\n\nПригласите эту маленькую Историю на свой стол.',
-  },
-  {
-    id: 'railing-premium-01',
-    category: 'accessories',
-    name: 'Рейлинг кухонный Solid Brass',
-    description:
-      'Премиальная система рейлингов из цельного металла. Идеальная шлифовка, тяжелый вес, надежное крепление. Подходит для организации пространства на фартуке кухни.',
-    price: 4500,
-    basePrice: 4500,
-    image:
-      'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?q=80&w=2669&auto=format&fit=crop',
-    gallery: [
-      'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?q=80&w=2669&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=2670&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=2670&auto=format&fit=crop',
-    ],
-    options: {
-      hasColor: true,
-      hasSize: true,
-    },
-    variants: {
-      colors: [
-        { id: 'chrome', name: 'Хром (Satin)', hex: '#e5e7eb' },
-        { id: 'bronze', name: 'Античная Бронза', hex: '#78350f' },
-        { id: 'black', name: 'Матовый Черный', hex: '#171717' },
-      ],
-      sizes: [
-        { value: 60, label: '60 см', priceMod: 0 },
-        { value: 80, label: '80 см', priceMod: 1200 },
-        { value: 100, label: '100 см', priceMod: 2500 },
-      ],
-    },
-    rating: 5.0,
-    reviews: 12,
   },
 ];
