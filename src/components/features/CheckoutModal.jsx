@@ -174,43 +174,91 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
                   {error}
                 </div>
               )}
-              <input
-                required
-                placeholder="Ваше имя"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="w-full p-4 bg-transparent border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-none px-0 py-3"
-              />
-              <input
-                required
-                type="tel"
-                placeholder="Телефон"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                className="w-full p-4 bg-transparent border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-none px-0 py-3"
-              />
-              <input
-                type="email"
-                placeholder="Email (для чека)"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className="w-full p-4 bg-transparent border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-none px-0 py-3"
-              />
-              <input
-                required
-                placeholder="Адрес доставки"
-                value={formData.address}
-                onChange={(e) =>
-                  setFormData({ ...formData, address: e.target.value })
-                }
-                className="w-full p-4 bg-transparent border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-none px-0 py-3"
-              />
+              <div className="space-y-1">
+                <label className="text-xs text-stone-400 ml-1">Ваше имя</label>
+                <input
+                  required
+                  placeholder="Иван Иванов"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full p-4 bg-stone-800/50 border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-xl"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-stone-400 ml-1">Телефон</label>
+                <input
+                  required
+                  type="tel"
+                  placeholder="+7 (999) 000-00-00"
+                  value={formData.phone}
+                  onFocus={() => {
+                    if (!formData.phone) setFormData({ ...formData, phone: '+7' });
+                  }}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    // Prevent deleting +7
+                    if (!val.startsWith('+7')) val = '+7' + val.replace(/^\+7/, '');
+                    // Allow only numbers and symbols
+                    if (/^[\d\s()+-]*$/.test(val)) {
+                       setFormData({ ...formData, phone: val });
+                    }
+                  }}
+                  className="w-full p-4 bg-stone-800/50 border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs text-stone-400 ml-1">Email (для чека)</label>
+                <input
+                  type="email"
+                  placeholder="example@mail.ru"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full p-4 bg-stone-800/50 border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-1 relative">
+                <label className="text-xs text-stone-400 ml-1">Адрес доставки</label>
+                <textarea
+                  required
+                  rows={2}
+                  placeholder="Город, улица, дом, квартира"
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
+                  className="w-full p-4 bg-stone-800/50 border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-xl resize-none"
+                />
+                 {/* Simple geolocation button */}
+                 <button
+                    type="button"
+                    onClick={() => {
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(async (position) => {
+                                try {
+                                    const { latitude, longitude } = position.coords;
+                                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ru`);
+                                    const data = await response.json();
+                                    if (data.display_name) {
+                                        setFormData(prev => ({ ...prev, address: data.display_name }));
+                                    }
+                                } catch (e) {
+                                    console.error("Geo error", e);
+                                }
+                            });
+                        }
+                    }}
+                    className="absolute right-2 top-8 p-2 text-amber-500 hover:text-amber-400"
+                    title="Определить адрес"
+                 >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                 </button>
+              </div>
 
               <button
                 type="submit"
