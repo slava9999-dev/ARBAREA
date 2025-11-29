@@ -102,7 +102,7 @@ const FlipProductCard = ({ product, onBuy }) => {
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
             {images.map((img, idx) => (
               <div
-                key={`${img}-${idx}`}
+                key={img}
                 className={`w-1.5 h-1.5 rounded-full transition-all ${
                   idx === imgIndex ? 'bg-white w-3' : 'bg-white/50'
                 }`}

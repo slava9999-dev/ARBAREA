@@ -1,7 +1,10 @@
-import { Check, Loader2, Play, ShoppingBag, X } from 'lucide-react';
+import { addDoc, collection } from 'firebase/firestore';
+import { Check, ChevronRight, Loader2, Play, ShoppingBag, X } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, SIZES } from '../../lib/constants';
+import { db } from '../../lib/firebase';
+import { sendTelegramNotification } from '../../lib/telegram';
 import { initPayment } from '../../lib/tinkoff';
 import OptimizedImage from '../ui/OptimizedImage';
 import TactileButton from '../ui/TactileButton';
@@ -37,6 +40,38 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
     onClose();
   };
 
+  const saveOrderToFirestore = async (orderId, paymentUrl) => {
+    try {
+      const orderData = {
+        orderId,
+        userId: user?.uid || 'guest',
+        userEmail: user?.email || '',
+        userPhone: user?.phoneNumber || '',
+        userName: user?.displayName || '',
+        items: [
+          {
+            id: product.id,
+            name: product.name,
+            price: currentPrice,
+            quantity: 1,
+            selectedSize,
+            selectedColor,
+            selectedColorName: selectedColor ? COLORS[selectedColor].name : null,
+          },
+        ],
+        total: currentPrice,
+        status: 'pending_payment',
+        paymentUrl,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      await addDoc(collection(db, 'orders'), orderData);
+    } catch (error) {
+      console.error('Error saving order:', error);
+    }
+  };
+
   const handleBuyNow = async () => {
     // Если Tinkoff ключи ещё не заданы – показываем дружелюбное сообщение
     if (!process.env.TINKOFF_TERMINAL_KEY) {
@@ -63,6 +98,21 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
       });
 
       if (paymentUrl) {
+        // 1. Save to Firestore
+        await saveOrderToFirestore(orderId, paymentUrl);
+
+        // 2. Send Telegram Notification
+        const message = `
+<b>Быстрая покупка!</b> ⚡
+<b>ID:</b> ${orderId}
+<b>Товар:</b> ${product.name}
+<b>Цена:</b> ${currentPrice} ₽
+<b>Размер:</b> ${selectedSize || '-'}
+<b>Цвет:</b> ${selectedColor ? COLORS[selectedColor].name : '-'}
+`;
+        await sendTelegramNotification(message);
+
+        // 3. Redirect
         window.location.href = paymentUrl;
       } else {
         alert('Ошибка: Ссылка на оплату не получена');

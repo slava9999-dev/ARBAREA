@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2, Send, X } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '../context/ToastContext';
+import { sendTelegramNotification } from '../lib/telegram';
 
 const CustomOrderModal = ({ isOpen, onClose }) => {
   const { showToast } = useToast();
@@ -18,17 +19,22 @@ const CustomOrderModal = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/telegram-notify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const message = `
+<b>🔔 Новый Индивидуальный Заказ!</b>
 
-      const data = await response.json();
+👤 <b>Имя:</b> ${formData.name}
+📞 <b>Телефон:</b> ${formData.phone}
+💬 <b>Связь:</b> ${formData.contactMethod === 'telegram' ? 'Telegram' : 'WhatsApp'}
 
-      if (response.ok && data.success) {
+📝 <b>Описание идеи:</b>
+<i>${formData.description}</i>
+
+#custom_order #new
+`;
+
+      const result = await sendTelegramNotification(message);
+
+      if (result.success !== false) {
         showToast('Заявка успешно отправлена!', 'success');
         onClose();
         setFormData({
@@ -38,7 +44,7 @@ const CustomOrderModal = ({ isOpen, onClose }) => {
           contactMethod: 'telegram',
         });
       } else {
-        throw new Error(data.error || 'Ошибка отправки');
+        throw new Error(result.error || 'Ошибка отправки');
       }
     } catch (error) {
       console.error('Error sending custom order:', error);

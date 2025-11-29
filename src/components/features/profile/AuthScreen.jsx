@@ -1,7 +1,7 @@
 import { Loader2, Mail, Phone, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import TelegramLoginButton from '../../TelegramLoginButton';
+
 
 const AuthScreen = () => {
   const {
@@ -148,7 +148,7 @@ const AuthScreen = () => {
             )}
           </button>
 
-          <div className="pt-4 grid grid-cols-4 gap-3 items-center">
+          <div className="pt-4 grid grid-cols-3 gap-3 items-center">
             <button
               type="button"
               onClick={() => setMethod('phone')}
@@ -164,10 +164,7 @@ const AuthScreen = () => {
               <Mail size={20} />
             </button>
 
-            {/* Telegram Widget Button */}
-            <div className="flex items-center justify-center h-14 w-full overflow-hidden">
-              <TelegramLoginButton botName="ArbareaBot" />
-            </div>
+
 
             <button
               type="button"

@@ -168,15 +168,10 @@ export default async function handler(req, res) {
         calculatedAmount = currentTotal / 100;
       }
     } else {
-      // Fallback: если items не передан, используем description (НЕ РЕКОМЕНДУЕТСЯ для продакшна)
-      // TODO: REMOVE THIS FALLBACK IN PRODUCTION
-      calculatedAmount = 1000; // Минимальная сумма для теста
-      receiptItems.push({
-        Name: description || 'Заказ',
-        Price: calculatedAmount * 100,
-        Quantity: 1,
-        Amount: calculatedAmount * 100,
-        Tax: 'none',
+      // Fallback: если items не передан, возвращаем ошибку
+      return res.status(400).json({
+        success: false,
+        error: 'No items provided for payment',
       });
     }
 
