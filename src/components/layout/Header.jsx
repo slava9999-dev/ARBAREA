@@ -1,10 +1,5 @@
 import { motion } from 'framer-motion';
-import { Menu, Moon, Sun } from 'lucide-react';
-import { useContext } from 'react';
-import { ThemeContext } from '../../context/ThemeContext';
-
 const Header = () => {
-  const { dark, setDark } = useContext(ThemeContext);
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-stone-900/90 backdrop-blur-sm z-40 px-6 py-4 flex justify-between items-center border-b border-stone-100 dark:border-stone-800 transition-colors duration-300">
@@ -39,24 +34,8 @@ const Header = () => {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setDark(!dark)}
-          className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-          aria-label="Toggle theme"
-        >
-          {dark ? (
-            <Sun size={24} className="text-stone-200" />
-          ) : (
-            <Moon size={24} className="text-stone-600" />
-          )}
-        </button>
-        <button
-          type="button"
-          className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-        >
-          <Menu size={24} className="text-stone-600 dark:text-stone-200" />
-        </button>
+
+
       </div>
     </div>
   );
