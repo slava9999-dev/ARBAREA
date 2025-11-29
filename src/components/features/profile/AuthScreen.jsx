@@ -1,6 +1,8 @@
 import { Loader2, Mail, Phone, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import { GoogleIcon, YandexIcon } from '../../ui/CustomIcons';
+import TelegramLoginButton from './TelegramLoginButton';
 
 
 const AuthScreen = () => {
@@ -12,6 +14,7 @@ const AuthScreen = () => {
     loginWithYandex,
     setupRecaptcha,
     clearRecaptcha,
+    loginWithCustomToken,
   } = useAuth();
   const [method, setMethod] = useState('main'); // main, email, phone
   const [emailMode, setEmailMode] = useState('login'); // login, register
@@ -112,6 +115,29 @@ const AuthScreen = () => {
     }
   };
 
+  const handleTelegramAuth = async (telegramUser) => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/auth-telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(telegramUser),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка авторизации Telegram');
+      }
+
+      await loginWithCustomToken(data.token);
+    } catch (err) {
+      console.error('Telegram Login Error:', err);
+      setError(err.message || 'Ошибка входа через Telegram');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-center px-6 pb-32 text-center animate-fade-in">
       <div className="w-24 h-24 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -185,6 +211,18 @@ const AuthScreen = () => {
             >
               Я
             </button>
+          </div>
+
+          <div className="mt-6">
+             <div className="relative mb-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-stone-200"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-stone-400">или</span>
+                </div>
+             </div>
+             <TelegramLoginButton onAuth={handleTelegramAuth} botName="Arbarea_bot" />
           </div>
         </div>
       )}

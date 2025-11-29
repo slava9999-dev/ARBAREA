@@ -8,6 +8,7 @@ import {
   signInWithPhoneNumber,
   signInWithPopup,
   signOut,
+  signInWithCustomToken,
 } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../lib/firebase';
@@ -95,6 +96,7 @@ export const AuthProvider = ({ children }) => {
         loginWithPhone,
 
         loginWithYandex,
+        loginWithCustomToken: (token) => signInWithCustomToken(auth, token),
       }}
     >
       {!loading && children}
