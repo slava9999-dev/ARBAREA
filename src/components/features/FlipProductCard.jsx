@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ShoppingBag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
@@ -15,6 +15,22 @@ const FlipProductCard = ({ product, onBuy }) => {
   const [selectedSize, setSelectedSize] = useState(
     product.variants?.sizes?.[0],
   );
+
+  // Gallery Logic
+  const images =
+    product.gallery && product.gallery.length > 0
+      ? product.gallery
+      : [product.image];
+  const [imgIndex, setImgIndex] = useState(0);
+
+  const paginate = (newDirection) => {
+    setImgIndex((prev) => {
+      let next = prev + newDirection;
+      if (next < 0) next = images.length - 1;
+      if (next >= images.length) next = 0;
+      return next;
+    });
+  };
 
   // Dynamic Price Calculation
   const basePrice = product.basePrice || product.price;
@@ -52,19 +68,78 @@ const FlipProductCard = ({ product, onBuy }) => {
       }}
       onClick={handleDetailsClick}
     >
-      {/* Image Container */}
-      <div className="relative h-64 overflow-hidden bg-stone-900">
+      {/* Image Container with Swipe */}
+      <div className="relative h-64 overflow-hidden bg-stone-900 group/image">
         <motion.img
-          src={product.image}
+          key={imgIndex}
+          src={images[imgIndex]}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          className="w-full h-full object-cover absolute inset-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_e, { offset, velocity }) => {
+            const swipe = Math.abs(offset.x) * velocity.x;
+            if (swipe < -100) {
+              paginate(1);
+            } else if (swipe > 100) {
+              paginate(-1);
+            }
+          }}
+          onClick={() => {
+             // Allow click to propagate to parent unless dragging happened
+          }}
         />
+        
+        {/* Navigation Dots */}
+        {images.length > 1 && (
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            {images.map((img, idx) => (
+              <div
+                key={`${img}-${idx}`}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                  idx === imgIndex ? 'bg-white w-3' : 'bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Navigation Arrows (Visible on hover) */}
+        {images.length > 1 && (
+           <>
+             <button
+               type="button"
+               className="absolute left-1 top-1/2 -translate-y-1/2 p-1 bg-black/30 text-white rounded-full opacity-0 group-hover/image:opacity-100 transition-opacity"
+               onClick={(e) => {
+                 e.stopPropagation();
+                 paginate(-1);
+               }}
+             >
+               <ChevronLeft size={16} />
+             </button>
+             <button
+               type="button"
+               className="absolute right-1 top-1/2 -translate-y-1/2 p-1 bg-black/30 text-white rounded-full opacity-0 group-hover/image:opacity-100 transition-opacity"
+               onClick={(e) => {
+                 e.stopPropagation();
+                 paginate(1);
+               }}
+             >
+               <ChevronRight size={16} />
+             </button>
+           </>
+        )}
+
         {product.isSold && (
-          <div className="absolute bottom-3 left-3 bg-stone-900/80 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-white border border-stone-700">
+          <div className="absolute bottom-3 left-3 bg-stone-900/80 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-white border border-stone-700 z-20">
             ПРОДАНО
           </div>
         )}
-        <div className="absolute top-3 right-3 bg-stone-900/60 backdrop-blur px-2 py-1 rounded text-xs font-bold text-amber-500 border border-amber-500/20">
+        <div className="absolute top-3 right-3 bg-stone-900/60 backdrop-blur px-2 py-1 rounded text-xs font-bold text-amber-500 border border-amber-500/20 z-20">
           {currentPrice.toLocaleString()} ₽
         </div>
       </div>

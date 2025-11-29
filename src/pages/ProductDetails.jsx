@@ -114,13 +114,13 @@ const ProductDetails = () => {
       </div>
 
       {/* Image Gallery */}
-      <div className="h-[50vh] w-full bg-stone-800 relative">
+      <div className="h-[55vh] w-full bg-stone-800 relative">
         <ProductCarousel images={images} />
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#1c1917] to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#1c1917]/80 to-transparent pointer-events-none" />
       </div>
 
       {/* Content */}
-      <div className="px-6 -mt-10 relative z-10">
+      <div className="px-6 -mt-6 relative z-10">
         <div className="bg-[#1c1917] rounded-t-3xl p-6 shadow-xl border-t border-white/5">
           {/* Category & Rating */}
           <div className="flex justify-between items-center mb-3">
