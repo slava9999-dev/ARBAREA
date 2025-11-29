@@ -15,13 +15,16 @@ service cloud.firestore {
       match /cart/{cartItemId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+    }
 
-      // Orders
-      match /orders/{orderId} {
-        // Пользователь может создавать и читать только свои заказы
-        allow create: if request.auth != null && request.auth.uid == userId;
-        allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      }
+    // ✅ Orders (Root collection)
+    match /orders/{orderId} {
+      // Пользователь может читать свои заказы
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Создавать можно, если userId совпадает
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Обновлять (например, статус оплаты) - пока разрешим владельцу, но лучше через сервер
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
     }
   }
 }

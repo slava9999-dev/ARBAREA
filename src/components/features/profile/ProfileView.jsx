@@ -18,9 +18,18 @@ const ProfileView = () => {
     try {
       const orderId = `DONATE-${Date.now()}`;
       const description = 'Донат мастеру Arbarea';
-      const amount = 100; // 100 рублей
 
-      const paymentUrl = await initPayment(orderId, amount, description, {
+      // ✅ SECURITY: Send items for server-side price calculation
+      // Для доната используем специальный ID или обрабатываем на сервере
+      const items = [
+        {
+          id: 'donate-100', // Специальный ID для доната
+          name: 'Донат мастеру',
+          quantity: 1,
+        },
+      ];
+
+      const paymentUrl = await initPayment(orderId, items, description, {
         email: user?.email || '',
         phone: user?.phoneNumber || '',
       });

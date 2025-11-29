@@ -48,7 +48,16 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
       const orderId = `ORDER-${Date.now()}`;
       const description = `Заказ ${orderId}: ${product.name}`;
 
-      const paymentUrl = await initPayment(orderId, currentPrice, description, {
+      // ✅ SECURITY: Send items for server-side price calculation
+      const items = [
+        {
+          id: product.id,
+          name: product.name,
+          quantity: 1,
+        },
+      ];
+
+      const paymentUrl = await initPayment(orderId, items, description, {
         email: user?.email || '',
         phone: user?.phoneNumber || '',
       });

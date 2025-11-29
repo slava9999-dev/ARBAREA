@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // SYSTEM PROMPT
 const SYSTEM_INSTRUCTION = `
@@ -18,7 +18,7 @@ const SYSTEM_INSTRUCTION = `
 ПРАВИЛО: Всегда заканчивай ответ вопросом или предложением (Call to Action).
 `;
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');

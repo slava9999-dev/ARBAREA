@@ -1,7 +1,7 @@
-const crypto = require('crypto');
-const fetch = require('node-fetch');
+import crypto from 'crypto';
+import fetch from 'node-fetch';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
     // CORS headers
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -41,6 +41,7 @@ module.exports = async (req, res) => {
             'prod-6': 8500,
             'prod-7': 15000,
             'prod-8': 22000,
+            'donate-100': 100, // Донат
         };
 
         let calculatedAmount = 0;
