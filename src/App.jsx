@@ -44,7 +44,7 @@ const AppContent = () => {
 
   return (
     <div className="bg-stone-50 dark:bg-stone-950 min-h-screen font-sans pb-safe selection:bg-stone-200 dark:selection:bg-stone-700">
-      <div className="noise-overlay" />
+
       {!location.pathname.startsWith('/product/') && <Header />}
       <main className="max-w-md mx-auto bg-white dark:bg-stone-900 min-h-screen shadow-2xl relative overflow-hidden">
         <Suspense fallback={<LoadingSpinner />}>

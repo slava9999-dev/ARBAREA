@@ -175,8 +175,9 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
                 </div>
               )}
               <div className="space-y-1">
-                <label className="text-xs text-stone-400 ml-1">Ваше имя</label>
+                <label htmlFor="name" className="text-xs text-stone-400 ml-1">Ваше имя</label>
                 <input
+                  id="name"
                   required
                   placeholder="Иван Иванов"
                   value={formData.name}
@@ -187,8 +188,9 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-stone-400 ml-1">Телефон</label>
+                <label htmlFor="phone" className="text-xs text-stone-400 ml-1">Телефон</label>
                 <input
+                  id="phone"
                   required
                   type="tel"
                   placeholder="+7 (999) 000-00-00"
@@ -199,7 +201,7 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
                   onChange={(e) => {
                     let val = e.target.value;
                     // Prevent deleting +7
-                    if (!val.startsWith('+7')) val = '+7' + val.replace(/^\+7/, '');
+                    if (!val.startsWith('+7')) val = `+7${val.replace(/^\+7/, '')}`;
                     // Allow only numbers and symbols
                     if (/^[\d\s()+-]*$/.test(val)) {
                        setFormData({ ...formData, phone: val });
@@ -210,8 +212,9 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs text-stone-400 ml-1">Email (для чека)</label>
+                <label htmlFor="email" className="text-xs text-stone-400 ml-1">Email (для чека)</label>
                 <input
+                  id="email"
                   type="email"
                   placeholder="example@mail.ru"
                   value={formData.email}
@@ -223,8 +226,9 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
               </div>
 
               <div className="space-y-1 relative">
-                <label className="text-xs text-stone-400 ml-1">Адрес доставки</label>
+                <label htmlFor="address" className="text-xs text-stone-400 ml-1">Адрес доставки</label>
                 <textarea
+                  id="address"
                   required
                   rows={2}
                   placeholder="Город, улица, дом, квартира"
@@ -256,7 +260,7 @@ ${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
                     className="absolute right-2 top-8 p-2 text-amber-500 hover:text-amber-400"
                     title="Определить адрес"
                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-labelledby="geoIconTitle"><title id="geoIconTitle">Определить местоположение</title><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                  </button>
               </div>
 

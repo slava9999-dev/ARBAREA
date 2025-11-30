@@ -12,6 +12,10 @@ const ProductCard = ({ product, categoryName, onOpenModal }) => {
       <div className="relative aspect-[4/5] overflow-hidden">
         <OptimizedImage
           src={product.image}
+          srcSet={product.image.startsWith('/images/products/') 
+            ? `/images/products/thumbnails/${product.image.split('/').pop().replace('.webp', '_thumb.webp')} 400w, ${product.image} 1000w`
+            : undefined}
+          sizes="(max-width: 768px) 50vw, 25vw"
           alt={product.name}
           width={400}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -23,6 +27,7 @@ const ProductCard = ({ product, categoryName, onOpenModal }) => {
         <button
           type="button"
           onClick={() => onOpenModal(product)}
+          aria-label={`Купить ${product.name}`}
           className="absolute bottom-4 right-4 bg-stone-900 text-white p-3 rounded-full opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:bg-amber-600"
         >
           <ShoppingBag size={20} />

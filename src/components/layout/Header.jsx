@@ -27,7 +27,7 @@ const Header = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.5 }}
-            className="text-[8px] uppercase tracking-[0.4em] text-stone-400 dark:text-stone-500 ml-0.5"
+            className="text-[8px] uppercase tracking-[0.4em] text-stone-400 dark:text-stone-400 ml-0.5"
           >
             Workshop
           </motion.span>

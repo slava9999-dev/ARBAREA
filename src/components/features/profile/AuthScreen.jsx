@@ -1,7 +1,7 @@
 import { Loader2, Mail, Phone, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { GoogleIcon, YandexIcon } from '../../ui/CustomIcons';
+
 import TelegramLoginButton from './TelegramLoginButton';
 
 
@@ -144,11 +144,11 @@ const AuthScreen = () => {
         <User size={40} className="text-stone-400" />
       </div>
 
-      <h2 className="text-2xl font-serif font-bold mb-3 text-stone-800">
+      <h2 className="text-2xl font-serif font-bold mb-3 text-white">
         Добро пожаловать
         <br />в Arbarea
       </h2>
-      <p className="text-stone-500 mb-10 text-sm leading-relaxed max-w-xs mx-auto">
+      <p className="text-stone-300 mb-10 text-sm leading-relaxed max-w-xs mx-auto">
         Войдите, чтобы отслеживать заказы, копить бонусы и вступить в закрытый
         клуб
       </p>
@@ -216,10 +216,10 @@ const AuthScreen = () => {
           <div className="mt-6">
              <div className="relative mb-4">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-stone-200"></div>
+                  <div className="w-full border-t border-stone-200 dark:border-stone-700"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-stone-400">или</span>
+                  <span className="px-2 bg-white dark:bg-stone-900 text-stone-400 dark:text-stone-500">или</span>
                 </div>
              </div>
              <TelegramLoginButton onAuth={handleTelegramAuth} botName="Arbarea_bot" />

@@ -88,6 +88,7 @@ const ProductCarousel = ({ images }) => {
           <>
             <button
               type="button"
+              aria-label="Предыдущее фото"
               className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-black/50 rounded-full opacity-70 hover:opacity-100 transition-opacity z-10"
               onClick={(e) => {
                 e.stopPropagation();
@@ -98,6 +99,7 @@ const ProductCarousel = ({ images }) => {
             </button>
             <button
               type="button"
+              aria-label="Следующее фото"
               className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-black/50 rounded-full opacity-70 hover:opacity-100 transition-opacity z-10"
               onClick={(e) => {
                 e.stopPropagation();
@@ -126,6 +128,7 @@ const ProductCarousel = ({ images }) => {
         <button
           type="button"
           onClick={openLightbox}
+          aria-label="Открыть на весь экран"
           className="absolute top-3 right-3 p-1.5 bg-black/30 backdrop-blur rounded-full text-white opacity-70 hover:opacity-100 transition-opacity z-10 hover:bg-black/50"
         >
           <Maximize2 size={16} />
@@ -144,6 +147,7 @@ const ProductCarousel = ({ images }) => {
           >
             <button
               type="button"
+              aria-label="Закрыть"
               className="absolute top-4 right-4 text-white p-2 z-50"
               onClick={() => setIsLightboxOpen(false)}
             >
@@ -185,6 +189,7 @@ const ProductCarousel = ({ images }) => {
                 <>
                   <button
                     type="button"
+                    aria-label="Предыдущее фото"
                     className="absolute left-4 top-1/2 -translate-y-1/2 p-4 text-white/75 hover:text-white z-50"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -195,6 +200,7 @@ const ProductCarousel = ({ images }) => {
                   </button>
                   <button
                     type="button"
+                    aria-label="Следующее фото"
                     className="absolute right-4 top-1/2 -translate-y-1/2 p-4 text-white/75 hover:text-white z-50"
                     onClick={(e) => {
                       e.stopPropagation();

@@ -8,7 +8,7 @@ import {
 import { NavLink } from 'react-router-dom';
 
 const BottomNav = ({ cartCount }) => (
-  <div className="fixed bottom-4 left-4 right-4 glass-panel px-6 py-4 flex justify-between items-center z-50">
+  <div className="fixed bottom-4 left-4 right-4 glass-panel flex items-center z-[100] overflow-hidden h-20">
     {[
       { path: '/', icon: Home, label: 'Витрина' },
       { path: '/gallery', icon: ImageIcon, label: 'Галерея' },
@@ -20,7 +20,7 @@ const BottomNav = ({ cartCount }) => (
         key={tab.path}
         to={tab.path}
         className={({ isActive }) =>
-          `relative flex flex-col items-center justify-center space-y-1 transition-colors duration-300 w-full h-full ${isActive ? 'text-primary' : 'text-stone-400 hover:text-stone-200'}`
+          `flex-1 relative flex flex-col items-center justify-center h-full transition-colors duration-300 active:scale-95 ${isActive ? 'text-amber-500' : 'text-stone-400 hover:text-stone-200'}`
         }
       >
         {({ isActive }) => (

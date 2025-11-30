@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
-const OptimizedImage = ({ src, alt, className, width = 400 }) => {
+const OptimizedImage = ({ src, alt, className, width = 400, srcSet, sizes }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
   // Optimize Unsplash URLs aggressively
   let optimizedSrc = src;
-  if (src.includes('unsplash.com')) {
+  if (src?.includes('unsplash.com')) {
     // Remove existing parameters
     const baseUrl = src.split('?')[0];
     // Add optimized parameters: width, quality 60%, webp format
@@ -22,6 +22,8 @@ const OptimizedImage = ({ src, alt, className, width = 400 }) => {
 
       <motion.img
         src={optimizedSrc}
+        srcSet={srcSet}
+        sizes={sizes}
         alt={alt}
         loading="lazy"
         initial={{ opacity: 0 }}

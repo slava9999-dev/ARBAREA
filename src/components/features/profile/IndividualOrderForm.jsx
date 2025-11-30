@@ -145,8 +145,9 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
         {/* Contact Info */}
         <div className="grid grid-cols-1 gap-4">
            <div className="space-y-1">
-            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Ваше имя</label>
+            <label htmlFor="userName" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Ваше имя</label>
             <input
+              id="userName"
               required
               placeholder="Как к вам обращаться?"
               defaultValue={user?.displayName || ''}
@@ -155,8 +156,9 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
             />
           </div>
            <div className="space-y-1">
-            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Телефон для связи</label>
+            <label htmlFor="userPhone" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Телефон для связи</label>
             <input
+              id="userPhone"
               required
               type="tel"
               placeholder="+7 (999) 000-00-00"
@@ -168,8 +170,9 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
         </div>
 
         <div className="space-y-1">
-            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Что будем создавать?</label>
+            <label htmlFor="description" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Что будем создавать?</label>
             <input
+              id="description"
               required
               placeholder="Например: Обеденный стол из дуба"
               value={formData.description}
@@ -182,8 +185,9 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
 
         <div className="flex gap-3">
           <div className="w-1/2 space-y-1">
-            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Длина (см)</label>
+            <label htmlFor="length" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Длина (см)</label>
             <input
+                id="length"
                 type="number"
                 placeholder="0"
                 value={formData.length}
@@ -194,8 +198,9 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
             />
           </div>
           <div className="w-1/2 space-y-1">
-            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Ширина (см)</label>
+            <label htmlFor="width" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Ширина (см)</label>
             <input
+                id="width"
                 type="number"
                 placeholder="0"
                 value={formData.width}
@@ -208,8 +213,9 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
         </div>
 
         <div className="space-y-1">
-            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Детали и пожелания</label>
+            <label htmlFor="details" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Детали и пожелания</label>
             <textarea
+              id="details"
               placeholder="Опишите желаемый цвет, материал, стиль и другие важные детали..."
               rows={4}
               value={formData.details}
