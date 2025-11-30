@@ -1,7 +1,6 @@
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
-  OAuthProvider,
   onAuthStateChanged,
   RecaptchaVerifier,
   signInWithEmailAndPassword,
@@ -70,16 +69,6 @@ export const AuthProvider = ({ children }) => {
 
 
 
-  const loginWithYandex = async () => {
-    const provider = new OAuthProvider('yandex.ru');
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (e) {
-      console.error('Yandex Auth Error:', e);
-      throw e;
-    }
-  };
-
   const logout = () => signOut(auth);
 
   return (
@@ -94,8 +83,6 @@ export const AuthProvider = ({ children }) => {
         setupRecaptcha,
         clearRecaptcha,
         loginWithPhone,
-
-        loginWithYandex,
         loginWithCustomToken: (token) => signInWithCustomToken(auth, token),
       }}
     >

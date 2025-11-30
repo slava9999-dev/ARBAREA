@@ -11,7 +11,6 @@ const AuthScreen = () => {
     loginWithEmail,
     registerWithEmail,
     loginWithPhone,
-    loginWithYandex,
     setupRecaptcha,
     clearRecaptcha,
     loginWithCustomToken,
@@ -118,21 +117,29 @@ const AuthScreen = () => {
 
   const handleTelegramAuth = async (telegramUser) => {
     try {
+      console.log('🔵 Telegram auth started:', telegramUser);
       setLoading(true);
+      
+      console.log('🔵 Sending request to /api/auth-telegram...');
       const response = await fetch('/api/auth-telegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(telegramUser),
       });
 
+      console.log('🔵 Response status:', response.status);
       const data = await response.json();
+      console.log('🔵 Response data:', data);
+      
       if (!response.ok) {
         throw new Error(data.error || 'Ошибка авторизации Telegram');
       }
 
+      console.log('🔵 Logging in with custom token...');
       await loginWithCustomToken(data.token);
+      console.log('✅ Telegram auth successful!');
     } catch (err) {
-      console.error('Telegram Login Error:', err);
+      console.error('❌ Telegram Login Error:', err);
       setError(err.message || 'Ошибка входа через Telegram');
     } finally {
       setLoading(false);
@@ -177,7 +184,7 @@ const AuthScreen = () => {
             )}
           </button>
 
-          <div className="pt-4 grid grid-cols-3 gap-3 items-center">
+          <div className="pt-4 grid grid-cols-2 gap-3 items-center">
             <button
               type="button"
               onClick={() => setMethod('phone')}
@@ -191,26 +198,6 @@ const AuthScreen = () => {
               className="bg-stone-800 border border-stone-700 text-stone-200 py-3 rounded-xl flex items-center justify-center hover:bg-stone-700 active:scale-95 transition-all h-14 shadow-neon-stone"
             >
               <Mail size={20} />
-            </button>
-
-
-
-            <button
-              type="button"
-              onClick={async () => {
-                setError('');
-                setLoading(true);
-                try {
-                  await loginWithYandex();
-                } catch (e) {
-                  setError(getErrorMessage(e));
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              className="bg-[#FC3F1D]/10 border border-[#FC3F1D]/20 text-[#FC3F1D] py-3 rounded-xl flex items-center justify-center hover:bg-[#FC3F1D]/20 active:scale-95 transition-all font-bold text-lg h-14"
-            >
-              Я
             </button>
           </div>
 
