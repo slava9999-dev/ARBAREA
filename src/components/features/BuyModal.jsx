@@ -58,18 +58,16 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
             id="modal-title"
             className="font-serif font-bold text-lg text-stone-800 dark:text-stone-100"
           >
-            {step === 'form' ? 'Детали заказа' : 'Оплата'}
+            Детали заказа
           </h3>
-          {step !== 'processing' && (
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Закрыть модальное окно"
-              className="p-1 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors"
-            >
-              <X className="text-stone-400" size={20} />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Закрыть модальное окно"
+            className="p-1 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors"
+          >
+            <X className="text-stone-400" size={20} />
+          </button>
         </div>
 
         <div className="overflow-y-auto p-0 custom-scrollbar">
