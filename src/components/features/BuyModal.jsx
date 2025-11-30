@@ -74,7 +74,7 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
 
   const handleBuyNow = async () => {
     // Если Tinkoff ключи ещё не заданы – показываем дружелюбное сообщение
-    if (!process.env.TINKOFF_TERMINAL_KEY) {
+    if (!import.meta.env.VITE_TINKOFF_TERMINAL_KEY) {
       alert('Платёж пока недоступен – ключи Tinkoff ещё не настроены.');
       return;
     }
