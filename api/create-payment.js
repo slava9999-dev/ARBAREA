@@ -123,7 +123,7 @@ export default async function handler(req, res) {
           });
         }
 
-        if (item.id.startsWith('donate-')) {
+        if (String(item.id).startsWith('donate-')) {
           hasDonation = true;
         }
 
