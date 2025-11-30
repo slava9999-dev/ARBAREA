@@ -18,7 +18,7 @@ export default async function handler(req, res) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: chatId,
-          text: message, // Telegram API expects 'text', but our internal API expects 'message'
+          text: message,
           parse_mode: 'HTML',
         }),
       },

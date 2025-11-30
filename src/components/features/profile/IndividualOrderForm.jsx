@@ -42,18 +42,28 @@ const IndividualOrderForm = () => {
   };
 
   const handleSendNotification = async (orderData) => {
+    const escapeHtml = (text) => {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    };
+
     const message = `
 🔔 <b>Новая заявка на индивидуальный заказ!</b>
 
-👤 <b>Клиент:</b> ${user.displayName || user.phoneNumber || user.email || 'Неизвестно'}
-📧 <b>Email:</b> ${orderData.userEmail || 'Не указан'}
-📱 <b>Телефон:</b> ${orderData.userPhone || 'Не указан'}
+👤 <b>Клиент:</b> ${escapeHtml(user.displayName || user.phoneNumber || user.email || 'Неизвестно')}
+📧 <b>Email:</b> ${escapeHtml(orderData.userEmail || 'Не указан')}
+📱 <b>Телефон:</b> ${escapeHtml(orderData.userPhone || 'Не указан')}
 
-📝 <b>Описание:</b> ${orderData.description}
-📏 <b>Размеры:</b> ${orderData.dimensions.length || '?'} x ${orderData.dimensions.width || '?'} см
-💬 <b>Детали:</b> ${orderData.details || 'Не указаны'}
+📝 <b>Описание:</b> ${escapeHtml(orderData.description)}
+📏 <b>Размеры:</b> ${escapeHtml(orderData.dimensions.length || '?')} x ${escapeHtml(orderData.dimensions.width || '?')} см
+💬 <b>Детали:</b> ${escapeHtml(orderData.details || 'Не указаны')}
 
-${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Файл не прикреплён'}
+${orderData.fileUrl ? `📎 <b>Файл:</b> ${escapeHtml(orderData.fileName)}` : '📎 Файл не прикреплён'}
 
 🔗 <b>ID заявки:</b> ${orderData.orderId}
         `.trim();

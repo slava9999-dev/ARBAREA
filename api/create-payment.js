@@ -79,8 +79,8 @@ export default async function handler(req, res) {
 
     function calculateProductPrice(itemId) {
       // Check if it's a donation (format: "donate-500")
-      if (itemId.startsWith('donate-')) {
-        const amount = parseInt(itemId.split('-')[1], 10);
+      if (String(itemId).startsWith('donate-')) {
+        const amount = parseInt(String(itemId).split('-')[1], 10);
         if (amount && amount >= 10 && amount <= 100000) {
           return amount;
         }
@@ -88,7 +88,8 @@ export default async function handler(req, res) {
       }
 
       // Check if it's a variant ID (format: "101-bronze-600")
-      const parts = itemId.split('-');
+      const itemIdStr = String(itemId);
+      const parts = itemIdStr.split('-');
       const baseId = parts[0];
 
       // Get base price
@@ -238,8 +239,8 @@ export default async function handler(req, res) {
       paymentUrl: data.PaymentURL,
       paymentId: data.PaymentId,
     });
-  } catch {
-    // ❌ DO NOT log error details (may contain secrets)
+  } catch (error) {
+    console.error('Payment API Error:', error);
     return res.status(500).json({
       success: false,
       error: 'Internal Server Error',
