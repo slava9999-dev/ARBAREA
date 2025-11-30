@@ -304,7 +304,7 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${escapeHtml(orderData.fileName)}` 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-amber-500 shadow-neon-amber hover:shadow-neon-amber-lg"
+          className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-amber-500 border-2 border-amber-500 animate-neon-pulse"
         >
           {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
           {!isSubmitting && <ArrowRight size={20} />}

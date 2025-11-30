@@ -27,16 +27,17 @@ export default {
                 glass: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
                 glow: '0 0 20px rgba(217, 119, 6, 0.4)',
                 'glass-inner': 'inset 0 1px 0 0 rgba(255,255,255,0.1)',
-                'neon-amber': '0 0 20px rgba(217, 119, 6, 0.3)',
-                'neon-amber-lg': '0 0 30px rgba(217, 119, 6, 0.5)',
-                'neon-dark': '0 0 20px rgba(28, 25, 23, 0.3)',
-                'neon-dark-lg': '0 0 30px rgba(28, 25, 23, 0.5)',
-                'neon-stone': '0 0 15px rgba(68, 64, 60, 0.2)',
-                'neon-stone-lg': '0 0 25px rgba(68, 64, 60, 0.4)',
+                'neon-amber': '0 0 25px rgba(217, 119, 6, 0.5), 0 0 50px rgba(217, 119, 6, 0.2)',
+                'neon-amber-lg': '0 0 35px rgba(217, 119, 6, 0.7), 0 0 60px rgba(217, 119, 6, 0.3)',
+                'neon-dark': '0 0 25px rgba(120, 113, 108, 0.4), 0 0 50px rgba(120, 113, 108, 0.2)',
+                'neon-dark-lg': '0 0 35px rgba(120, 113, 108, 0.6), 0 0 60px rgba(120, 113, 108, 0.3)',
+                'neon-stone': '0 0 20px rgba(168, 162, 158, 0.3), 0 0 40px rgba(168, 162, 158, 0.15)',
+                'neon-stone-lg': '0 0 30px rgba(168, 162, 158, 0.5), 0 0 50px rgba(168, 162, 158, 0.25)',
             },
             animation: {
                 'slow-zoom': 'zoom 20s infinite alternate',
                 'fade-in-up': 'fadeInUp 1s ease-out forwards',
+                'neon-pulse': 'neonPulse 2s ease-in-out infinite',
             },
             keyframes: {
                 zoom: {
@@ -46,6 +47,16 @@ export default {
                 fadeInUp: {
                     '0%': { opacity: '0', transform: 'translateY(20px)' },
                     '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+                neonPulse: {
+                    '0%, 100%': { 
+                        borderColor: 'rgba(217, 119, 6, 0.5)',
+                        boxShadow: '0 0 5px rgba(217, 119, 6, 0.3), inset 0 0 5px rgba(217, 119, 6, 0.1)'
+                    },
+                    '50%': { 
+                        borderColor: 'rgba(217, 119, 6, 0.8)',
+                        boxShadow: '0 0 15px rgba(217, 119, 6, 0.6), inset 0 0 10px rgba(217, 119, 6, 0.2)'
+                    },
                 }
             }
         },

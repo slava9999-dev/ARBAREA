@@ -19,10 +19,10 @@ const TactileButton = ({
 
   const variants = {
     primary:
-      'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white shadow-neon-dark hover:shadow-neon-dark-lg',
-    glass: 'glass-panel text-white hover:bg-stone-800/60 shadow-neon-stone hover:shadow-neon-stone-lg',
+      'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white border-2 border-stone-700 hover:border-stone-600',
+    glass: 'glass-panel text-white hover:bg-stone-800/60 border-2 border-white/20 hover:border-white/30',
     secondary:
-      'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 hover:bg-stone-200 dark:hover:bg-stone-700 shadow-neon-stone hover:shadow-neon-stone-lg',
+      'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 hover:bg-stone-200 dark:hover:bg-stone-700 border-2 border-stone-300 dark:border-stone-600 hover:border-stone-400 dark:hover:border-stone-500',
   };
 
   return (

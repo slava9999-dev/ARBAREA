@@ -166,7 +166,7 @@ const AuthScreen = () => {
             type="button"
             onClick={handleGoogle}
             disabled={loading}
-            className="w-full bg-stone-800 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-stone-700 active:scale-95 transition-all shadow-neon-dark hover:shadow-neon-dark-lg"
+            className="w-full bg-stone-800 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-stone-700 active:scale-95 transition-all border-2 border-stone-700 hover:border-stone-600"
           >
             {loading ? (
               <Loader2 className="animate-spin" />
