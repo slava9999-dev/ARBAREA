@@ -8,6 +8,18 @@
       "destination": "/api/$1"
     },
     {
+      "source": "/manifest.webmanifest",
+      "destination": "/manifest.webmanifest"
+    },
+    {
+      "source": "/sw.js",
+      "destination": "/sw.js"
+    },
+    {
+      "source": "/workbox-(.*).js",
+      "destination": "/workbox-$1.js"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
