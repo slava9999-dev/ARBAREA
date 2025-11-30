@@ -68,7 +68,17 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${escapeHtml(orderData.fileName)}` 
 🔗 <b>ID заявки:</b> ${orderData.orderId}
         `.trim();
 
-    await sendTelegramNotification(message);
+    try {
+      const result = await sendTelegramNotification(message);
+      console.log('Telegram notification result:', result);
+      
+      if (result && result.ok === false) {
+        throw new Error(result.description || 'Telegram API error');
+      }
+    } catch (error) {
+      console.error('Failed to send Telegram notification:', error);
+      // Не прерываем процесс, но логируем ошибку
+    }
   };
 
   const handleSubmit = async (e) => {

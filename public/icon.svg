@@ -1,0 +1,27 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark background -->
+  <rect width="512" height="512" fill="#1c1917" rx="64"/>
+  
+  <!-- Stylized tree/wood grain design -->
+  <g transform="translate(256, 256)">
+    <!-- Central trunk -->
+    <rect x="-20" y="-120" width="40" height="240" fill="#d97706" rx="8"/>
+    
+    <!-- Wood grain rings (concentric circles) -->
+    <circle cx="0" cy="-60" r="80" fill="none" stroke="#d97706" stroke-width="3" opacity="0.6"/>
+    <circle cx="0" cy="-60" r="100" fill="none" stroke="#d97706" stroke-width="2" opacity="0.4"/>
+    <circle cx="0" cy="-60" r="120" fill="none" stroke="#d97706" stroke-width="1.5" opacity="0.3"/>
+    
+    <!-- Stylized branches -->
+    <path d="M -20,-80 L -80,-120 L -60,-100 Z" fill="#d97706" opacity="0.8"/>
+    <path d="M 20,-80 L 80,-120 L 60,-100 Z" fill="#d97706" opacity="0.8"/>
+    <path d="M -20,-40 L -100,-60 L -80,-50 Z" fill="#d97706" opacity="0.7"/>
+    <path d="M 20,-40 L 100,-60 L 80,-50 Z" fill="#d97706" opacity="0.7"/>
+    
+    <!-- Bottom accent -->
+    <rect x="-30" y="100" width="60" height="20" fill="#78350f" rx="4"/>
+  </g>
+  
+  <!-- Subtle border -->
+  <rect width="512" height="512" fill="none" stroke="#78350f" stroke-width="2" rx="64" opacity="0.3"/>
+</svg>

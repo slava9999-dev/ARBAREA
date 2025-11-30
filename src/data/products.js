@@ -2,7 +2,7 @@ export const PRODUCTS = [
   // НОВИНКА: Рейлинг Ясень
   {
     id: 101,
-    name: 'Рейлинг Ясень 1000 мм бронза METAL AND GRAIN',
+    name: 'Рейлинг Ясень   METAL AND GRAIN',
     category: 'Для кухни',
     price: 3500,
     basePrice: 3500,
@@ -42,7 +42,7 @@ export const PRODUCTS = [
   },
   {
     id: 102,
-    name: 'Держатель Ясень 600мм бронза WOOD AND STEEL',
+    name: 'Держатель Ясень  WOOD AND STEEL',
     category: 'Для ванной',
     price: 3000,
     basePrice: 3000,

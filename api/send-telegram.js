@@ -24,8 +24,17 @@ export default async function handler(req, res) {
       },
     );
     const data = await response.json();
+    
+    // Log for debugging
+    if (!data.ok) {
+      console.error('Telegram API Error:', data);
+    } else {
+      console.log('Telegram message sent successfully');
+    }
+    
     return res.status(200).json(data);
   } catch (error) {
+    console.error('Telegram API Exception:', error);
     return res.status(500).json({ error: error.message });
   }
 }
