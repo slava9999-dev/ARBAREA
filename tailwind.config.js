@@ -27,6 +27,12 @@ export default {
                 glass: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
                 glow: '0 0 20px rgba(217, 119, 6, 0.4)',
                 'glass-inner': 'inset 0 1px 0 0 rgba(255,255,255,0.1)',
+                'neon-amber': '0 0 20px rgba(217, 119, 6, 0.3)',
+                'neon-amber-lg': '0 0 30px rgba(217, 119, 6, 0.5)',
+                'neon-dark': '0 0 20px rgba(28, 25, 23, 0.3)',
+                'neon-dark-lg': '0 0 30px rgba(28, 25, 23, 0.5)',
+                'neon-stone': '0 0 15px rgba(68, 64, 60, 0.2)',
+                'neon-stone-lg': '0 0 25px rgba(68, 64, 60, 0.4)',
             },
             animation: {
                 'slow-zoom': 'zoom 20s infinite alternate',
@@ -45,7 +51,7 @@ export default {
         },
     },
     plugins: [
-        function ({ addComponents }) {
+        ({ addComponents }) => {
             addComponents({
                 '.glass-panel': {
                     '@apply bg-stone-900/40 backdrop-blur-xl border border-white/10 shadow-xl': {},
