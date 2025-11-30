@@ -1,17 +1,13 @@
-import { addDoc, collection } from 'firebase/firestore';
-import { Check, ChevronRight, Loader2, Play, ShoppingBag, X } from 'lucide-react';
+
+import { Check, Loader2, Play, ShoppingBag, X } from 'lucide-react';
 import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+
 import { COLORS, SIZES } from '../../lib/constants';
-import { db } from '../../lib/firebase';
-import { sendTelegramNotification } from '../../lib/telegram';
-import { initPayment } from '../../lib/tinkoff';
 import OptimizedImage from '../ui/OptimizedImage';
 import TactileButton from '../ui/TactileButton';
 
 const BuyModal = ({ product, onClose, onAddToCart }) => {
-  const { user } = useAuth();
-  const [step, setStep] = useState('form');
+
   const [selectedSize, setSelectedSize] = useState(
     product.hasOptions ? SIZES[0] : null,
   );
@@ -40,90 +36,9 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
     onClose();
   };
 
-  const saveOrderToFirestore = async (orderId, paymentUrl) => {
-    try {
-      const orderData = {
-        orderId,
-        userId: user?.uid || 'guest',
-        userEmail: user?.email || '',
-        userPhone: user?.phoneNumber || '',
-        userName: user?.displayName || '',
-        items: [
-          {
-            id: product.id,
-            name: product.name,
-            price: currentPrice,
-            quantity: 1,
-            selectedSize,
-            selectedColor,
-            selectedColorName: selectedColor ? COLORS[selectedColor].name : null,
-          },
-        ],
-        total: currentPrice,
-        status: 'pending_payment',
-        paymentUrl,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
 
-      await addDoc(collection(db, 'orders'), orderData);
-    } catch (error) {
-      console.error('Error saving order:', error);
-    }
-  };
 
-  const handleBuyNow = async () => {
-    // Если Tinkoff ключи ещё не заданы – показываем дружелюбное сообщение
-    if (!import.meta.env.VITE_TINKOFF_TERMINAL_KEY) {
-      alert('Платёж пока недоступен – ключи Tinkoff ещё не настроены.');
-      return;
-    }
-    setStep('processing');
-    try {
-      const orderId = `ORDER-${Date.now()}`;
-      const description = `Заказ ${orderId}: ${product.name}`;
 
-      // ✅ SECURITY: Send items for server-side price calculation
-      const items = [
-        {
-          id: product.id,
-          name: product.name,
-          quantity: 1,
-        },
-      ];
-
-      const paymentUrl = await initPayment(orderId, items, description, {
-        email: user?.email || '',
-        phone: user?.phoneNumber || '',
-      });
-
-      if (paymentUrl) {
-        // 1. Save to Firestore
-        await saveOrderToFirestore(orderId, paymentUrl);
-
-        // 2. Send Telegram Notification
-        const message = `
-<b>Быстрая покупка!</b> ⚡
-<b>ID:</b> ${orderId}
-<b>Товар:</b> ${product.name}
-<b>Цена:</b> ${currentPrice} ₽
-<b>Размер:</b> ${selectedSize || '-'}
-<b>Цвет:</b> ${selectedColor ? COLORS[selectedColor].name : '-'}
-`;
-        await sendTelegramNotification(message);
-
-        // 3. Redirect
-        window.location.href = paymentUrl;
-      } else {
-        alert('Ошибка: Ссылка на оплату не получена');
-        setStep('form');
-      }
-    } catch (error) {
-      console.error('Payment Error:', error);
-      alert(`Ошибка инициализации оплаты: ${error.message}`);
-      setStep('form');
-    }
-  };
 
   if (!product) return null;
 
@@ -289,29 +204,7 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
 
               <div className="space-y-3 pt-2">
                 <div className="space-y-3 pt-2">
-                  <TactileButton
-                    onClick={handleBuyNow}
-                    variant="secondary"
-                    className="w-full p-4 border border-stone-200 dark:border-stone-700 rounded-xl flex justify-between items-center hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors group h-auto"
-                  >
-                    <div className="flex gap-3 items-center">
-                      <div className="w-10 h-10 bg-[#FFDD2D] rounded-lg flex items-center justify-center font-bold text-stone-900 text-sm shadow-sm">
-                        T
-                      </div>
-                      <div className="text-left">
-                        <div className="font-bold text-stone-800 dark:text-stone-100 text-sm">
-                          Tinkoff Pay
-                        </div>
-                        <div className="text-xs text-stone-500 dark:text-stone-400 font-normal">
-                          Быстрая оплата картой
-                        </div>
-                      </div>
-                    </div>
-                    <ChevronRight
-                      size={20}
-                      className="text-stone-300 group-hover:text-stone-500 transition-colors"
-                    />
-                  </TactileButton>
+
 
                   <TactileButton
                     onClick={handleAddToCart}

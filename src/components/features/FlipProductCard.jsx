@@ -226,7 +226,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                onOpenModal(product);
+                if (onOpenModal) onOpenModal(product);
               }}
               className="flex-1 bg-stone-700 text-stone-200 hover:bg-stone-600 active:scale-95 transition-all duration-300 rounded-lg py-3 font-medium tracking-wide flex items-center justify-center text-sm border border-stone-600"
             >
