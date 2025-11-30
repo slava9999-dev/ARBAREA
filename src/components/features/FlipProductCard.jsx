@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
 
-const FlipProductCard = ({ product, onBuy }) => {
+const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -213,13 +213,26 @@ const FlipProductCard = ({ product, onBuy }) => {
             Продано
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={handleBuy}
-            className="w-full bg-amber-600 text-white hover:bg-amber-500 active:scale-95 transition-all duration-300 rounded-lg py-3 font-medium tracking-wide flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(217,119,6,0.3)]"
-          >
-            В корзину <ShoppingBag size={16} />
-          </button>
+          <div className="flex gap-2 mt-auto">
+            <button
+              type="button"
+              onClick={handleBuy}
+              className="flex-1 bg-amber-600 text-white hover:bg-amber-500 active:scale-95 transition-all duration-300 rounded-lg py-3 font-medium tracking-wide flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(217,119,6,0.3)] text-sm"
+            >
+              <ShoppingBag size={16} />
+              В корзину
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenModal(product);
+              }}
+              className="flex-1 bg-stone-700 text-stone-200 hover:bg-stone-600 active:scale-95 transition-all duration-300 rounded-lg py-3 font-medium tracking-wide flex items-center justify-center text-sm border border-stone-600"
+            >
+              Подробнее
+            </button>
+          </div>
         )}
       </div>
     </motion.div>

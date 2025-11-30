@@ -6,7 +6,7 @@ import SocialFooter from '../components/layout/SocialFooter';
 import { SearchOverlay } from '../components/SearchOverlay';
 import { PRODUCTS } from '../data/products';
 
-const Showcase = ({ onBuy }) => {
+const Showcase = ({ onBuy, onOpenModal }) => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -140,7 +140,7 @@ const Showcase = ({ onBuy }) => {
               key={p.id}
               className="h-full transition-transform duration-300 hover:scale-[1.02]"
             >
-              <FlipProductCard product={p} onBuy={onBuy} />
+              <FlipProductCard product={p} onBuy={onBuy} onOpenModal={onOpenModal} />
             </div>
           ))}
         </div>

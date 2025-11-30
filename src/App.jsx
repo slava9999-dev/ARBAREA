@@ -57,6 +57,7 @@ const AppContent = () => {
                     onBuy={(product) => {
                       addToCart({ ...product, quantity: 1 });
                     }}
+                    onOpenModal={setSelectedProduct}
                   />
                 }
               />
