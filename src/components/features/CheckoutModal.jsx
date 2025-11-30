@@ -80,17 +80,28 @@ const CheckoutModal = ({ onClose }) => {
         await saveOrderToFirestore(orderId, paymentUrl);
 
         // Send Telegram Notification
+        // Helper to escape HTML for Telegram
+        const escapeHtml = (text) => {
+          if (!text) return '';
+          return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+        };
+
         const message = `
 <b>Новый заказ!</b> 📦
 <b>ID:</b> ${orderId}
-<b>Имя:</b> ${formData.name}
-<b>Телефон:</b> ${formData.phone}
-<b>Email:</b> ${formData.email}
-<b>Адрес:</b> ${formData.address}
+<b>Имя:</b> ${escapeHtml(formData.name)}
+<b>Телефон:</b> ${escapeHtml(formData.phone)}
+<b>Email:</b> ${escapeHtml(formData.email)}
+<b>Адрес:</b> ${escapeHtml(formData.address)}
 <b>Сумма:</b> ${cartTotal} ₽
 
 <b>Товары:</b>
-${cartItems.map((item) => `- ${item.name} x${item.quantity}`).join('\n')}
+${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
 `;
         await sendTelegramNotification(message);
 

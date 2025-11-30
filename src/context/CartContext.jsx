@@ -100,7 +100,7 @@ export const CartProvider = ({ children }) => {
   );
 
   // 10% discount for authorized users
-  const discount = user ? Math.round(subtotal * 0.1) : 0;
+  const discount = user ? Math.floor(subtotal * 0.1) : 0;
   const cartTotal = subtotal - discount;
 
   const addToCart = (product) => {
