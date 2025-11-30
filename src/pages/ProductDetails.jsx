@@ -89,12 +89,14 @@ const ProductDetails = () => {
         <button
           type="button"
           onClick={() => navigate(-1)}
+          aria-label="Назад"
           className="pointer-events-auto p-3 bg-black/50 backdrop-blur-md rounded-full shadow-sm text-stone-100 hover:bg-black transition-colors"
         >
           <ArrowLeft size={20} />
         </button>
         <button
           type="button"
+          aria-label="Поделиться"
           className="pointer-events-auto p-3 bg-black/50 backdrop-blur-md rounded-full shadow-sm text-stone-100 hover:bg-black transition-colors"
           onClick={() => {
             if (navigator.share) {
@@ -143,7 +145,7 @@ const ProductDetails = () => {
           <div className="flex justify-between items-center mb-8">
             <div className="text-3xl font-mono text-amber-500">
               {currentPrice.toLocaleString()}{' '}
-              <span className="text-lg text-stone-500 font-sans">₽</span>
+              <span className="text-lg text-stone-400 font-sans">₽</span>
             </div>
             <button
               type="button"
@@ -154,6 +156,7 @@ const ProductDetails = () => {
                   'success',
                 );
               }}
+              aria-label={isInWishlist(product.id) ? "Удалить из избранного" : "Добавить в избранное"}
               className={`p-3 rounded-full transition-all ${
                 isInWishlist(product.id)
                   ? 'bg-red-500/10 text-red-500'
@@ -173,7 +176,7 @@ const ProductDetails = () => {
               {/* Colors */}
               {product.variants?.colors && (
                 <div>
-                  <span className="text-xs font-bold uppercase text-stone-500 mb-3 block">
+                  <span className="text-xs font-bold uppercase text-stone-400 mb-3 block">
                     Цвет
                   </span>
                   <div className="flex gap-3">
@@ -182,6 +185,7 @@ const ProductDetails = () => {
                         key={color.id}
                         type="button"
                         onClick={() => setSelectedColor(color)}
+                        aria-label={`Цвет: ${color.name}`}
                         className={`
                           group relative w-12 h-12 rounded-full border-2 transition-all
                           ${
@@ -209,7 +213,7 @@ const ProductDetails = () => {
               {/* Sizes */}
               {product.variants?.sizes && (
                 <div>
-                  <span className="text-xs font-bold uppercase text-stone-500 mb-3 block">
+                  <span className="text-xs font-bold uppercase text-stone-400 mb-3 block">
                     Размер
                   </span>
                   <div className="flex flex-wrap gap-2">
@@ -252,7 +256,7 @@ const ProductDetails = () => {
               <button
                 type="button"
                 disabled
-                className="w-full py-4 bg-stone-800 text-stone-500 font-bold rounded-2xl cursor-not-allowed border border-stone-700"
+                className="w-full py-4 bg-stone-800 text-stone-400 font-bold rounded-2xl cursor-not-allowed border border-stone-700"
               >
                 Продано
               </button>
