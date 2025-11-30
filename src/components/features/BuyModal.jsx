@@ -220,7 +220,7 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-6 pb-24">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h2 className="font-serif text-2xl font-bold text-stone-800 dark:text-stone-100 mb-1">
