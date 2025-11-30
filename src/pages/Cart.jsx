@@ -50,6 +50,7 @@ const Cart = ({ cart, onRemove, onCheckout }) => {
         <button
           type="button"
           onClick={onCheckout}
+          aria-label="Оформить заказ"
           className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex justify-center gap-2 active:scale-95 transition-transform hover:bg-amber-500 shadow-[0_0_20px_rgba(217,119,6,0.3)]"
         >
           <Lock size={18} /> Оформить заказ
