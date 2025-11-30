@@ -166,7 +166,7 @@ const AuthScreen = () => {
             type="button"
             onClick={handleGoogle}
             disabled={loading}
-            className="w-full bg-stone-800 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-stone-700 active:scale-95 transition-all shadow-lg shadow-stone-200"
+            className="w-full bg-stone-800 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-stone-700 active:scale-95 transition-all shadow-[0_0_20px_rgba(28,25,23,0.3)] hover:shadow-[0_0_30px_rgba(28,25,23,0.5)]"
           >
             {loading ? (
               <Loader2 className="animate-spin" />
@@ -181,14 +181,14 @@ const AuthScreen = () => {
             <button
               type="button"
               onClick={() => setMethod('phone')}
-              className="bg-white border border-stone-100 text-stone-600 py-3 rounded-xl flex items-center justify-center hover:bg-stone-50 active:scale-95 transition-all h-14"
+              className="bg-stone-800 border border-stone-700 text-stone-200 py-3 rounded-xl flex items-center justify-center hover:bg-stone-700 active:scale-95 transition-all h-14 shadow-[0_0_10px_rgba(41,37,36,0.2)]"
             >
               <Phone size={20} />
             </button>
             <button
               type="button"
               onClick={() => setMethod('email')}
-              className="bg-white border border-stone-100 text-stone-600 py-3 rounded-xl flex items-center justify-center hover:bg-stone-50 active:scale-95 transition-all h-14"
+              className="bg-stone-800 border border-stone-700 text-stone-200 py-3 rounded-xl flex items-center justify-center hover:bg-stone-700 active:scale-95 transition-all h-14 shadow-[0_0_10px_rgba(41,37,36,0.2)]"
             >
               <Mail size={20} />
             </button>

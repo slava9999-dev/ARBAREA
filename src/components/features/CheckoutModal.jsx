@@ -277,7 +277,7 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
 
               <button
                 type="submit"
-                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-4 hover:bg-amber-500 transition-colors shadow-[0_0_20px_rgba(217,119,6,0.3)]"
+                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-4 hover:bg-amber-500 transition-all shadow-[0_0_20px_rgba(217,119,6,0.3)] hover:shadow-[0_0_30px_rgba(217,119,6,0.5)]"
               >
                 <CreditCard size={18} />
                 <span>Оплатить (Карта / СБП)</span>
@@ -316,7 +316,7 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
             <button
               type="button"
               onClick={onClose}
-              className="w-full bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-500 transition-colors shadow-[0_0_20px_rgba(217,119,6,0.3)]"
+              className="w-full bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-500 transition-all shadow-[0_0_20px_rgba(217,119,6,0.3)] hover:shadow-[0_0_30px_rgba(217,119,6,0.5)]"
             >
               Отлично
             </button>

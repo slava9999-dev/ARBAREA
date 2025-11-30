@@ -151,7 +151,7 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${escapeHtml(orderData.fileName)}` 
   };
 
   return (
-    <div className="bg-white dark:bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-100 dark:border-stone-700 mb-8">
+    <div className="bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-700 mb-8">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-8 h-8 bg-stone-100 dark:bg-stone-700 rounded-full flex items-center justify-center text-stone-600 dark:text-stone-300">
           <FileText size={16} />
@@ -304,7 +304,7 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${escapeHtml(orderData.fileName)}` 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed hover:bg-amber-500 shadow-lg shadow-amber-600/20"
+          className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-amber-500 shadow-[0_0_20px_rgba(217,119,6,0.3)] hover:shadow-[0_0_30px_rgba(217,119,6,0.5)]"
         >
           {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
           {!isSubmitting && <ArrowRight size={20} />}

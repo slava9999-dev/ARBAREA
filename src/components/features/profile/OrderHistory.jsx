@@ -84,8 +84,8 @@ const OrderHistory = () => {
 
   if (!user) {
     return (
-      <div className="bg-white dark:bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-100 dark:border-stone-700 mb-8">
-        <p className="text-center text-stone-500 dark:text-stone-400 text-sm">
+      <div className="bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-700 mb-8">
+        <p className="text-center text-stone-400 text-sm">
           Войдите в аккаунт, чтобы увидеть историю заказов
         </p>
       </div>
@@ -94,7 +94,7 @@ const OrderHistory = () => {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-100 dark:border-stone-700 mb-8">
+      <div className="bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-700 mb-8">
         <p className="text-center text-stone-500 dark:text-stone-400 text-sm">
           Загрузка...
         </p>
@@ -104,7 +104,7 @@ const OrderHistory = () => {
 
   if (orders.length === 0) {
     return (
-      <div className="bg-white dark:bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-100 dark:border-stone-700 mb-8">
+      <div className="bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-700 mb-8">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-8 h-8 bg-stone-100 dark:bg-stone-700 rounded-full flex items-center justify-center text-stone-600 dark:text-stone-300">
             <Package size={16} />
@@ -121,7 +121,7 @@ const OrderHistory = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-100 dark:border-stone-700 mb-8">
+    <div className="bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-700 mb-8">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-8 h-8 bg-stone-100 dark:bg-stone-700 rounded-full flex items-center justify-center text-stone-600 dark:text-stone-300">
           <Package size={16} />

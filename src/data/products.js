@@ -4,8 +4,8 @@ export const PRODUCTS = [
     id: 101,
     name: 'Рейлинг Ясень   METAL AND GRAIN',
     category: 'Для кухни',
-    price: 3500,
-    basePrice: 3500,
+    price: 2500,
+    basePrice: 2500,
     image: '/images/products/railing_ash_1.webp',
     gallery: [
       '/images/products/railing_ash_1.webp',
@@ -33,8 +33,8 @@ export const PRODUCTS = [
       ],
       sizes: [
         { value: 600, label: '60 см', priceMod: 0 },
-        { value: 800, label: '80 см', priceMod: 1000 },
-        { value: 1000, label: '100 см', priceMod: 2000 },
+        { value: 800, label: '80 см', priceMod: 500 },
+        { value: 1000, label: '100 см', priceMod: 1000 },
       ],
     },
     description:
@@ -44,8 +44,8 @@ export const PRODUCTS = [
     id: 102,
     name: 'Держатель Ясень  WOOD AND STEEL',
     category: 'Для ванной',
-    price: 3000,
-    basePrice: 3000,
+    price: 2000,
+    basePrice: 2000,
     image: '/images/products/holder_ash_1.webp',
     gallery: [
       '/images/products/holder_ash_1.webp',
@@ -73,8 +73,8 @@ export const PRODUCTS = [
       ],
       sizes: [
         { value: 600, label: '60 см', priceMod: 0 },
-        { value: 800, label: '80 см', priceMod: 800 },
-        { value: 1000, label: '100 см', priceMod: 1600 },
+        { value: 800, label: '80 см', priceMod: 500 },
+        { value: 1000, label: '100 см', priceMod: 1000 },
       ],
     },
     description:

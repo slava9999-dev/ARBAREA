@@ -50,13 +50,13 @@ export default async function handler(req, res) {
     // Base product prices (without variants)
     const BASE_PRODUCT_PRICES = {
       // Products with variants (base price)
-      101: 3500, // Рейлинг Ясень (60см base)
-      102: 3000, // Держатель Ясень (60см base)
+      101: 2500, // Рейлинг Ясень (60см base)
+      102: 2000, // Держатель Ясень (60см base)
 
       // Fixed price products
       103: 8500, // Панно Эхо Леса
       104: 4900, // Панно Зимние Горы
-      105: 100, // Подставка Малый Дом
+      105: 600, // Подставка Малый Дом
 
       // Donation fallback
       'donate-100': 100,
@@ -66,11 +66,11 @@ export default async function handler(req, res) {
     const VARIANT_MODIFIERS = {
       101: {
         // Рейлинг Ясень
-        size: { 600: 0, 800: 1000, 1000: 2000 },
+        size: { 600: 0, 800: 500, 1000: 1000 },
       },
       102: {
         // Держатель Ясень
-        size: { 600: 0, 800: 800, 1000: 1600 },
+        size: { 600: 0, 800: 500, 1000: 1000 },
       },
       'railing-premium-01': {
         size: { 60: 0, 80: 1200, 100: 2500 },
