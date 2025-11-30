@@ -8,7 +8,7 @@ const initialState = {
 };
 
 const cartReducer = (state, action) => {
-  console.log('🛒 [Cart Action]:', action.type, action.payload);
+
 
   switch (action.type) {
     case 'SET_CART':
@@ -104,6 +104,16 @@ export const CartProvider = ({ children }) => {
   const cartTotal = subtotal - discount;
 
   const addToCart = (product) => {
+    // Validation
+    if (!product || !product.id) {
+      console.error('❌ Invalid product: Missing ID');
+      return;
+    }
+    if (typeof product.price !== 'number' || Number.isNaN(product.price)) {
+      console.error('❌ Invalid product: Price must be a number');
+      return;
+    }
+
     dispatch({ type: 'ADD_ITEM', payload: product });
   };
 

@@ -51,7 +51,7 @@ const ProfileView = () => {
       <div className="grid grid-cols-2 gap-3 mb-8">
         {/* Карточка Клуба */}
         <a
-          href="https://vk.com/arbarea_nn"
+          href="https://vk.com/arbarea_nn?w=donut_payment-229247954&levelId=2246"
           target="_blank"
           rel="noopener noreferrer"
           className="relative overflow-hidden bg-gradient-to-br from-stone-800 to-stone-900 text-white p-4 rounded-2xl shadow-lg border border-white/5 text-left group active:scale-95 transition-transform block"

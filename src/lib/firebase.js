@@ -20,8 +20,6 @@ if (missingKeys.length > 0) {
   console.error(
     `❌ Firebase Config Error: Missing keys: ${missingKeys.join(', ')}. Check your .env file.`,
   );
-} else {
-  console.log('✅ Firebase Configured Successfully');
 }
 
 const app = initializeApp(firebaseConfig);

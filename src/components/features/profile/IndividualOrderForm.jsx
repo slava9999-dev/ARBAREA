@@ -86,11 +86,16 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
 
       const orderId = `ORDER-${Date.now()}`;
 
+      const formDataObj = new FormData(e.target);
+      const userName = formDataObj.get('userName');
+      const userPhone = formDataObj.get('userPhone');
+
       const orderData = {
         orderId,
         userId: user.uid,
         userEmail: user.email || '',
-        userPhone: user.phoneNumber || '',
+        userName: userName || user.displayName || 'Не указано',
+        userPhone: userPhone || user.phoneNumber || 'Не указано',
         description: formData.description,
         dimensions: {
           length: formData.length,
@@ -136,47 +141,84 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
         </h3>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          required
-          placeholder="Что будем создавать?"
-          value={formData.description}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          className="w-full p-4 bg-stone-50 dark:bg-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none focus:ring-1 focus:ring-primary-300 transition-all"
-        />
-
-        <div className="flex gap-3">
-          <input
-            type="number"
-            placeholder="Длина (см)"
-            value={formData.length}
-            onChange={(e) =>
-              setFormData({ ...formData, length: e.target.value })
-            }
-            className="w-1/2 p-4 bg-stone-50 dark:bg-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none focus:ring-1 focus:ring-primary-300 transition-all"
-          />
-          <input
-            type="number"
-            placeholder="Ширина (см)"
-            value={formData.width}
-            onChange={(e) =>
-              setFormData({ ...formData, width: e.target.value })
-            }
-            className="w-1/2 p-4 bg-stone-50 dark:bg-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none focus:ring-1 focus:ring-primary-300 transition-all"
-          />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Contact Info */}
+        <div className="grid grid-cols-1 gap-4">
+           <div className="space-y-1">
+            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Ваше имя</label>
+            <input
+              required
+              placeholder="Как к вам обращаться?"
+              defaultValue={user?.displayName || ''}
+              name="userName"
+              className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+            />
+          </div>
+           <div className="space-y-1">
+            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Телефон для связи</label>
+            <input
+              required
+              type="tel"
+              placeholder="+7 (999) 000-00-00"
+              defaultValue={user?.phoneNumber || ''}
+              name="userPhone"
+              className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+            />
+          </div>
         </div>
 
-        <textarea
-          placeholder="Опишите детали (материал, цвет, стиль)..."
-          rows={3}
-          value={formData.details}
-          onChange={(e) =>
-            setFormData({ ...formData, details: e.target.value })
-          }
-          className="w-full p-4 bg-stone-50 dark:bg-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none focus:ring-1 focus:ring-primary-300 transition-all resize-none"
-        />
+        <div className="space-y-1">
+            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Что будем создавать?</label>
+            <input
+              required
+              placeholder="Например: Обеденный стол из дуба"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+            />
+        </div>
+
+        <div className="flex gap-3">
+          <div className="w-1/2 space-y-1">
+            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Длина (см)</label>
+            <input
+                type="number"
+                placeholder="0"
+                value={formData.length}
+                onChange={(e) =>
+                setFormData({ ...formData, length: e.target.value })
+                }
+                className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+            />
+          </div>
+          <div className="w-1/2 space-y-1">
+            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Ширина (см)</label>
+            <input
+                type="number"
+                placeholder="0"
+                value={formData.width}
+                onChange={(e) =>
+                setFormData({ ...formData, width: e.target.value })
+                }
+                className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+            <label className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Детали и пожелания</label>
+            <textarea
+              placeholder="Опишите желаемый цвет, материал, стиль и другие важные детали..."
+              rows={4}
+              value={formData.details}
+              onChange={(e) =>
+                setFormData({ ...formData, details: e.target.value })
+              }
+              className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all resize-none"
+            />
+        </div>
 
         <input
           ref={fileInputRef}
@@ -189,42 +231,44 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
         <button
           type="button"
           onClick={!file ? handleFileClick : undefined}
-          className={`w-full border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center transition-colors ${
+          className={`w-full border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all group ${
             file
-              ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
-              : 'border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 cursor-pointer'
+              ? 'border-green-500/50 bg-green-50/50 dark:bg-green-900/10'
+              : 'border-stone-200 dark:border-stone-700 hover:border-amber-500 dark:hover:border-amber-500 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer'
           }`}
         >
           {file ? (
             <div className="w-full flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
-                  <Check size={16} />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center shadow-sm">
+                  <Check size={20} />
                 </div>
-                <div>
-                  <span className="text-xs text-green-700 dark:text-green-400 font-medium block">
+                <div className="text-left">
+                  <span className="text-sm text-stone-800 dark:text-stone-200 font-medium block truncate max-w-[150px]">
                     {file.name}
                   </span>
-                  <span className="text-[10px] text-green-600 dark:text-green-500">
+                  <span className="text-xs text-stone-500 dark:text-stone-400">
                     {(file.size / 1024).toFixed(1)} KB
                   </span>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={removeFile}
-                className="p-1 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-full transition-colors"
+                onClick={(e) => { e.stopPropagation(); removeFile(); }}
+                className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-full transition-colors text-stone-400 hover:text-red-500"
               >
-                <X size={16} className="text-red-500" />
+                <X size={20} />
               </button>
             </div>
           ) : (
             <>
-              <Upload size={20} className="text-stone-400 mb-2" />
-              <span className="text-xs text-stone-400 dark:text-stone-500">
+              <div className="w-12 h-12 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <Upload size={24} className="text-stone-400 group-hover:text-amber-500 transition-colors" />
+              </div>
+              <span className="text-sm font-medium text-stone-600 dark:text-stone-300">
                 Прикрепить эскиз или фото
               </span>
-              <span className="text-[10px] text-stone-300 dark:text-stone-600 mt-1">
+              <span className="text-xs text-stone-400 dark:text-stone-500 mt-1">
                 JPG, PNG, PDF (макс 10MB)
               </span>
             </>
@@ -234,10 +278,10 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${orderData.fileName}` : '📎 Фа
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-stone-800 dark:bg-primary-600 text-white py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-700 dark:hover:bg-primary-500"
+          className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed hover:bg-amber-500 shadow-lg shadow-amber-600/20"
         >
           {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
-          {!isSubmitting && <ArrowRight size={16} />}
+          {!isSubmitting && <ArrowRight size={20} />}
         </button>
       </form>
     </div>
