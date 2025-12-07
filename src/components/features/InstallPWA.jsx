@@ -1,94 +1,97 @@
 import { Download, X, Share } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+/**
+ * Компонент установки PWA.
+ * - Если событие `beforeinstallprompt` сработало – показываем системный диалог.
+ * - Если событие не пришло (iOS, некоторые браузеры) – сразу показываем инструкцию.
+ * - Баннер отображается в безопасной зоне нижней части экрана.
+ */
 const InstallPWA = () => {
-  const [showPrompt, setShowPrompt] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
-  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const deferredPromptRef = useRef(null);
 
+  // Определяем платформу и проверяем, установлено ли приложение
   useEffect(() => {
-    // Определяем платформу
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     setIsIOS(iOS);
 
-    // Проверяем — уже установлено?
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    if (isStandalone) {
-      return; // Уже установлено, не показываем баннер
-    }
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      navigator.standalone === true;
+    if (isStandalone) return; // уже установлен – ничего не делаем
 
-    // Проверяем — пользователь отклонил ранее?
+    // Если пользователь отклонил баннер недавно, не показываем его
     const dismissed = localStorage.getItem('pwa-install-dismissed');
     if (dismissed) {
-      const dismissedTime = parseInt(dismissed, 10);
-      const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
-      if (daysSinceDismissed < 7) {
-        return; // Не показываем 7 дней
-      }
+      const days = (Date.now() - Number(dismissed)) / (1000 * 60 * 60 * 24);
+      if (days < 7) return;
     }
 
-    // Слушаем beforeinstallprompt (Android Chrome)
     const handleBeforeInstall = (e) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      deferredPromptRef.current = e;
+      setShowBanner(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
-    // Показываем баннер через 5 секунд
-    const timer = setTimeout(() => {
-      setShowPrompt(true);
+    // Фолбэк: если событие не пришло в течение 5 сек – показываем инструкцию сразу
+    const fallbackTimer = setTimeout(() => {
+      if (!deferredPromptRef.current) {
+        setShowInstructions(true);
+        setShowBanner(true);
+      }
     }, 5000);
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(fallbackTimer);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
     };
   }, []);
 
-  // Обработка клика на кнопку "Установить"
   const handleInstall = async () => {
+    // iOS – нет системного диалога
     if (isIOS) {
-      // iOS — показываем инструкции
-      setShowIOSInstructions(true);
+      setShowInstructions(true);
       return;
     }
 
-    if (deferredPrompt) {
-      // Android — пытаемся вызвать системный диалог
-      try {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        
-        if (outcome === 'accepted') {
-          setShowPrompt(false);
-        }
-        setDeferredPrompt(null);
-      } catch (error) {
-        console.error('Ошибка установки:', error);
-        // Если ошибка — показываем инструкцию
-        setShowIOSInstructions(true);
+    const prompt = deferredPromptRef.current;
+    if (!prompt) {
+      setShowInstructions(true);
+      return;
+    }
+
+    try {
+      prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowBanner(false);
       }
-    } else {
-      // Событие не сработало — показываем инструкцию вручную
-      setShowIOSInstructions(true);
+    } catch (err) {
+      console.error('PWA install error:', err);
+      setShowInstructions(true);
+    } finally {
+      deferredPromptRef.current = null;
     }
   };
 
   const handleDismiss = () => {
-    setShowPrompt(false);
-    setShowIOSInstructions(false);
+    setShowBanner(false);
+    setShowInstructions(false);
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
 
-  if (!showPrompt) return null;
+  if (!showBanner) return null;
 
   return (
     <AnimatePresence>
-      {showIOSInstructions ? (
-        // Модал с инструкциями (работает для всех платформ)
+      {showInstructions ? (
+        // Модальное окно с инструкциями (универсальное)
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -121,72 +124,51 @@ const InstallPWA = () => {
                 {isIOS ? (
                   // iOS инструкции
                   <>
-                    <p className="leading-relaxed">
-                      Чтобы добавить Arbarea на главный экран:
-                    </p>
-                    
+                    <p>Чтобы добавить Arbarea на главный экран:</p>
                     <ol className="space-y-3">
                       <li className="flex items-start gap-3">
                         <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                        <span className="leading-relaxed">
-                          Нажмите кнопку <Share className="inline w-4 h-4 text-blue-400 mx-1" /> <span className="text-blue-400 font-medium">Поделиться</span> внизу экрана Safari
-                        </span>
+                        <span>Нажмите кнопку <Share className="inline w-4 h-4 text-blue-400 mx-1" /> <span className="text-blue-400 font-medium">Поделиться</span> внизу экрана Safari</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                        <span className="leading-relaxed">
-                          Прокрутите меню и выберите <span className="font-bold text-white">"На экран Домой"</span>
-                        </span>
+                        <span>Прокрутите меню и выберите <span className="font-bold text-white">"На экран Домой"</span></span>
                       </li>
                       <li className="flex items-start gap-3">
                         <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                        <span className="leading-relaxed">
-                          Нажмите <span className="font-bold text-white">"Добавить"</span> в правом верхнем углу
-                        </span>
+                        <span>Нажмите <span className="font-bold text-white">"Добавить"</span></span>
                       </li>
                     </ol>
                   </>
                 ) : (
                   // Android инструкции
                   <>
-                    <p className="leading-relaxed">
-                      Чтобы установить Arbarea:
-                    </p>
-                    
+                    <p>Чтобы установить Arbarea:</p>
                     <ol className="space-y-3">
                       <li className="flex items-start gap-3">
                         <span className="flex-shrink-0 w-6 h-6 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                        <span className="leading-relaxed">
-                          Нажмите <span className="font-bold text-white">⋮</span> (три точки) в правом верхнем углу браузера
-                        </span>
+                        <span>Нажмите <span className="font-bold text-white">⋮</span> (три точки) в правом верхнем углу браузера</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <span className="flex-shrink-0 w-6 h-6 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                        <span className="leading-relaxed">
-                          Выберите <span className="font-bold text-white">"Установить приложение"</span> или <span className="font-bold text-white">"Добавить на главный экран"</span>
-                        </span>
+                        <span>Выберите <span className="font-bold text-white">"Установить приложение"</span> или <span className="font-bold text-white">"Добавить на главный экран"</span></span>
                       </li>
                       <li className="flex items-start gap-3">
                         <span className="flex-shrink-0 w-6 h-6 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                        <span className="leading-relaxed">
-                          Нажмите <span className="font-bold text-white">"Установить"</span>
-                        </span>
+                        <span>Нажмите <span className="font-bold text-white">"Установить"</span></span>
                       </li>
                     </ol>
                   </>
                 )}
-
                 <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                  <p className="text-amber-400 text-xs leading-relaxed">
-                    ✨ После установки приложение будет работать быстрее и даже без интернета!
-                  </p>
+                  <p className="text-amber-400 text-xs leading-relaxed">✨ После установки приложение будет работать быстрее и даже без интернета!</p>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="w-full mt-6 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-500 transition-all"
+                className="w-full mt-6 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-5 transition-all"
               >
                 Понятно
               </button>
@@ -194,58 +176,37 @@ const InstallPWA = () => {
           </motion.div>
         </motion.div>
       ) : (
-        // Баннер установки (внизу экрана)
+        // Баннер внизу экрана
         <motion.div
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          className="fixed bottom-24 left-4 right-4 z-[150] max-w-md mx-auto"
+          className="fixed bottom-4 left-4 right-4 z-[150] max-w-md mx-auto safe-area-inset-bottom"
         >
-          <div className="bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
-            {/* Декоративный градиент */}
+          <div className="bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden relative">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent pointer-events-none" />
-            
-            <div className="relative p-4">
-              <button
-                type="button"
-                onClick={handleDismiss}
-                className="absolute top-2 right-2 p-1.5 hover:bg-white/5 rounded-full transition-colors"
-              >
-                <X className="text-stone-400" size={16} />
-              </button>
-
-              <div className="flex items-start gap-4 pr-6">
-                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-amber-600 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg">
-                  <img 
-                    src="/icons/icon-96x96.png" 
-                    alt="Arbarea" 
-                    className="w-10 h-10 rounded-lg"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      const fallback = e.currentTarget.nextElementSibling;
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
-                  />
-                  <span className="text-white font-serif font-bold text-2xl hidden items-center justify-center">A</span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-serif font-bold text-white text-base mb-1">
-                    Установить Arbarea
-                  </h4>
-                  <p className="text-stone-400 text-xs leading-relaxed mb-3">
-                    Добавьте приложение на главный экран для быстрого доступа
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={handleInstall}
-                    className="flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-amber-500 active:scale-95 transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]"
-                  >
-                    <Download size={16} />
-                    {isIOS ? 'Как установить' : 'Установить'}
-                  </button>
-                </div>
+            <button
+              type="button"
+              onClick={handleDismiss}
+              className="absolute top-2 right-2 p-1.5 hover:bg-white/5 rounded-full transition-colors"
+            >
+              <X className="text-stone-400" size={16} />
+            </button>
+            <div className="p-4 flex items-start gap-4">
+              <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-amber-600 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <img src="/icons/icon-96x96.png" alt="Arbarea" className="w-10 h-10 rounded-lg" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-serif font-bold text-white text-base mb-1">Установить Arbarea</h4>
+                <p className="text-stone-400 text-xs mb-3">Добавьте приложение на главный экран для быстрого доступа</p>
+                <button
+                  type="button"
+                  onClick={handleInstall}
+                  className="flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-amber-500 active:scale-95 transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]"
+                >
+                  <Download size={16} />
+                  {isIOS ? 'Как установить' : 'Установить'}
+                </button>
               </div>
             </div>
           </div>
