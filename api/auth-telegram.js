@@ -1,7 +1,11 @@
 import crypto from 'crypto';
 import admin from './_firebase-admin.js';
+import { applyCors } from './_cors.js';
 
 export default async function handler(req, res) {
+  // Apply secure CORS
+  if (applyCors(req, res)) return;
+
   console.log('🔵 Telegram auth API called');
   
   if (req.method !== 'POST') {

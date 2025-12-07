@@ -1,4 +1,6 @@
 // AI Ассистент на базе OpenAI GPT
+import { applyCors } from './_cors.js';
+
 const SYSTEM_PROMPT = `Ты — Интеллектуальный Консьерж премиальной столярной студии "Arbarea".
 Твоя миссия: Помогать клиентам выбирать предметы интерьера из натурального дерева, транслируя философию "Тактильной эстетики".
 
@@ -32,13 +34,12 @@ const SYSTEM_PROMPT = `Ты — Интеллектуальный Консьер�
 4. Не придумывай товары или цены, которых нет в описании выше`;
 
 export default async function handler(req, res) {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // Apply secure CORS
+  if (applyCors(req, res)) return; // Handle preflight
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   try {
     const { message, history } = req.body;

@@ -1,23 +1,10 @@
 import crypto from 'node:crypto';
 import fetch from 'node-fetch';
+import { applyCors } from './_cors.js';
 
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'GET,OPTIONS,PATCH,DELETE,POST,PUT',
-  );
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
-  );
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+  // Apply secure CORS
+  if (applyCors(req, res)) return; // Handle preflight
 
   if (req.method !== 'POST') {
     return res
@@ -139,34 +126,19 @@ export default async function handler(req, res) {
         });
       }
 
-      // Apply 10% discount for authorized users (if not a donation)
-      // Донаты не скидываются
-      if (req.body.isAuth && !hasDonation) {
-        const discount = Math.floor(calculatedAmount * 0.1);
-        calculatedAmount -= discount;
-
-        // Add discount info to receipt (optional, but good for transparency)
-        // Note: Tinkoff receipt structure is strict, so we just adjust the total amount
-        // Or we could add a discount line item with negative price, but that's complex with taxes.
-        // Simpler: just reduce the total amount passed to Init.
-        // However, Receipt items sum MUST match Total Amount.
-        // So we need to adjust receipt items prices proportionally or add a discount.
-        // Tinkoff Reciept API is tricky with discounts.
-        // Let's try to adjust the last item or distribute discount?
-        // EASIEST WAY: Recalculate receipt items with discount.
-
-        // Re-calculating receipt items with discount
-        let currentTotal = 0;
-        receiptItems.forEach((item, _index) => {
-          const itemPrice = item.Price;
-          const discountedPrice = Math.floor(itemPrice * 0.9); // 10% off
-          item.Price = discountedPrice;
-          item.Amount = discountedPrice * item.Quantity;
-          currentTotal += item.Amount;
+      // Add shipping cost for non-authorized users (if not a donation)
+      const SHIPPING_COST = 500;
+      if (!req.body.isAuth && !hasDonation) {
+        calculatedAmount += SHIPPING_COST;
+        
+        // Add shipping as a separate receipt item
+        receiptItems.push({
+          Name: 'Доставка',
+          Price: SHIPPING_COST * 100, // Копейки
+          Quantity: 1,
+          Amount: SHIPPING_COST * 100,
+          Tax: 'none',
         });
-
-        // Adjust calculatedAmount to match the sum of discounted items exactly to avoid rounding errors
-        calculatedAmount = currentTotal / 100;
       }
     } else {
       // Fallback: если items не передан, возвращаем ошибку

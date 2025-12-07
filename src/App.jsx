@@ -1,7 +1,9 @@
 import { lazy, Suspense, useState } from 'react';
 import BottomNav from './components/layout/BottomNav';
 import Header from './components/layout/Header';
+import ErrorBoundary from './components/ui/ErrorBoundary';
 import LoadingSpinner from './components/ui/LoadingSpinner';
+import InstallPWA from './components/features/InstallPWA';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider, useCart } from './context/CartContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -14,6 +16,7 @@ const Gallery = lazy(() => import('./pages/Gallery'));
 const AIChat = lazy(() => import('./pages/AIChat'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Profile = lazy(() => import('./pages/Profile'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const LegalInfo = lazy(() => import('./pages/LegalInfo'));
 
@@ -76,6 +79,8 @@ const AppContent = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/legal" element={<LegalInfo />} />
               <Route path="/product/:id" element={<ProductDetails />} />
+              {/* 404 Fallback Route */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>
         </Suspense>
@@ -94,23 +99,27 @@ const AppContent = () => {
         )}
       </Suspense>
 
+      <InstallPWA />
       <BottomNav cartCount={cartItems.length} />
     </div>
   );
 };
 
 const App = () => (
-  <ThemeProvider>
-    <ToastProvider>
-      <AuthProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <AppContent />
-          </WishlistProvider>
-        </CartProvider>
-      </AuthProvider>
-    </ToastProvider>
-  </ThemeProvider>
+  <ErrorBoundary>
+    <ThemeProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <AppContent />
+            </WishlistProvider>
+          </CartProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </ThemeProvider>
+  </ErrorBoundary>
 );
 
 export default App;
+

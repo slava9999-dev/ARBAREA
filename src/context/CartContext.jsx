@@ -92,16 +92,17 @@ export const CartProvider = ({ children }) => {
     0,
   );
 
-  // Calculate Subtotal, Discount, and Total
+  // Calculate Subtotal, Shipping, and Total
   const { user } = useAuth();
   const subtotal = state.items.reduce(
     (total, item) => total + item.price * (item.quantity || 1),
     0,
   );
 
-  // 10% discount for authorized users
-  const discount = user ? Math.floor(subtotal * 0.1) : 0;
-  const cartTotal = subtotal - discount;
+  // Free shipping for authorized users, 500₽ for guests
+  const SHIPPING_COST = 500;
+  const shipping = user ? 0 : SHIPPING_COST;
+  const cartTotal = subtotal + shipping;
 
   const addToCart = (product) => {
     // Validation
@@ -133,8 +134,8 @@ export const CartProvider = ({ children }) => {
     cartItems: state.items,
     totalItems,
     subtotal, // Raw total
-    discount, // Calculated discount
-    cartTotal, // Final total to pay
+    shipping, // Shipping cost (0 for registered, 500 for guests)
+    cartTotal, // Final total to pay (subtotal + shipping)
     addToCart,
     removeFromCart,
     updateQuantity,

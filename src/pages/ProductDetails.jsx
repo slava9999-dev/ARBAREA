@@ -177,7 +177,7 @@ const ProductDetails = () => {
               {product.variants?.colors && (
                 <div>
                   <span className="text-xs font-bold uppercase text-stone-400 mb-3 block">
-                    Цвет
+                    Выбор цвета трубки
                   </span>
                   <div className="flex gap-3">
                     {product.variants.colors.map((color) => (

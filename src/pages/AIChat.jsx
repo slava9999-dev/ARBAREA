@@ -40,7 +40,7 @@ const AIChat = () => {
   };
 
   return (
-    <div className="pt-20 pb-24 px-4 h-screen flex flex-col bg-stone-50">
+    <div className="pt-20 pb-24 px-4 h-screen flex flex-col bg-[#1c1917]">
       <div className="flex-1 overflow-y-auto space-y-4 pb-32 custom-scrollbar">
         {messages.map((m, i) => (
           <div
@@ -49,12 +49,12 @@ const AIChat = () => {
             className={`flex gap-3 ${m.sender === 'user' ? 'flex-row-reverse' : ''}`}
           >
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${m.sender === 'user' ? 'bg-stone-800 text-white' : 'bg-white border border-stone-200 text-stone-600'}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${m.sender === 'user' ? 'bg-amber-600 text-white' : 'bg-stone-800 border border-white/10 text-amber-500'}`}
             >
               {m.sender === 'user' ? <User size={16} /> : <Bot size={16} />}
             </div>
             <div
-              className={`p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed shadow-sm ${m.sender === 'user' ? 'bg-stone-800 text-white rounded-tr-none' : 'bg-white border border-stone-100 text-stone-700 rounded-tl-none'}`}
+              className={`p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed ${m.sender === 'user' ? 'bg-amber-600 text-white rounded-tr-none shadow-[0_0_15px_rgba(217,119,6,0.2)]' : 'bg-stone-800/80 border border-white/5 text-stone-200 rounded-tl-none backdrop-blur-sm'}`}
             >
               {m.text}
             </div>
@@ -62,25 +62,25 @@ const AIChat = () => {
         ))}
         {isLoading && (
           <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-white border border-stone-200 flex items-center justify-center text-stone-600">
+            <div className="w-8 h-8 rounded-full bg-stone-800 border border-white/10 flex items-center justify-center text-amber-500">
               <Bot size={16} />
             </div>
-            <div className="bg-white border border-stone-100 p-4 rounded-2xl rounded-tl-none flex items-center gap-2 text-stone-400 text-sm">
-              <Loader2 size={16} className="animate-spin" /> Печатает...
+            <div className="bg-stone-800/80 border border-white/5 p-4 rounded-2xl rounded-tl-none flex items-center gap-2 text-stone-400 text-sm backdrop-blur-sm">
+              <Loader2 size={16} className="animate-spin text-amber-500" /> Печатает...
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-stone-50 via-stone-50 to-transparent z-10">
+      <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-[#1c1917] via-[#1c1917] to-transparent z-10">
         <div className="max-w-md mx-auto">
-          <div className="flex bg-white p-2 rounded-2xl border border-stone-200 shadow-lg">
+          <div className="flex bg-stone-800/90 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-xl">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              className="flex-1 px-4 outline-none text-stone-800 placeholder:text-stone-400 bg-transparent"
+              className="flex-1 px-4 outline-none text-white placeholder:text-stone-500 bg-transparent"
               placeholder="Спросите про мебель..."
               disabled={isLoading}
             />
@@ -88,7 +88,7 @@ const AIChat = () => {
               type="button"
               onClick={handleSend}
               disabled={isLoading || !input.trim()}
-              className="p-3 bg-stone-800 text-white rounded-xl hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-3 bg-amber-600 text-white rounded-xl hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-[0_0_15px_rgba(217,119,6,0.3)]"
             >
               <Send size={18} />
             </button>

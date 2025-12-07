@@ -9,7 +9,7 @@ import { initPayment } from '../../lib/tinkoff';
 import DiscountBanner from './DiscountBanner';
 
 const CheckoutModal = ({ onClose }) => {
-  const { cartItems, cartTotal, subtotal, discount } = useCart();
+  const { cartItems, cartTotal, subtotal, shipping } = useCart();
   const { user } = useAuth();
   const [step, setStep] = useState('form'); // form, processing, success
   const [formData, setFormData] = useState({
@@ -38,7 +38,7 @@ const CheckoutModal = ({ onClose }) => {
           selectedColor: item.selectedColor || null,
         })),
         subtotal,
-        discount,
+        shipping,
         total: cartTotal,
         status: 'pending_payment',
         paymentUrl,
@@ -163,15 +163,17 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
               ))}
               <div className="border-t border-white/5 pt-2 mt-2 space-y-1">
                 <div className="flex justify-between text-stone-400 text-sm">
-                  <span>Сумма</span>
+                  <span>Товары</span>
                   <span>{(subtotal || 0).toLocaleString()} ₽</span>
                 </div>
-                {discount > 0 && (
-                  <div className="flex justify-between text-green-400 text-sm">
-                    <span>Скидка (10%)</span>
-                    <span>-{(discount || 0).toLocaleString()} ₽</span>
-                  </div>
-                )}
+                <div className="flex justify-between text-sm">
+                  <span className={shipping === 0 ? 'text-emerald-400' : 'text-stone-400'}>
+                    Доставка
+                  </span>
+                  <span className={shipping === 0 ? 'text-emerald-400 font-medium' : 'text-stone-400'}>
+                    {shipping === 0 ? 'Бесплатно' : `${shipping.toLocaleString()} ₽`}
+                  </span>
+                </div>
                 <div className="flex justify-between font-bold text-lg text-white pt-1">
                   <span>Итого</span>
                   <span>{(cartTotal || 0).toLocaleString()} ₽</span>
