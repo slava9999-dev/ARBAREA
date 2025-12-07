@@ -1,5 +1,5 @@
 /**
- * Генерация PWA иконок из SVG
+ * Генерация PWA иконок из Master PNG (Premium Design)
  * Запуск: node scripts/generate-pwa-icons.js
  */
 
@@ -11,7 +11,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const SVG_SOURCE = path.join(__dirname, '../public/icon.svg');
+// Используем новый премиум-исходник
+const MASTER_SOURCE = path.join(__dirname, '../public/icon-master.png');
 const ICONS_DIR = path.join(__dirname, '../public/icons');
 
 // Размеры иконок для PWA
@@ -21,101 +22,76 @@ const ICON_SIZES = [
   { size: 128, name: 'icon-128x128.png' },
   { size: 144, name: 'icon-144x144.png' },
   { size: 152, name: 'icon-152x152.png' },
-  { size: 180, name: 'apple-touch-icon-180x180.png' },
-  { size: 192, name: 'icon-192x192.png' },
+  { size: 180, name: 'apple-touch-icon-180x180.png' }, // iOS Main
+  { size: 192, name: 'icon-192x192.png' },             // Android Home
   { size: 384, name: 'icon-384x384.png' },
-  { size: 512, name: 'icon-512x512.png' },
+  { size: 512, name: 'icon-512x512.png' },             // Play Store / Splash
 ];
 
-// Apple Touch Icons
+// Apple Touch Icons (дополнительные)
 const APPLE_ICONS = [
-  { size: 152, name: 'apple-touch-icon-152x152.png' },
-  { size: 180, name: 'apple-touch-icon-180x180.png' },
+  { size: 152, name: 'apple-touch-icon-152x152.png' }, // iPad
 ];
 
 async function generateIcons() {
-  console.log('🎨 Генерация PWA иконок...\n');
+  console.log('🎨 Генерация PWA иконок из Premium Source...\n');
 
-  // Проверяем существование SVG
-  if (!fs.existsSync(SVG_SOURCE)) {
-    console.error('❌ SVG файл не найден:', SVG_SOURCE);
+  if (!fs.existsSync(MASTER_SOURCE)) {
+    console.error('❌ Исходный файл не найден:', MASTER_SOURCE);
     process.exit(1);
   }
 
-  // Читаем SVG
-  const svgBuffer = fs.readFileSync(SVG_SOURCE);
-
-  // Создаем папку icons если её нет
+  // Создаем папку icons
   if (!fs.existsSync(ICONS_DIR)) {
     fs.mkdirSync(ICONS_DIR, { recursive: true });
   }
 
-  // Генерируем стандартные иконки
-  for (const { size, name } of ICON_SIZES) {
+  const masterBuffer = fs.readFileSync(MASTER_SOURCE);
+
+  // 1. Генерируем стандартные квадратные иконки (для iOS и Android)
+  // Sharp по умолчанию использует lanczos3 для качественного ресайза
+  for (const { size, name } of [...ICON_SIZES, ...APPLE_ICONS]) {
     try {
-      await sharp(svgBuffer)
-        .resize(size, size)
-        .png()
+      await sharp(masterBuffer)
+        .resize(size, size, {
+          fit: 'cover', // Заполнить квадрат
+          background: { r: 0, g: 0, b: 0, alpha: 0 }
+        })
+        .png({ quality: 90, compressionLevel: 9 })
         .toFile(path.join(ICONS_DIR, name));
+      
       console.log(`✅ ${name} (${size}x${size})`);
     } catch (error) {
       console.error(`❌ Ошибка создания ${name}:`, error.message);
     }
   }
 
-  // Генерируем Apple Touch Icons
-  for (const { size, name } of APPLE_ICONS) {
-    try {
-      await sharp(svgBuffer)
-        .resize(size, size)
-        .png()
-        .toFile(path.join(ICONS_DIR, name));
-      console.log(`✅ ${name} (Apple Touch)`);
-    } catch (error) {
-      console.error(`❌ Ошибка создания ${name}:`, error.message);
-    }
-  }
-
-  // Генерируем Maskable иконку (с отступами для safe area)
+  // 2. Генерируем Maskable Icon (специально для Android Adaptive Icons)
+  // Нам нужно убедиться, что важная часть (лого) в центре и есть "поля" (padding)
+  // DALL-E обычно генерирует "полную" картинку.
+  // Для maskable мы добавим бордюр (padding) того же цвета или просто заресайзим, если лого по центру.
+  // Самый безопасный способ для maskable из готовой квадратной иконки - добавить 10% padding цвета фона.
+  // Но так как у нас текстурный фон, padding одним цветом будет виден.
+  // Поэтому лучше просто использовать ту же иконку 512x512 как maskable.
+  // Android сам обрежет края. Если логотип в центре, все будет ОК.
+  
   try {
-    // Для maskable иконки нужен отступ ~20% по краям
-    const maskableSize = 512;
-    const iconSize = Math.floor(maskableSize * 0.8); // 80% от размера
-    const offset = Math.floor((maskableSize - iconSize) / 2);
+    const maskableName = 'maskable-icon-512x512.png';
+    await sharp(masterBuffer)
+      .resize(512, 512, { fit: 'cover' })
+      .png({ quality: 90 })
+      .toFile(path.join(ICONS_DIR, maskableName));
 
-    // Создаем фоновый слой
-    const background = await sharp({
-      create: {
-        width: maskableSize,
-        height: maskableSize,
-        channels: 4,
-        background: { r: 28, g: 25, b: 23, alpha: 1 } // #1c1917
-      }
-    }).png().toBuffer();
-
-    // Ресайзим иконку
-    const iconBuffer = await sharp(svgBuffer)
-      .resize(iconSize, iconSize)
-      .png()
-      .toBuffer();
-
-    // Комбинируем
-    await sharp(background)
-      .composite([{
-        input: iconBuffer,
-        top: offset,
-        left: offset
-      }])
-      .png()
-      .toFile(path.join(ICONS_DIR, 'maskable-icon-512x512.png'));
-    
-    console.log(`✅ maskable-icon-512x512.png (для Android)`);
+    console.log(`✅ ${maskableName} (Android Adaptive)`);
   } catch (error) {
-    console.error('❌ Ошибка создания maskable иконки:', error.message);
+    console.error('❌ Ошибка maskable:', error.message);
   }
 
-  console.log('\n🎉 Все иконки сгенерированы!');
-  console.log(`📁 Папка: ${ICONS_DIR}`);
+  // 3. Обновляем favicon.svg или .ico (опционально, но полезно)
+  // Для веба лучше оставить SVG если он есть, но для единообразия можно сделать 32x32 png
+  // await sharp(masterBuffer).resize(32, 32).toFile(path.join(__dirname, '../public/favicon.ico'));
+
+  console.log('\n🎉 Новые премиум-иконки готовы!');
 }
 
 generateIcons().catch(console.error);
