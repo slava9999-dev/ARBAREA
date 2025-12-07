@@ -24,6 +24,7 @@ const LegalInfo = lazy(() => import('./pages/LegalInfo'));
 const BuyModal = lazy(() => import('./components/features/BuyModal'));
 const CheckoutModal = lazy(() => import('./components/features/CheckoutModal'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
+const DebugPWA = lazy(() => import('./pages/DebugPWA'));
 
 import { AnimatePresence } from 'framer-motion';
 import { Route, Routes, useLocation } from 'react-router-dom';
@@ -79,6 +80,7 @@ const AppContent = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/legal" element={<LegalInfo />} />
               <Route path="/product/:id" element={<ProductDetails />} />
+              <Route path="/debug" element={<DebugPWA />} />
               {/* 404 Fallback Route */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -13,6 +13,12 @@ export default defineConfig({
             devOptions: {
                 enabled: true
             },
+            workbox: {
+                globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+                cleanupOutdatedCaches: true,
+                clientsClaim: true,
+                skipWaiting: true
+            },
             manifest: {
                 id: '/',
                 name: 'Arbarea — Столярная мастерская',
