@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 /**
  * Компонент установки PWA.
- * - Если событие `beforeinstallprompt` сработало – показываем системный диалог.
- * - Если событие не пришло (iOS, некоторые браузеры) – сразу показываем инструкцию.
- * - Баннер отображается в безопасной зоне нижней части экрана.
+ * Гарантирует обратную связь пользователю:
+ * 1. Пытается вызвать нативный промпт.
+ * 2. Если браузер или ОС блокирует (или уже отклонено) - показывает ручную инструкцию.
  */
 const InstallPWA = () => {
   const [showBanner, setShowBanner] = useState(false);
@@ -14,38 +14,37 @@ const InstallPWA = () => {
   const [isIOS, setIsIOS] = useState(false);
   const deferredPromptRef = useRef(null);
 
-  // Определяем платформу и проверяем, установлено ли приложение
   useEffect(() => {
+    // 1. Платформа
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     setIsIOS(iOS);
 
+    // 2. Уже установлено?
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       navigator.standalone === true;
-    if (isStandalone) return; // уже установлен – ничего не делаем
-
-    // Если пользователь отклонил баннер недавно, не показываем его
-    const dismissed = localStorage.getItem('pwa-install-dismissed');
-    if (dismissed) {
-      const days = (Date.now() - Number(dismissed)) / (1000 * 60 * 60 * 24);
-      if (days < 7) return;
+    
+    if (isStandalone) {
+      console.log('App is already installed');
+      return; 
     }
 
+    // 3. Слушаем событие браузера
     const handleBeforeInstall = (e) => {
       e.preventDefault();
       deferredPromptRef.current = e;
-      setShowBanner(true);
+      setShowBanner(true); // Показываем баннер, так как установка возможна
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
-    // Фолбэк: если событие не пришло в течение 5 сек – показываем инструкцию сразу
+    // 4. Таймер для случаев, когда событие не приходит (iOS, Desktop Manual, Samsung Internet иногда)
+    // Показываем баннер все равно, чтобы кнопка была доступна. При нажатии разберемся.
     const fallbackTimer = setTimeout(() => {
       if (!deferredPromptRef.current) {
-        setShowInstructions(true);
         setShowBanner(true);
       }
-    }, 5000);
+    }, 4000);
 
     return () => {
       clearTimeout(fallbackTimer);
@@ -54,36 +53,41 @@ const InstallPWA = () => {
   }, []);
 
   const handleInstall = async () => {
-    // iOS – нет системного диалога
+    // A. iOS - всегда инструкция
     if (isIOS) {
       setShowInstructions(true);
       return;
     }
 
+    // B. Android - пробуем нативно
     const prompt = deferredPromptRef.current;
-    if (!prompt) {
-      setShowInstructions(true);
-      return;
-    }
-
-    try {
-      prompt.prompt();
-      const { outcome } = await prompt.userChoice;
-      if (outcome === 'accepted') {
-        setShowBanner(false);
+    if (prompt) {
+      try {
+        await prompt.prompt();
+        const { outcome } = await prompt.userChoice;
+        
+        if (outcome === 'accepted') {
+          setShowBanner(false);
+        } else {
+          console.log('User dismissed install prompt');
+        }
+      } catch (err) {
+        console.error('Install failed:', err);
+        // Если нативный вызов упал (редко, но бывает) -> показываем инструкцию
+        setShowInstructions(true);
+      } finally {
+        deferredPromptRef.current = null;
       }
-    } catch (err) {
-      console.error('PWA install error:', err);
+    } else {
+      // C. Android без промпта (событие не пришло или заблокировано) -> Инструкция
       setShowInstructions(true);
-    } finally {
-      deferredPromptRef.current = null;
     }
   };
 
   const handleDismiss = () => {
     setShowBanner(false);
     setShowInstructions(false);
-    localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+    // Не сохраняем отказ, чтобы при рефреше можно было попробовать снова (удобнее для юзера)
   };
 
   if (!showBanner) return null;
@@ -91,7 +95,6 @@ const InstallPWA = () => {
   return (
     <AnimatePresence>
       {showInstructions ? (
-        // Модальное окно с инструкциями (универсальное)
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -122,53 +125,30 @@ const InstallPWA = () => {
 
               <div className="space-y-4 text-stone-300 text-sm">
                 {isIOS ? (
-                  // iOS инструкции
                   <>
-                    <p>Чтобы добавить Arbarea на главный экран:</p>
+                    <p>Нажмите "Поделиться" и выберите "На экран Домой":</p>
                     <ol className="space-y-3">
-                      <li className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                        <span>Нажмите кнопку <Share className="inline w-4 h-4 text-blue-400 mx-1" /> <span className="text-blue-400 font-medium">Поделиться</span> внизу экрана Safari</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                        <span>Прокрутите меню и выберите <span className="font-bold text-white">"На экран Домой"</span></span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                        <span>Нажмите <span className="font-bold text-white">"Добавить"</span></span>
-                      </li>
+                      <li className="flex items-center gap-3"><Share size={16} className="text-blue-400" /> 1. Нажмите "Поделиться"</li>
+                      <li className="flex items-center gap-3"><span className="font-bold text-white">+</span> 2. "На экран Домой"</li>
+                      <li className="flex items-center gap-3"><span className="font-bold text-white">Add</span> 3. Нажмите "Добавить"</li>
                     </ol>
                   </>
                 ) : (
-                  // Android инструкции
                   <>
-                    <p>Чтобы установить Arbarea:</p>
+                    <p>Добавьте через меню браузера:</p>
                     <ol className="space-y-3">
-                      <li className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                        <span>Нажмите <span className="font-bold text-white">⋮</span> (три точки) в правом верхнем углу браузера</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                        <span>Выберите <span className="font-bold text-white">"Установить приложение"</span> или <span className="font-bold text-white">"Добавить на главный экран"</span></span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                        <span>Нажмите <span className="font-bold text-white">"Установить"</span></span>
-                      </li>
+                      <li className="flex items-center gap-3"><span className="font-bold text-white">⋮</span> 1. Нажмите меню (три точки)</li>
+                      <li className="flex items-center gap-3"><Download size={16} className="text-green-400" /> 2. "Установить приложение"</li>
+                      <li className="flex items-center gap-3"><span className="text-stone-400 text-xs">(Или "Добавить на гл. экран")</span></li>
                     </ol>
                   </>
                 )}
-                <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                  <p className="text-amber-400 text-xs leading-relaxed">✨ После установки приложение будет работать быстрее и даже без интернета!</p>
-                </div>
               </div>
 
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="w-full mt-6 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-5 transition-all"
+                className="w-full mt-6 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-500 transition-all"
               >
                 Понятно
               </button>
@@ -176,7 +156,6 @@ const InstallPWA = () => {
           </motion.div>
         </motion.div>
       ) : (
-        // Баннер внизу экрана
         <motion.div
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -184,28 +163,27 @@ const InstallPWA = () => {
           className="fixed bottom-4 left-4 right-4 z-[150] max-w-md mx-auto safe-area-inset-bottom"
         >
           <div className="bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent pointer-events-none" />
             <button
               type="button"
               onClick={handleDismiss}
-              className="absolute top-2 right-2 p-1.5 hover:bg-white/5 rounded-full transition-colors"
+              className="absolute top-2 right-2 p-1.5 hover:bg-white/5 rounded-full transition-colors z-10"
             >
               <X className="text-stone-400" size={16} />
             </button>
-            <div className="p-4 flex items-start gap-4">
-              <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-amber-600 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <img src="/icons/icon-96x96.png" alt="Arbarea" className="w-10 h-10 rounded-lg" />
+            <div className="p-4 flex items-center gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-amber-600 rounded-xl flex items-center justify-center shadow-lg">
+                 {/* Fallback Icon */}
+                 <span className="text-white font-bold text-xl">A</span> 
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-serif font-bold text-white text-base mb-1">Установить Arbarea</h4>
-                <p className="text-stone-400 text-xs mb-3">Добавьте приложение на главный экран для быстрого доступа</p>
+                <h4 className="font-bold text-white text-sm mb-0.5">Установить приложение</h4>
+                <p className="text-stone-400 text-[10px] leading-tight mb-2">Работает быстрее и оффлайн</p>
                 <button
                   type="button"
                   onClick={handleInstall}
-                  className="flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-amber-500 active:scale-95 transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]"
+                  className="bg-white text-stone-900 px-3 py-1.5 rounded-lg font-bold text-xs hover:bg-stone-200 transition-colors shadow-sm"
                 >
-                  <Download size={16} />
-                  {isIOS ? 'Как установить' : 'Установить'}
+                  Установить
                 </button>
               </div>
             </div>
