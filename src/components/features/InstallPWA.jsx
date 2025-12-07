@@ -40,7 +40,20 @@ const InstallPWA = () => {
       }, 10000);
     };
 
+    // Listen for custom event from HeroBanner button
+    const customHandler = () => {
+      if (deferredPrompt) {
+        handleInstall();
+      } else {
+        setShowPrompt(true);
+        if (iOS) {
+          setShowIOSInstructions(true);
+        }
+      }
+    };
+
     window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('show-pwa-install', customHandler);
 
     // For iOS, show instructions after 10 seconds
     if (iOS) {
@@ -51,8 +64,9 @@ const InstallPWA = () => {
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('show-pwa-install', customHandler);
     };
-  }, []);
+  }, [deferredPrompt]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) {

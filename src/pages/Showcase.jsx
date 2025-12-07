@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import { useState } from 'react';
 import FlipProductCard from '../components/features/FlipProductCard';
+import HeroBanner from '../components/features/HeroBanner';
 import SocialFooter from '../components/layout/SocialFooter';
 import { SearchOverlay } from '../components/SearchOverlay';
 import { PRODUCTS } from '../data/products';
@@ -133,6 +134,9 @@ const Showcase = ({ onBuy, onOpenModal }) => {
           {/* Декоративная линия градиента снизу панели */}
           <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
         </div>
+
+        {/* Hero Banners */}
+        <HeroBanner />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filtered.map((p) => (
