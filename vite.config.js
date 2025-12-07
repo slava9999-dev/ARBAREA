@@ -8,63 +8,71 @@ export default defineConfig({
         react(),
         VitePWA({
             registerType: 'autoUpdate',
+            injectRegister: 'auto',
+            manifestFilename: 'manifest.json', // Для совместимости с Android
             strategies: 'generateSW',
             includeAssets: ['favicon.svg', 'icon.svg', 'icons/*.png'],
-            devOptions: {
-                enabled: true
-            },
             workbox: {
                 globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
                 cleanupOutdatedCaches: true,
                 clientsClaim: true,
-                skipWaiting: true
+                skipWaiting: true,
+                runtimeCaching: [
+                    {
+                        urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'google-fonts-cache',
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 365
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    },
+                    {
+                        urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'gstatic-fonts-cache',
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 365
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    }
+                ]
             },
             manifest: {
-                id: '/',
-                name: 'Arbarea — Столярная мастерская',
+                name: 'Arbarea',
                 short_name: 'Arbarea',
-                description: 'Эксклюзивная мебель и декор из массива дерева ручной работы.',
+                description: 'Эксклюзивная мебель и декор из дуба',
                 theme_color: '#1c1917',
                 background_color: '#1c1917',
                 display: 'standalone',
-                prefer_related_applications: false,
-                orientation: 'portrait',
-                scope: '/',
                 start_url: '/',
-                categories: ['shopping', 'lifestyle'],
+                orientation: 'portrait',
                 icons: [
                     {
                         src: '/icons/icon-192x192.png',
                         sizes: '192x192',
-                        type: 'image/png',
-                        purpose: 'any'
+                        type: 'image/png'
                     },
                     {
                         src: '/icons/icon-512x512.png',
                         sizes: '512x512',
-                        type: 'image/png',
-                        purpose: 'any'
+                        type: 'image/png'
                     },
                     {
                         src: '/icons/maskable-icon-512x512.png',
                         sizes: '512x512',
                         type: 'image/png',
                         purpose: 'maskable'
-                    },
-                    {
-                        src: '/icon.svg',
-                        sizes: 'any',
-                        type: 'image/svg+xml',
-                        purpose: 'any'
-                    }
-                ],
-                screenshots: [
-                    {
-                        src: '/screenshots/screenshot-mobile.png',
-                        sizes: '390x844',
-                        type: 'image/png',
-                        form_factor: 'narrow',
-                        label: 'Главный экран Arbarea'
                     }
                 ]
             }
