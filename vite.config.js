@@ -9,34 +9,55 @@ export default defineConfig({
         VitePWA({
             registerType: 'autoUpdate',
             strategies: 'generateSW',
+            includeAssets: ['favicon.svg', 'icon.svg', 'icons/*.png'],
             devOptions: {
                 enabled: true
             },
             manifest: {
-                name: 'Arbarea',
+                id: '/',
+                name: 'Arbarea — Столярная мастерская',
                 short_name: 'Arbarea',
                 description: 'Эксклюзивная мебель и декор из массива дерева ручной работы.',
                 theme_color: '#1c1917',
                 background_color: '#1c1917',
                 display: 'standalone',
+                orientation: 'portrait',
+                scope: '/',
+                start_url: '/',
+                categories: ['shopping', 'lifestyle'],
                 icons: [
                     {
-                        src: '/icon.svg',
+                        src: '/icons/icon-192x192.png',
                         sizes: '192x192',
-                        type: 'image/svg+xml',
+                        type: 'image/png',
                         purpose: 'any'
                     },
                     {
-                        src: '/icon.svg',
+                        src: '/icons/icon-512x512.png',
                         sizes: '512x512',
-                        type: 'image/svg+xml',
+                        type: 'image/png',
                         purpose: 'any'
                     },
                     {
-                        src: '/icon.svg',
-                        sizes: '192x192',
-                        type: 'image/svg+xml',
+                        src: '/icons/maskable-icon-512x512.png',
+                        sizes: '512x512',
+                        type: 'image/png',
                         purpose: 'maskable'
+                    },
+                    {
+                        src: '/icon.svg',
+                        sizes: 'any',
+                        type: 'image/svg+xml',
+                        purpose: 'any'
+                    }
+                ],
+                screenshots: [
+                    {
+                        src: '/screenshots/screenshot-mobile.png',
+                        sizes: '390x844',
+                        type: 'image/png',
+                        form_factor: 'narrow',
+                        label: 'Главный экран Arbarea'
                     }
                 ]
             }

@@ -1,5 +1,5 @@
-import { Download, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Download, X, Share } from 'lucide-react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const InstallPWA = () => {
@@ -7,84 +7,117 @@ const InstallPWA = () => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+  const promptRef = useRef(null);
 
-  useEffect(() => {
-    // Check if iOS
-    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    setIsIOS(iOS);
-
-    // Check if already installed
+  // Проверка установлено ли приложение
+  const checkIfInstalled = useCallback(() => {
+    // Метод 1: display-mode
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    if (isStandalone) {
-      return; // Already installed
+    // Метод 2: iOS Safari standalone
+    const isIOSStandalone = window.navigator.standalone === true;
+    // Метод 3: Android TWA
+    const isTWA = document.referrer.includes('android-app://');
+    
+    return isStandalone || isIOSStandalone || isTWA;
+  }, []);
+
+  // Функция установки
+  const triggerInstall = useCallback(async () => {
+    const prompt = promptRef.current || deferredPrompt;
+    
+    if (!prompt) {
+      // iOS или браузер не поддерживает — показываем инструкции
+      setShowIOSInstructions(true);
+      return;
     }
 
-    // Check if user dismissed before
+    try {
+      // Показываем системный диалог установки
+      prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      
+      console.log(`📱 Результат установки: ${outcome}`);
+      
+      if (outcome === 'accepted') {
+        setShowPrompt(false);
+      }
+    } catch (error) {
+      console.error('Ошибка установки PWA:', error);
+    } finally {
+      promptRef.current = null;
+      setDeferredPrompt(null);
+    }
+  }, [deferredPrompt]);
+
+  useEffect(() => {
+    // Определяем платформу
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const iOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    
+    setIsIOS(iOS);
+
+    // Проверяем — уже установлено?
+    if (checkIfInstalled()) {
+      console.log('📱 PWA уже установлено');
+      return;
+    }
+
+    // Проверяем — пользователь отклонил ранее?
     const dismissed = localStorage.getItem('pwa-install-dismissed');
     if (dismissed) {
       const dismissedTime = parseInt(dismissed, 10);
       const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
       if (daysSinceDismissed < 7) {
-        return; // Don't show for 7 days after dismissal
+        console.log('🔕 PWA баннер скрыт на 7 дней');
+        return;
       }
     }
 
-    // Listen for beforeinstallprompt event (Android/Desktop)
-    const handler = (e) => {
+    // Обработчик события beforeinstallprompt (Chrome/Edge/Samsung)
+    const handleBeforeInstall = (e) => {
+      console.log('✅ beforeinstallprompt сработал!');
       e.preventDefault();
+      promptRef.current = e;
       setDeferredPrompt(e);
       
-      // Show prompt after 10 seconds
+      // Показываем баннер через 5 секунд
       setTimeout(() => {
         setShowPrompt(true);
-      }, 10000);
+      }, 5000);
     };
 
-    // Listen for custom event from HeroBanner button
-    const customHandler = () => {
-      if (deferredPrompt) {
-        handleInstall();
+    // Обработчик кастомного события (кнопка в интерфейсе)
+    const handleShowInstall = () => {
+      if (promptRef.current) {
+        triggerInstall();
+      } else if (iOS) {
+        setShowPrompt(true);
+        setShowIOSInstructions(true);
       } else {
         setShowPrompt(true);
-        if (iOS) {
-          setShowIOSInstructions(true);
-        }
       }
     };
 
-    window.addEventListener('beforeinstallprompt', handler);
-    window.addEventListener('show-pwa-install', customHandler);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('show-pwa-install', handleShowInstall);
 
-    // For iOS, show instructions after 10 seconds
+    // Для iOS показываем инструкции через 8 секунд
     if (iOS) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setShowPrompt(true);
-      }, 10000);
+      }, 8000);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+        window.removeEventListener('show-pwa-install', handleShowInstall);
+      };
     }
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handler);
-      window.removeEventListener('show-pwa-install', customHandler);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('show-pwa-install', handleShowInstall);
     };
-  }, [deferredPrompt]);
-
-  const handleInstall = async () => {
-    if (!deferredPrompt) {
-      // iOS - show instructions
-      setShowIOSInstructions(true);
-      return;
-    }
-
-    // Android/Desktop
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      setShowPrompt(false);
-    }
-    
-    setDeferredPrompt(null);
-  };
+  }, [checkIfInstalled, triggerInstall]);
 
   const handleDismiss = () => {
     setShowPrompt(false);
@@ -131,21 +164,30 @@ const InstallPWA = () => {
                   Чтобы добавить Arbarea на главный экран:
                 </p>
                 
-                <ol className="space-y-3 list-decimal list-inside">
-                  <li className="leading-relaxed">
-                    Нажмите кнопку <span className="inline-flex items-center px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded font-medium">Поделиться</span> внизу экрана
+                <ol className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                    <span className="leading-relaxed">
+                      Нажмите кнопку <Share className="inline w-4 h-4 text-blue-400 mx-1" /> <span className="text-blue-400 font-medium">Поделиться</span> внизу экрана Safari
+                    </span>
                   </li>
-                  <li className="leading-relaxed">
-                    Прокрутите вниз и выберите <span className="font-bold text-white">"На экран Домой"</span>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                    <span className="leading-relaxed">
+                      Прокрутите меню и выберите <span className="font-bold text-white">"На экран Домой"</span>
+                    </span>
                   </li>
-                  <li className="leading-relaxed">
-                    Нажмите <span className="font-bold text-white">"Добавить"</span>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                    <span className="leading-relaxed">
+                      Нажмите <span className="font-bold text-white">"Добавить"</span> в правом верхнем углу
+                    </span>
                   </li>
                 </ol>
 
                 <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
                   <p className="text-amber-400 text-xs leading-relaxed">
-                    После установки приложение будет работать как обычное приложение с иконкой на рабочем столе!
+                    ✨ После установки приложение будет работать как обычное приложение с иконкой на рабочем столе!
                   </p>
                 </div>
               </div>
@@ -183,7 +225,16 @@ const InstallPWA = () => {
 
               <div className="flex items-start gap-4 pr-6">
                 <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-amber-600 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-serif font-bold text-2xl">A</span>
+                  <img 
+                    src="/icons/icon-96x96.png" 
+                    alt="Arbarea" 
+                    className="w-10 h-10 rounded-lg"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <span className="text-white font-serif font-bold text-2xl hidden items-center justify-center">A</span>
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -196,7 +247,7 @@ const InstallPWA = () => {
 
                   <button
                     type="button"
-                    onClick={handleInstall}
+                    onClick={triggerInstall}
                     className="flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-amber-500 transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]"
                   >
                     <Download size={16} />
