@@ -52,7 +52,7 @@ const AppContent = () => {
       {!location.pathname.startsWith('/product/') && <Header />}
       <main className="max-w-md mx-auto bg-white dark:bg-stone-900 min-h-screen shadow-2xl relative overflow-hidden">
         <Suspense fallback={<LoadingSpinner />}>
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="popLayout">
             <Routes location={location} key={location.pathname}>
               <Route
                 path="/"
