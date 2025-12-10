@@ -132,7 +132,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
              {/* Maximize Button */}
              <button
                 type="button"
-                className="absolute top-2 right-2 p-2 bg-black/40 text-white rounded-lg hover:bg-black/60 active:scale-95 transition-all"
+                className="absolute top-2 left-2 p-2 bg-black/40 text-white rounded-lg hover:bg-black/60 active:scale-95 transition-all z-30"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowFullScreen(true);
