@@ -23,7 +23,7 @@ const AuthScreen = () => {
   // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+7');
   const [otp, setOtp] = useState('');
   const [confirmationResult, setConfirmationResult] = useState(null);
 

@@ -30,7 +30,7 @@ const Cart = ({ cart, onRemove, onCheckout }) => {
         ))}
       </div>
 
-      <div className="fixed bottom-20 left-0 right-0 bg-[#1c1917]/90 backdrop-blur-xl p-6 z-30 border-t border-white/5">
+      <div className="fixed bottom-28 left-0 right-0 bg-[#1c1917]/90 backdrop-blur-xl p-6 z-30 border-t border-white/5">
         <div className="space-y-2 mb-4 text-sm">
           <div className="flex justify-between text-stone-400">
             <span>Сумма:</span>

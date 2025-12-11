@@ -73,7 +73,7 @@ const AIChat = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-[#1c1917] via-[#1c1917] to-transparent z-10">
+      <div className="fixed bottom-28 left-0 right-0 p-4 bg-gradient-to-t from-[#1c1917] via-[#1c1917] to-transparent z-10">
         <div className="max-w-md mx-auto">
           <div className="flex bg-stone-800/90 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-xl">
             <input
