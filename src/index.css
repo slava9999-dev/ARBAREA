@@ -152,3 +152,10 @@
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* Hide Google reCAPTCHA badge (allowed per Google's FAQ if you include privacy policy links) */
+.grecaptcha-badge {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
