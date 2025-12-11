@@ -62,7 +62,6 @@ const AuthScreen = () => {
 
   const handleGoogle = async () => {
     setError('');
-    setError('');
     // setLoading(true); // Removed to prevent popup blocking
     try {
       await loginWithGoogle();

@@ -83,7 +83,7 @@ const ProductDetails = () => {
       : [product.image];
 
   return (
-    <div className="min-h-screen bg-[#1c1917] text-stone-200 pb-24 animate-fade-in">
+    <div className="min-h-screen bg-[#1c1917] text-stone-200 pb-40 animate-fade-in">
       {/* Header / Navigation */}
       <div className="fixed top-0 left-0 right-0 z-40 p-4 flex justify-between items-center pointer-events-none">
         <button
@@ -251,7 +251,7 @@ const ProductDetails = () => {
           </div>
 
           {/* Action Button */}
-          <div className="sticky bottom-4 z-20">
+          <div className="sticky bottom-28 z-20">
             {product.isSold ? (
               <button
                 type="button"
