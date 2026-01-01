@@ -1,4 +1,4 @@
-export const sendMessageToGemini = async (history, newMessage, token) => {
+export const sendMessageToAI = async (history, newMessage, token) => {
   try {
     const headers = { 'Content-Type': 'application/json' };
     if (token) {

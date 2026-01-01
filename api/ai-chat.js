@@ -20,7 +20,8 @@ const SYSTEM_PROMPT = `Ты — Интеллектуальный Консьер�
   * Освещение: настенные светильники, люстры, бра (от 5800₽)
   * Кухонные аксессуары: подставки для ножей, разделочные доски (от 2200₽)
   
-- Популярные товары:
+- Популярные товары и НОВИНКИ:
+  * 🔥 НОВИНКА: Панно "Гортензия" (5000₽) — живая фактура дерева в геометрическом узоре (34х34 см). Припыленный розовый и глубокий коричневый.
   * Панно "Эхо Леса" (8500₽) - геометрический узор из сосны
   * Панно "Зимние Горы" (4900₽) - минималистичное 30x30см
   * Рейлинг Ясень с бронзовой фурнитурой (от 3500₽)
@@ -60,21 +61,22 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: 'API key not configured' });
+    if (!process.env.GROQ_API_KEY) {
+      console.error('GROQ_API_KEY is missing');
+      return res.status(500).json({ error: 'AI service configuration error' });
     }
 
-    // Конвертируем историю из формата {text, sender} в формат OpenAI
+    // Конвертируем историю из формата {text, sender} в формат OpenAI/Groq
     const messages = [{ role: 'system', content: SYSTEM_PROMPT }];
 
     // Добавляем историю диалога (пропускаем приветственное сообщение)
     if (history && Array.isArray(history) && history.length > 1) {
-      history.slice(1).forEach((msg) => {
+      for (const msg of history.slice(1)) {
         messages.push({
           role: msg.sender === 'user' ? 'user' : 'assistant',
           content: msg.text,
         });
-      });
+      }
     }
 
     // Добавляем текущее сообщение пользователя
@@ -85,18 +87,18 @@ export default async function handler(req, res) {
         : message,
     });
 
-    // Вызов OpenAI API
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Вызов Groq API (OpenAI compatible)
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Быстрая и дешевая модель
+        model: 'llama-3.3-70b-versatile', // Быстрая и мощная модель Groq
         messages: messages,
-        temperature: 0.7, // Баланс между креативностью и точностью
-        max_tokens: 300, // Ограничение длины ответа
+        temperature: 0.6, // Чуть строже для консьержа
+        max_tokens: 500,
       }),
     });
 

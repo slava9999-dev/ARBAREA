@@ -1,6 +1,6 @@
 import { Bot, Loader2, Send, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { sendMessageToGemini } from '../lib/gemini';
+import { sendMessageToAI } from '../lib/ai-assistant';
 import { useAuth } from '../context/AuthContext';
 
 const AIChat = () => {
@@ -30,7 +30,7 @@ const AIChat = () => {
 
     try {
       const token = user ? await user.getIdToken() : null;
-      const responseText = await sendMessageToGemini(messages, input, token);
+      const responseText = await sendMessageToAI(messages, input, token);
 
       setMessages((prev) => [...prev, { text: responseText, sender: 'ai' }]);
     } catch (_error) {
@@ -70,7 +70,8 @@ const AIChat = () => {
               <Bot size={16} />
             </div>
             <div className="bg-stone-800/80 border border-white/5 p-4 rounded-2xl rounded-tl-none flex items-center gap-2 text-stone-400 text-sm backdrop-blur-sm">
-              <Loader2 size={16} className="animate-spin text-amber-500" /> Печатает...
+              <Loader2 size={16} className="animate-spin text-amber-500" />{' '}
+              Печатает...
             </div>
           </div>
         )}
