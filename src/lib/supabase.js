@@ -8,11 +8,22 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-let supabaseClient;
+// Strict validation
+const isValidUrl = (url) =>
+  typeof url === 'string' && url.trim().length > 0 && url.startsWith('http');
+const isValidKey = (key) => typeof key === 'string' && key.trim().length > 0;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+let supabaseClient;
+const isConfigured = isValidUrl(supabaseUrl) && isValidKey(supabaseAnonKey);
+
+console.log(
+  '🔌 Supabase Config Status:',
+  isConfigured ? 'Valid' : 'Invalid/Missing',
+);
+
+if (!isConfigured) {
   console.warn(
-    '⚠️ Supabase credentials not configured. App will run in simple mode.',
+    '⚠️ Supabase credentials not configured or invalid. App will run in simple mode.',
   );
   // Mock client to prevent crashes
   supabaseClient = {
@@ -45,16 +56,33 @@ if (!supabaseUrl || !supabaseAnonKey) {
         eq: () => ({ single: async () => ({ data: null, error: null }) }),
         order: () => ({ data: [], error: null }),
       }),
+      insert: async () => ({ error: { message: 'Database not configured' } }),
     }),
   };
 } else {
-  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-    },
-  });
+  try {
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+      },
+    });
+  } catch (e) {
+    console.error('❌ Failed to initialize Supabase client:', e);
+    // Fallback to mock in case of weird errors
+    supabaseClient = {
+      auth: {
+        getSession: async () => ({ data: { session: null } }),
+        onAuthStateChange: () => ({
+          data: { subscription: { unsubscribe: () => {} } },
+        }),
+      },
+      from: () => ({
+        select: () => ({ eq: () => ({ single: async () => ({}) }) }),
+      }),
+    };
+  }
 }
 
 export const supabase = supabaseClient;
