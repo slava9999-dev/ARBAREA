@@ -1,171 +1,141 @@
--- ============================================
--- Supabase Database Schema for Arbarea
--- Run this in Supabase SQL Editor
--- UPDATED: Idempotent (safe to run multiple times)
--- ============================================
+-- Enable UUID extension (safe to run multiple times)
+create extension if not exists "uuid-ossp";
 
--- ============================================
--- 1. ORDERS TABLE
--- ============================================
-CREATE TABLE IF NOT EXISTS orders (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  order_id TEXT UNIQUE NOT NULL,
-  user_id UUID REFERENCES auth.users(id),
-  user_email TEXT,
-  user_phone TEXT,
-  user_name TEXT,
-  delivery_address TEXT,
-  delivery_method TEXT,
-  delivery_price DECIMAL(10,2) DEFAULT 0,
-  items JSONB NOT NULL DEFAULT '[]',
-  subtotal DECIMAL(10,2) NOT NULL DEFAULT 0,
-  shipping DECIMAL(10,2) DEFAULT 0,
-  total DECIMAL(10,2) NOT NULL DEFAULT 0,
-  status TEXT DEFAULT 'pending_payment',
-  payment_url TEXT,
-  payment_id TEXT,
-  tracking_number TEXT,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+-- Function to handle updated_at (safe to run multiple times)
+create or replace function handle_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = timezone('utc'::text, now());
+  return new;
+end;
+$$ language plpgsql;
+
+-- -----------------------------------------------------------------------------
+-- 1. PROFILES (Users)
+-- -----------------------------------------------------------------------------
+create table if not exists profiles (
+  id uuid references auth.users on delete cascade not null primary key,
+  email text,
+  name text,
+  phone text,
+  role text default 'user',
+  avatar_url text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable Row Level Security
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+-- RLS for PROFILES
+alter table profiles enable row level security;
 
--- Policies (Drop first to avoid "policy already exists" errors)
-DROP POLICY IF EXISTS "Users can view own orders" ON orders;
-CREATE POLICY "Users can view own orders" ON orders
-  FOR SELECT
-  USING (auth.uid() = user_id);
+-- Policies (DROP first to ensure no duplicates/errors on re-run)
+drop policy if exists "Users can view own profile" on profiles;
+create policy "Users can view own profile" 
+  on profiles for select using (auth.uid() = id);
 
-DROP POLICY IF EXISTS "Users can insert own orders" ON orders;
-CREATE POLICY "Users can insert own orders" ON orders
-  FOR INSERT
-  WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+drop policy if exists "Users can insert own profile" on profiles;
+create policy "Users can insert own profile" 
+  on profiles for insert with check (auth.uid() = id);
 
-DROP POLICY IF EXISTS "Service role full access" ON orders;
-CREATE POLICY "Service role full access" ON orders
-  FOR ALL
-  USING (auth.role() = 'service_role');
+drop policy if exists "Users can update own profile" on profiles;
+create policy "Users can update own profile" 
+  on profiles for update using (auth.uid() = id);
 
--- ============================================
--- 2. PRODUCTS TABLE (optional, for dynamic catalog)
--- ============================================
-CREATE TABLE IF NOT EXISTS products (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  slug TEXT UNIQUE NOT NULL,
-  name TEXT NOT NULL,
-  description TEXT,
-  price DECIMAL(10,2) NOT NULL,
-  old_price DECIMAL(10,2),
-  category TEXT,
-  subcategory TEXT,
-  images JSONB DEFAULT '[]',
-  sizes JSONB DEFAULT '[]',
-  colors JSONB DEFAULT '[]',
-  in_stock BOOLEAN DEFAULT true,
-  featured BOOLEAN DEFAULT false,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+-- Trigger for PROFILES
+drop trigger if exists on_profiles_updated on profiles;
+create trigger on_profiles_updated before update on profiles for each row execute procedure handle_updated_at();
+
+-- -----------------------------------------------------------------------------
+-- 2. PRODUCTS (Catalog)
+-- -----------------------------------------------------------------------------
+create table if not exists products (
+  id uuid default uuid_generate_v4() primary key,
+  name text not null,
+  slug text not null unique,
+  description text,
+  price numeric not null,
+  old_price numeric,
+  category text,
+  subcategory text,
+  images jsonb,
+  colors jsonb,
+  sizes jsonb,
+  in_stock boolean default true,
+  featured boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable RLS
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+-- RLS for PRODUCTS
+alter table products enable row level security;
 
--- Policies
-DROP POLICY IF EXISTS "Anyone can read products" ON products;
-CREATE POLICY "Anyone can read products" ON products
-  FOR SELECT
-  USING (true);
+drop policy if exists "Products are viewable by everyone" on products;
+create policy "Products are viewable by everyone" 
+  on products for select using (true);
 
--- ============================================
--- 3. USER PROFILES TABLE (extends auth.users)
--- ============================================
-CREATE TABLE IF NOT EXISTS profiles (
-  id UUID REFERENCES auth.users(id) PRIMARY KEY,
-  email TEXT,
-  phone TEXT,
-  name TEXT,
-  avatar_url TEXT,
-  role TEXT DEFAULT 'customer',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+drop policy if exists "Only service role can insert/update products" on products;
+create policy "Only service role can insert/update products" 
+  on products for all using (auth.role() = 'service_role');
+
+-- Trigger for PRODUCTS
+drop trigger if exists on_products_updated on products;
+create trigger on_products_updated before update on products for each row execute procedure handle_updated_at();
+
+-- -----------------------------------------------------------------------------
+-- 3. ORDERS
+-- -----------------------------------------------------------------------------
+create table if not exists orders (
+  id uuid default uuid_generate_v4() primary key,
+  order_id text not null,
+  user_id uuid references auth.users on delete set null,
+  user_email text,
+  user_phone text,
+  user_name text,
+  items jsonb not null,
+  subtotal numeric not null,
+  shipping numeric default 0,
+  total numeric not null,
+  delivery_method text,
+  delivery_address text,
+  delivery_price numeric,
+  payment_url text,
+  payment_id text,
+  status text default 'pending_payment',
+  tracking_number text,
+  notes text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable RLS
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+-- RLS for ORDERS
+alter table orders enable row level security;
 
--- Policies
-DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
-CREATE POLICY "Users can view own profile" ON profiles
-  FOR SELECT
-  USING (auth.uid() = id);
+drop policy if exists "Users can view their own orders" on orders;
+create policy "Users can view their own orders" 
+  on orders for select using (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
-CREATE POLICY "Users can update own profile" ON profiles
-  FOR UPDATE
-  USING (auth.uid() = id);
+drop policy if exists "Anyone can create orders" on orders;
+create policy "Anyone can create orders" 
+  on orders for insert with check (true);
 
--- ============================================
--- 4. TRIGGER: Auto-create profile on signup
--- ============================================
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.profiles (id, email, phone, name)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    NEW.phone,
-    COALESCE(NEW.raw_user_meta_data->>'name', NEW.email)
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- Trigger for ORDERS
+drop trigger if exists on_orders_updated on orders;
+create trigger on_orders_updated before update on orders for each row execute procedure handle_updated_at();
 
--- Trigger on auth.users insert
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+-- -----------------------------------------------------------------------------
+-- 4. NEW USER HANDLER (Auto-create profile)
+-- -----------------------------------------------------------------------------
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, name)
+  values (new.id, new.email, new.raw_user_meta_data->>'name')
+  on conflict (id) do nothing; -- Safe idempotent insert
+  return new;
+end;
+$$ language plpgsql security definer;
 
--- ============================================
--- 5. INDEXES for performance
--- ============================================
-CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
-CREATE INDEX IF NOT EXISTS idx_orders_order_id ON orders(order_id);
-CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
-CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
-CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
-
--- ============================================
--- 6. Enable Realtime for orders
--- ============================================
--- Safe way to add table to publication
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'orders') THEN
-    ALTER PUBLICATION supabase_realtime ADD TABLE orders;
-  END IF;
-END $$;
-
--- ============================================
--- 7. STORAGE BUCKET (orders)
--- ============================================
--- Attempt to insert the bucket if it doesn't exist.
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('orders', 'orders', true)
-ON CONFLICT (id) DO NOTHING;
-
--- Policies for Storage
-DROP POLICY IF EXISTS "Public Access" ON storage.objects;
-CREATE POLICY "Public Access"
-ON storage.objects FOR SELECT
-USING ( bucket_id = 'orders' );
-
-DROP POLICY IF EXISTS "Authenticated Upload" ON storage.objects;
-CREATE POLICY "Authenticated Upload"
-ON storage.objects FOR INSERT
-WITH CHECK ( bucket_id = 'orders' AND auth.role() = 'authenticated' );
+-- Trigger for AUTH
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
