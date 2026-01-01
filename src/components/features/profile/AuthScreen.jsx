@@ -38,6 +38,8 @@ const AuthScreen = () => {
       return 'Пароль слишком простой (минимум 6 символов)';
     if (msg.includes('rate limit'))
       return 'Слишком много попыток. Подождите немного.';
+    if (msg.includes('Supabase not configured'))
+      return 'Регистрация временно недоступна (технические работы).';
 
     return 'Ошибка авторизации. Проверьте данные.';
   };

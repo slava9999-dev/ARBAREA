@@ -30,34 +30,38 @@ const Cart = ({ cart, onRemove, onCheckout }) => {
         ))}
       </div>
 
-      <div className="fixed bottom-28 left-0 right-0 bg-[#1c1917]/90 backdrop-blur-xl p-6 z-30 border-t border-white/5">
-        <div className="space-y-2 mb-4 text-sm">
-          <div className="flex justify-between text-stone-400">
-            <span>Сумма:</span>
-            <span>{(subtotal || 0).toLocaleString()} ₽</span>
-          </div>
-          {user && discount > 0 && (
-            <div className="flex justify-between text-green-400 font-medium">
-              <span>Скидка клиента (10%):</span>
-              <span>-{(discount || 0).toLocaleString()} ₽</span>
+      <div className="mt-8 mb-8">
+        <PaymentTrustBlock variant="compact" />
+      </div>
+
+      <div className="fixed bottom-24 left-4 right-4 bg-[#1c1917]/95 backdrop-blur-xl p-5 z-40 border border-white/10 rounded-2xl shadow-2xl">
+        <div className="flex justify-between items-end mb-4">
+          <div className="space-y-1 text-sm">
+            <div className="text-stone-400">
+              Сумма: {(subtotal || 0).toLocaleString()} ₽
             </div>
-          )}
-          <div className="flex justify-between font-bold text-xl text-amber-500 font-mono pt-2 border-t border-white/5">
-            <span>Итого:</span>
-            <span>{(cartTotal || 0).toLocaleString()} ₽</span>
+            {user && discount > 0 && (
+              <div className="text-green-400 text-xs">
+                Скидка: -{(discount || 0).toLocaleString()} ₽
+              </div>
+            )}
+          </div>
+          <div className="text-right">
+            <div className="text-stone-500 text-xs mb-1">Итого к оплате</div>
+            <div className="font-bold text-2xl text-amber-500 font-mono leading-none">
+              {(cartTotal || 0).toLocaleString()} ₽
+            </div>
           </div>
         </div>
+
         <button
           type="button"
           onClick={onCheckout}
           aria-label="Оформить заказ"
-          className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex justify-center gap-2 active:scale-95 transition-transform hover:bg-amber-500 shadow-[0_0_20px_rgba(217,119,6,0.3)]"
+          className="w-full bg-amber-600 text-white py-3.5 rounded-xl font-bold flex justify-center items-center gap-2 active:scale-95 transition-transform hover:bg-amber-500 shadow-[0_0_20px_rgba(217,119,6,0.3)] text-lg"
         >
-          <Lock size={18} /> Оформить заказ
+          <Lock size={20} /> Оформить заказ
         </button>
-        <div className="mt-6">
-          <PaymentTrustBlock variant="compact" />
-        </div>
       </div>
     </div>
   );
