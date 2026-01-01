@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE yml_catalog SYSTEM "shops.dtd">
+<yml_catalog date="2026-01-01T20:56:27.774Z">
+  <shop>
+    <name>Arbarea</name>
+    <company>Arbarea - Авторская столярная мастерская</company>
+    <url>https://arbarea.ru</url>
+    <currencies>
+      <currency id="RUB" rate="1"/>
+    </currencies>
+    <categories>
+      <category id="1">Декор для дома</category>
+      <category id="2" parentId="1">Вешалки</category>
+      <category id="3" parentId="1">Полки</category>
+      <category id="4" parentId="1">Столы</category>
+      <category id="5" parentId="1">Аксессуары</category>
+    </categories>
+    <offers>
+      <offer id="101" available="true">
+        <name>Рейлинг Ясень   METAL AND GRAIN</name>
+        <url>https://arbarea.ru/product/101</url>
+        <price>2500</price>
+        <currencyId>RUB</currencyId>
+        <categoryId>5</categoryId>
+        <picture>https://arbarea.ru/images/products/railing_ash_1.webp</picture>
+        <delivery>true</delivery>
+        <description>Этот стильный рейлинг для кухни станет не только функциональным элементом, но и изысканным украшением вашего интерьера. Изготовленный из термообработанного дуба, он сочетает в себе природную красоту, долговечность и экологичность. Каждая деталь тщательно проработана вручную, что подчеркивает высокое качество и уникальность изделия. Полная детализация и использование натуральных материалов делают этот рейлинг не только практичным, но и эстетически привлекательным. Идеальный выбор для тех, кто ценит натуральные материалы, ручную работу и современный дизайн.</description>
+        <vendor>Arbarea</vendor>
+        <param name="Материал">Массив дуба</param>
+        <param name="Стиль">Минимализм</param>
+        <param name="Ручная работа">Да</param>
+        <param name="Бренд">Arbarea</param>
+      </offer>
+      <offer id="102" available="true">
+        <name>Держатель Ясень  WOOD AND STEEL</name>
+        <url>https://arbarea.ru/product/102</url>
+        <price>2000</price>
+        <currencyId>RUB</currencyId>
+        <categoryId>5</categoryId>
+        <picture>https://arbarea.ru/images/products/holder_ash_1.webp</picture>
+        <delivery>true</delivery>
+        <description>Этот стильный держатель для полотенец станет прекрасным дополнением вашей ванной комнаты или спальни. Изготовленный из термообработанного дуба или ясеня, он сочетает в себе природную красоту, долговечность и экологичность. Держатель для полотенец — идеальный выбор для тех, кто ценит натуральные материалы, ручную работу и современный дизайн. Он не только украсит ваше пространство, но и сделает его более уютным и функциональным. Держатель доступен в стандартных размерах 1000 мм, 800 мм и 600 мм, а также может быть выполнен по индивидуальным размерам, чтобы идеально вписаться в ваш интерьер.</description>
+        <vendor>Arbarea</vendor>
+        <param name="Материал">Массив дуба</param>
+        <param name="Стиль">Минимализм</param>
+        <param name="Ручная работа">Да</param>
+        <param name="Бренд">Arbarea</param>
+      </offer>
+      <offer id="103" available="true">
+        <name>Панно &quot;Эхо Леса&quot;</name>
+        <url>https://arbarea.ru/product/103</url>
+        <price>8500</price>
+        <currencyId>RUB</currencyId>
+        <categoryId>5</categoryId>
+        <picture>https://arbarea.ru/images/products/panno_echo_1.webp</picture>
+        <delivery>true</delivery>
+        <description>Это элегантное панно из массива сосны притягивает взгляд своей сложной геометрией и гармоничным сочетанием природных оттенков. Узор, напоминающий переплетение лесных троп или игру света в кронах деревьев, привносит в интерьер ощущение глубины и стиля.
+
+Характеристики:
+Материал: Массив сосны.
+Размеры: 78 см х 38 см.
+Дизайн: Динамичный геометрический узор из планок различных светлых и темных оттенков дерева.
+Особенности: Ручная работа, подчеркивающая уникальность каждого элемента и естественную красоту древесины. Идеально подходит для создания акцентной стены или дополнения современного интерьера.</description>
+        <vendor>Arbarea</vendor>
+        <param name="Материал">Массив дуба</param>
+        <param name="Стиль">Минимализм</param>
+        <param name="Ручная работа">Да</param>
+        <param name="Бренд">Arbarea</param>
+      </offer>
+      <offer id="104" available="true">
+        <name>Панно &quot;Зимние Горы&quot;</name>
+        <url>https://arbarea.ru/product/104</url>
+        <price>4900</price>
+        <currencyId>RUB</currencyId>
+        <categoryId>5</categoryId>
+        <picture>https://arbarea.ru/images/products/panno_winter_mountains_1.webp</picture>
+        <delivery>true</delivery>
+        <description>Изящное панно, выполненное из массива сосны, станет уютным акцентом в любом интерьере. Его минималистичный дизайн с изображением заснеженных гор под звездным небом создает атмосферу спокойствия и гармонии.
+
+Характеристики:
+Материал: Массив сосны.
+Размеры: 30 см х 30 см.
+Дизайн: Изображение стилизованных гор со снежными вершинами на фоне звездного неба.
+Особенности: Ручная работа, подчеркивающая естественную красоту дерева и уникальность каждого элемента.</description>
+        <vendor>Arbarea</vendor>
+        <param name="Материал">Массив дуба</param>
+        <param name="Стиль">Минимализм</param>
+        <param name="Ручная работа">Да</param>
+        <param name="Бренд">Arbarea</param>
+      </offer>
+      <offer id="105" available="true">
+        <name>Подставка «Малый Дом» из термоясеня</name>
+        <url>https://arbarea.ru/product/105</url>
+        <price>600</price>
+        <currencyId>RUB</currencyId>
+        <categoryId>5</categoryId>
+        <picture>https://arbarea.ru/images/products/5285080811512204613.webp</picture>
+        <delivery>true</delivery>
+        <description>Эта подставка — больше, чем просто аксессуар для сервировки. Это архитектурная миниатюра на вашем столе. Она выполнена из термоясеня — материала с глубоким, благородным цветом и выразительной текстурой, которая раскрывается благодаря нашей натуральной пропитке из премиального масла.
+
+Мы бережно сохраняем «подпись природы», поэтому каждая подставка уникальна и имеет свой неповторимый рисунок. Лаконичная форма домика символизирует уют и тепло домашнего очага, а компактные размеры позволяют ей гармонично вписаться в любую сервировку, не перегружая ее.
+
+Характеристики:
+• Материал: 100% натуральный термоясень
+• Покрытие: Премиальное масло, подчеркивающее текстуру
+• Размеры: 7 × 7,5 × 4,5 см
+
+Пригласите эту маленькую Историю на свой стол.</description>
+        <vendor>Arbarea</vendor>
+        <param name="Материал">Массив дуба</param>
+        <param name="Стиль">Минимализм</param>
+        <param name="Ручная работа">Да</param>
+        <param name="Бренд">Arbarea</param>
+      </offer>
+      <offer id="106" available="true">
+        <name>Панно &quot;Горные Вершины&quot;</name>
+        <url>https://arbarea.ru/product/106</url>
+        <price>6500</price>
+        <currencyId>RUB</currencyId>
+        <categoryId>5</categoryId>
+        <picture>https://arbarea.ru/images/products/panno_mountain_peaks_1.webp</picture>
+        <delivery>true</delivery>
+        <description>Горы, которые всегда рядом. Это панно из массива сосны, чтобы добавить в ваш дом тепла и немного волшебства.\n\nНатуральное дерево, приятное и &quot;живое&quot; на ощупь. Сочетание теплой фактуры дерева и глубокого синего неба. Звезды нанесены вручную, поэтому панно уникально.\n\nХарактеристики:\n• Материал: Массив сосны\n• Размеры: 38 × 38 см\n• Особенности: Ручная работа, звезды нанесены вручную, каждое панно уникально\n\nИдеально встанет на полку или украсит стену. Отличный подарок для тех, кто любит природу и уют.</description>
+        <vendor>Arbarea</vendor>
+        <param name="Материал">Массив дуба</param>
+        <param name="Стиль">Минимализм</param>
+        <param name="Ручная работа">Да</param>
+        <param name="Бренд">Arbarea</param>
+      </offer>
+    </offers>
+  </shop>
+</yml_catalog>
