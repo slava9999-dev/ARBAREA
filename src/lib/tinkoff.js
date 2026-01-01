@@ -1,4 +1,4 @@
-export async function initPayment(orderId, items, description, customerData, token) {
+export async function initPayment(orderId, items, description, customerData, token, deliveryId) {
   try {
     const headers = { 'Content-Type': 'application/json' };
     if (token) {
@@ -14,7 +14,7 @@ export async function initPayment(orderId, items, description, customerData, tok
         description,
         customerEmail: customerData?.email || '',
         customerPhone: customerData?.phone || '',
-        // isAuth is now verified on server via token
+        deliveryId,
       }),
     });
 

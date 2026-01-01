@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useReducer } from 'react';
-import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
@@ -8,8 +7,6 @@ const initialState = {
 };
 
 const cartReducer = (state, action) => {
-
-
   switch (action.type) {
     case 'SET_CART':
       return {
@@ -92,29 +89,13 @@ export const CartProvider = ({ children }) => {
     0,
   );
 
-  // Calculate Subtotal, Shipping, and Total
-  const { user } = useAuth();
   const subtotal = state.items.reduce(
     (total, item) => total + item.price * (item.quantity || 1),
     0,
   );
 
-  // Free shipping for authorized users, 500₽ for guests
-  const SHIPPING_COST = 500;
-  const shipping = user ? 0 : SHIPPING_COST;
-  const cartTotal = subtotal + shipping;
-
   const addToCart = (product) => {
-    // Validation
-    if (!product || !product.id) {
-      console.error('❌ Invalid product: Missing ID');
-      return;
-    }
-    if (typeof product.price !== 'number' || Number.isNaN(product.price)) {
-      console.error('❌ Invalid product: Price must be a number');
-      return;
-    }
-
+    if (!product || !product.id) return;
     dispatch({ type: 'ADD_ITEM', payload: product });
   };
 
@@ -133,9 +114,7 @@ export const CartProvider = ({ children }) => {
   const value = {
     cartItems: state.items,
     totalItems,
-    subtotal, // Raw total
-    shipping, // Shipping cost (0 for registered, 500 for guests)
-    cartTotal, // Final total to pay (subtotal + shipping)
+    subtotal,
     addToCart,
     removeFromCart,
     updateQuantity,

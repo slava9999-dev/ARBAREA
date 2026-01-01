@@ -68,7 +68,19 @@ export default async function handler(req, res) {
       }
     });
 
+    // All delivery services with server-verified prices
+    const DELIVERY_METHODS = {
+      cdek: { name: 'СДЭК', price: 350 },
+      wildberries: { name: 'Wildberries', price: 0 },
+      ozon: { name: 'Ozon', price: 0 },
+      boxberry: { name: 'Boxberry', price: 300 },
+      pochta: { name: 'Почта России', price: 400 },
+      courier: { name: 'Курьер до двери', price: 600 },
+    };
+
+
     if (items && Array.isArray(items)) {
+      const { deliveryId } = req.body;
       for (const item of items) {
         const itemIdStr = String(item.id);
         
@@ -123,20 +135,23 @@ export default async function handler(req, res) {
         });
       }
 
-      // Add shipping cost for non-authorized users (if not a donation)
-      const SHIPPING_COST = 500;
-      if (!isUserAuthenticated && !hasDonation) {
-        calculatedAmount += SHIPPING_COST;
+      // Add shipping cost (verified server-side)
+      if (!hasDonation) {
+        const selectedMethod = DELIVERY_METHODS[deliveryId] || DELIVERY_METHODS.cdek;
+        const shippingCost = isUserAuthenticated ? 0 : selectedMethod.price;
         
-        // Add shipping as a separate receipt item
-        receiptItems.push({
-          Name: 'Доставка',
-          Price: SHIPPING_COST * 100, // Копейки
-          Quantity: 1,
-          Amount: SHIPPING_COST * 100,
-          Tax: 'none',
-        });
+        if (shippingCost > 0) {
+          calculatedAmount += shippingCost;
+          receiptItems.push({
+            Name: `Доставка (${selectedMethod.name})`,
+            Price: shippingCost * 100,
+            Quantity: 1,
+            Amount: shippingCost * 100,
+            Tax: 'none',
+          });
+        }
       }
+
     } else {
       // Fallback: если items не передан, возвращаем ошибку
       return res.status(400).json({
