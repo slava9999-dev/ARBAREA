@@ -1,8 +1,15 @@
-export async function initPayment(orderId, items, description, customerData, token, deliveryId) {
+export async function initPayment(
+  orderId,
+  items,
+  description,
+  customerData,
+  token,
+  deliveryId,
+) {
   try {
     const headers = { 'Content-Type': 'application/json' };
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers.Authorization = `Bearer ${token}`;
     }
 
     const response = await fetch('/api/create-payment', {

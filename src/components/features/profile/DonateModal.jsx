@@ -12,7 +12,7 @@ const DonateModal = ({ onClose }) => {
   const quickAmounts = [100, 300, 500, 1000];
 
   const handleDonate = async () => {
-    const donateAmount = parseInt(amount, 10);
+    const donateAmount = Number.parseInt(amount, 10);
 
     if (!donateAmount || donateAmount < 10) {
       setError('Минимальная сумма доната — 10₽');

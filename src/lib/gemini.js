@@ -2,7 +2,7 @@ export const sendMessageToGemini = async (history, newMessage, token) => {
   try {
     const headers = { 'Content-Type': 'application/json' };
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers.Authorization = `Bearer ${token}`;
     }
 
     const response = await fetch('/api/ai-chat', {

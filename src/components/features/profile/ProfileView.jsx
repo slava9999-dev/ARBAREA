@@ -13,8 +13,14 @@ const ProfileView = () => {
   const [showDonateModal, setShowDonateModal] = useState(false);
 
   // Helper to safely get user display name and avatar
-  const displayName = user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || user?.phone || 'Гость';
-  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+  const displayName =
+    user?.user_metadata?.name ||
+    user?.user_metadata?.full_name ||
+    user?.email?.split('@')[0] ||
+    user?.phone ||
+    'Гость';
+  const avatarUrl =
+    user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
 
   return (
     <div className="pb-32 pt-20 px-4 animate-slide-up">
@@ -60,7 +66,7 @@ const ProfileView = () => {
           rel="noopener noreferrer"
           className="relative overflow-hidden bg-gradient-to-br from-stone-800 to-stone-900 text-white p-4 rounded-2xl shadow-lg border border-white/5 text-left group active:scale-95 transition-transform block"
         >
-          <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full -mr-4 -mt-4"></div>
+          <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full -mr-4 -mt-4" />
           <Star
             className="text-amber-500 mb-3 group-hover:scale-110 transition-transform"
             size={24}

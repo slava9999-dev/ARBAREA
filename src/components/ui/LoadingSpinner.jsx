@@ -13,7 +13,7 @@ const LoadingSpinner = () => {
           }}
           transition={{
             duration: 3,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             ease: 'easeInOut',
           }}
         />
@@ -27,7 +27,7 @@ const LoadingSpinner = () => {
           }}
           transition={{
             duration: 3,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             ease: 'easeInOut',
             delay: 0.2,
           }}
@@ -41,7 +41,7 @@ const LoadingSpinner = () => {
           }}
           transition={{
             duration: 1.5,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             ease: 'easeInOut',
           }}
         >

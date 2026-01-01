@@ -1,13 +1,12 @@
-
 import { Play, ShoppingBag, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { COLORS, SIZES } from '../../lib/constants';
+import { ecommerceAdd } from '../../lib/yandex-metrica';
 import OptimizedImage from '../ui/OptimizedImage';
 import TactileButton from '../ui/TactileButton';
 
 const BuyModal = ({ product, onClose, onAddToCart }) => {
-
   const [selectedSize, setSelectedSize] = useState(
     product.hasOptions ? SIZES[0] : null,
   );
@@ -32,13 +31,18 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
       selectedColorName: selectedColor ? COLORS[selectedColor].name : null,
     };
 
+    // 🎯 YANDEX METRICA: Track add to cart
+    ecommerceAdd({
+      id: product.id,
+      name: `${product.name}${selectedSize ? ` (${selectedSize})` : ''}`,
+      price: currentPrice,
+      category: product.category || 'Декор',
+      quantity: 1,
+    });
+
     onAddToCart(itemToAdd);
     onClose();
   };
-
-
-
-
 
   if (!product) return null;
 
@@ -94,7 +98,7 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
                   allow="autoplay; encrypted-media"
                   allowFullScreen
                   title="Product Video"
-                ></iframe>
+                />
               )
             ) : (
               <OptimizedImage
@@ -185,15 +189,13 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
                       >
                         <div
                           className={`w-9 h-9 rounded-full ${val.class} shadow-sm`}
-                        ></div>
+                        />
                       </button>
                     ))}
                   </div>
                   <div className="mt-2 text-xs text-stone-500 dark:text-stone-400 font-medium">
                     Выбрано:{' '}
-                    {selectedColor
-                      ? COLORS[selectedColor].name
-                      : 'Не выбрано'}
+                    {selectedColor ? COLORS[selectedColor].name : 'Не выбрано'}
                   </div>
                 </div>
               </div>

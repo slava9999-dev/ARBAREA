@@ -10,6 +10,10 @@
       "recommended": true,
       "style": {
         "noUnusedTemplateLiteral": "off"
+      },
+      "a11y": {
+        "useSemanticElements": "warn",
+        "useKeyWithClickEvents": "warn"
       }
     }
   },
@@ -20,7 +24,7 @@
   },
   "overrides": [
     {
-      "includes": ["src/index.css"],
+      "include": ["src/index.css"],
       "linter": {
         "enabled": false
       },

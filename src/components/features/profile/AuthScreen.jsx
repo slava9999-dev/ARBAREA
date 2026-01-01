@@ -11,7 +11,7 @@ const AuthScreen = () => {
     sendPhoneOtp,
     verifyPhoneOtp,
   } = useAuth();
-  
+
   const [method, setMethod] = useState('main'); // main, email, phone, magic
   const [emailMode, setEmailMode] = useState('login'); // login, register
   const [loading, setLoading] = useState(false);
@@ -29,12 +29,16 @@ const AuthScreen = () => {
     console.error('Auth Error:', error);
     if (!error) return 'Произошла неизвестная ошибка';
     const msg = error.message || error.toString();
-    
-    if (msg.includes('Invalid login credentials')) return 'Неверный email или пароль';
-    if (msg.includes('User already registered')) return 'Пользователь уже существует';
-    if (msg.includes('Password should be')) return 'Пароль слишком простой (минимум 6 символов)';
-    if (msg.includes('rate limit')) return 'Слишком много попыток. Подождите немного.';
-    
+
+    if (msg.includes('Invalid login credentials'))
+      return 'Неверный email или пароль';
+    if (msg.includes('User already registered'))
+      return 'Пользователь уже существует';
+    if (msg.includes('Password should be'))
+      return 'Пароль слишком простой (минимум 6 символов)';
+    if (msg.includes('rate limit'))
+      return 'Слишком много попыток. Подождите немного.';
+
     return 'Ошибка авторизации. Проверьте данные.';
   };
 
@@ -127,7 +131,7 @@ const AuthScreen = () => {
           {error}
         </div>
       )}
-      
+
       {message && (
         <div className="bg-green-500/10 border border-green-500/20 text-green-400 p-3 rounded-xl text-sm mb-4">
           {message}
@@ -141,7 +145,13 @@ const AuthScreen = () => {
             onClick={handleGoogle}
             className="w-full bg-white text-stone-900 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-stone-200 active:scale-95 transition-all"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              aria-labelledby="google-icon-title"
+            >
+              <title id="google-icon-title">Google</title>
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -178,7 +188,7 @@ const AuthScreen = () => {
               <Mail size={20} />
             </button>
           </div>
-          
+
           <button
             type="button"
             onClick={() => setMethod('magic')}
@@ -248,7 +258,8 @@ const AuthScreen = () => {
         <div className="space-y-4 text-left">
           <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20 mb-2">
             <p className="text-xs text-amber-200">
-              💡 Мы отправим вам на почту волшебную ссылку. Просто нажмите на неё, чтобы войти без пароля.
+              💡 Мы отправим вам на почту волшебную ссылку. Просто нажмите на
+              неё, чтобы войти без пароля.
             </p>
           </div>
           <input
@@ -264,7 +275,13 @@ const AuthScreen = () => {
             disabled={loading}
             className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-500"
           >
-            {loading ? <Loader2 className="animate-spin" /> : <><Send size={18}/> Отправить ссылку</>}
+            {loading ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <>
+                <Send size={18} /> Отправить ссылку
+              </>
+            )}
           </button>
           <button
             type="button"

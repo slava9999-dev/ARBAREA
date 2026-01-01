@@ -1,6 +1,7 @@
 import { Instagram, Send, Youtube } from 'lucide-react';
 import { PinterestIcon, VKIcon } from '../ui/CustomIcons';
 import { PaymentTrustBlock } from '../ui/PaymentTrustBlock';
+import { reachGoal } from '../../lib/yandex-metrica';
 
 const socialLinks = [
   {
@@ -40,11 +41,11 @@ const SocialFooter = () => (
   <div className="mt-12 mb-6 px-6 animate-fade-in relative z-10">
     {/* Разделитель */}
     <div className="flex items-center gap-4 mb-6">
-      <div className="h-px bg-stone-800 flex-1"></div>
+      <div className="h-px bg-stone-800 flex-1" />
       <span className="text-[10px] text-stone-500 font-bold uppercase tracking-widest">
         Мы в соцсетях
       </span>
-      <div className="h-px bg-stone-800 flex-1"></div>
+      <div className="h-px bg-stone-800 flex-1" />
     </div>
 
     {/* Иконки соцсетей */}
@@ -58,6 +59,10 @@ const SocialFooter = () => (
             target="_blank"
             rel="noopener noreferrer"
             aria-label={social.ariaLabel}
+            onClick={() => {
+              // 🎯 YANDEX METRICA: Track contact initiation
+              reachGoal('CONTACT_INIT', { platform: social.name });
+            }}
             className="w-10 h-10 flex items-center justify-center rounded-full text-stone-500 hover:text-amber-500 transition-colors duration-300 hover:bg-stone-800/50"
           >
             <Icon size={20} className={social.iconClass || ''} />
@@ -71,7 +76,9 @@ const SocialFooter = () => (
       <p className="text-xs text-stone-400 font-bold tracking-wider font-serif">
         ARBAREA
       </p>
-      <p className="text-[10px] text-stone-500">Авторская столярная мастерская</p>
+      <p className="text-[10px] text-stone-500">
+        Авторская столярная мастерская
+      </p>
       <p className="text-[10px] text-stone-600">© 2025 Все права защищены</p>
     </div>
 

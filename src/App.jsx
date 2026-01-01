@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import BottomNav from './components/layout/BottomNav';
 import Header from './components/layout/Header';
 import ErrorBoundary from './components/ui/ErrorBoundary';
@@ -9,6 +9,8 @@ import { CartProvider, useCart } from './context/CartContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { initMetrica } from './lib/yandex-metrica';
+import { useYandexMetrica } from './lib/useYandexMetrica';
 
 // Lazy Load Pages
 const Showcase = lazy(() => import('./pages/Showcase'));
@@ -36,6 +38,14 @@ const AppContent = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const location = useLocation();
 
+  // 🎯 YANDEX METRICA: Initialize once on mount
+  useEffect(() => {
+    initMetrica();
+  }, []);
+
+  // 🎯 YANDEX METRICA: Track SPA navigation
+  useYandexMetrica();
+
   const handleCheckout = () => {
     if (cartItems.length > 0) {
       setIsCheckoutOpen(true);
@@ -48,7 +58,6 @@ const AppContent = () => {
 
   return (
     <div className="bg-stone-50 dark:bg-stone-950 min-h-screen font-sans pb-safe selection:bg-amber-500/30">
-
       {!location.pathname.startsWith('/product/') && <Header />}
       <main className="max-w-md mx-auto bg-white dark:bg-stone-900 min-h-screen shadow-2xl relative overflow-hidden">
         <Suspense fallback={<LoadingSpinner />}>
@@ -124,4 +133,3 @@ const App = () => (
 );
 
 export default App;
-

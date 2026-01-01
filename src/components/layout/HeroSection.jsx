@@ -24,7 +24,11 @@ const HeroSection = () => {
             rotate: [0, 5, 0],
             scale: [1, 1.05, 1],
           }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{
+            duration: 20,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: 'easeInOut',
+          }}
           className="absolute -top-[50%] -left-[20%] w-[150%] h-[150%] bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_50%,#3d342b_100%)] blur-[120px] opacity-50"
         />
 
@@ -35,7 +39,7 @@ const HeroSection = () => {
           }}
           transition={{
             duration: 15,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             ease: 'easeInOut',
             delay: 1,
           }}

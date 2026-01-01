@@ -5,7 +5,7 @@ const TelegramLoginButton = ({ onAuth, botName = 'Arbarea_bot' }) => {
 
   useEffect(() => {
     console.log('🔵 Loading Telegram widget for bot:', botName);
-    
+
     // Create the script element
     const script = document.createElement('script');
     script.src = 'https://telegram.org/js/telegram-widget.js?22';
@@ -26,7 +26,7 @@ const TelegramLoginButton = ({ onAuth, botName = 'Arbarea_bot' }) => {
     script.onload = () => {
       console.log('✅ Telegram widget loaded successfully');
     };
-    
+
     script.onerror = (error) => {
       console.error('❌ Failed to load Telegram widget:', error);
     };
@@ -39,7 +39,7 @@ const TelegramLoginButton = ({ onAuth, botName = 'Arbarea_bot' }) => {
 
     // Cleanup
     return () => {
-      delete window.onTelegramAuth;
+      window.onTelegramAuth = undefined;
     };
   }, [onAuth, botName]);
 

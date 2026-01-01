@@ -40,10 +40,9 @@ export const WishlistProvider = ({ children }) => {
     if (isInWishlist(product.id)) {
       removeFromWishlist(product.id);
       return false; // Removed
-    } else {
-      addToWishlist(product);
-      return true; // Added
     }
+    addToWishlist(product);
+    return true; // Added
   };
 
   return (

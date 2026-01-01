@@ -1,10 +1,18 @@
-import { CreditCard, Loader2, X, MapPin, ChevronRight, Check } from 'lucide-react';
-import { useState, lazy, Suspense } from 'react';
+import {
+  CreditCard,
+  Loader2,
+  X,
+  MapPin,
+  ChevronRight,
+  Check,
+} from 'lucide-react';
+import { useState, lazy, Suspense, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { supabase } from '../../lib/supabase';
 import { sendTelegramNotification } from '../../lib/telegram';
 import { initPayment } from '../../lib/tinkoff';
+import { reachGoal, ecommercePurchase } from '../../lib/yandex-metrica';
 import DiscountBanner from './DiscountBanner';
 
 // Lazy load delivery selector for performance
@@ -27,6 +35,14 @@ const CheckoutModal = ({ onClose }) => {
   // Calculate total with delivery
   const deliveryPrice = selectedDeliveryData?.price || 0;
   const cartTotal = subtotal + deliveryPrice;
+
+  // 🎯 YANDEX METRICA: Track checkout start
+  useEffect(() => {
+    reachGoal('CHECKOUT_START', {
+      cart_total: subtotal,
+      items_count: cartItems.length,
+    });
+  }, [subtotal, cartItems.length]);
 
   const saveOrderToDatabase = async (orderId, paymentUrl) => {
     try {
@@ -90,14 +106,23 @@ const CheckoutModal = ({ onClose }) => {
       // Get access token if user is logged in
       let token = null;
       if (user) {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         token = session?.access_token;
       }
 
-      const paymentUrl = await initPayment(orderId, items, description, {
-        email: formData.email,
-        phone: formData.phone,
-      }, token, selectedDeliveryData?.service?.id);
+      const paymentUrl = await initPayment(
+        orderId,
+        items,
+        description,
+        {
+          email: formData.email,
+          phone: formData.phone,
+        },
+        token,
+        selectedDeliveryData?.service?.id,
+      );
 
       if (paymentUrl) {
         await saveOrderToDatabase(orderId, paymentUrl);
@@ -127,6 +152,20 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
 `;
         await sendTelegramNotification(message, token);
 
+        // 🎯 YANDEX METRICA: Track purchase before redirect
+        ecommercePurchase({
+          orderId,
+          total: cartTotal,
+          shipping: deliveryPrice,
+          items: cartItems.map((item) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            category: item.category || 'Декор',
+            quantity: item.quantity || 1,
+          })),
+        });
+
         window.location.href = paymentUrl;
       } else {
         throw new Error('Ссылка на оплату не получена');
@@ -142,7 +181,7 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
     setSelectedDeliveryData(deliveryData);
     // Also update address in form if courier
     if (deliveryData?.service?.id === 'courier') {
-      setFormData(prev => ({ ...prev, address: deliveryData.address || '' }));
+      setFormData((prev) => ({ ...prev, address: deliveryData.address || '' }));
     }
   };
 
@@ -177,14 +216,19 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
 
               {/* Shopping List Summary */}
               <div className="mb-8 space-y-2">
-                <p className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mb-3">Ваш заказ</p>
+                <p className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mb-3">
+                  Ваш заказ
+                </p>
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
                     <span className="text-stone-400 truncate max-w-[200px]">
                       {item.name} x{item.quantity}
                     </span>
                     <span className="font-medium text-stone-200">
-                      {((item.price || 0) * (item.quantity || 1)).toLocaleString()} ₽
+                      {(
+                        (item.price || 0) * (item.quantity || 1)
+                      ).toLocaleString()}{' '}
+                      ₽
                     </span>
                   </div>
                 ))}
@@ -192,7 +236,9 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
 
               {/* Delivery Selection Button */}
               <div className="mb-8">
-                <p className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mb-4">Способ доставки</p>
+                <p className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mb-4">
+                  Способ доставки
+                </p>
                 <button
                   type="button"
                   onClick={() => setIsDeliveryModalOpen(true)}
@@ -207,17 +253,25 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
                       <>
                         <span
                           className="text-2xl w-12 h-12 flex items-center justify-center rounded-xl"
-                          style={{ backgroundColor: `${selectedDeliveryData.service.color}20` }}
+                          style={{
+                            backgroundColor: `${selectedDeliveryData.service.color}20`,
+                          }}
                         >
                           {selectedDeliveryData.service.logo}
                         </span>
                         <div className="text-left">
-                          <p className="text-sm font-bold text-white">{selectedDeliveryData.service.name}</p>
+                          <p className="text-sm font-bold text-white">
+                            {selectedDeliveryData.service.name}
+                          </p>
                           <p className="text-xs text-stone-400 truncate max-w-[180px]">
                             {selectedDeliveryData.address}
                           </p>
-                          <p className={`text-xs font-bold mt-1 ${selectedDeliveryData.price === 0 ? 'text-emerald-400' : 'text-amber-500'}`}>
-                            {selectedDeliveryData.price === 0 ? 'Бесплатно' : `${selectedDeliveryData.price} ₽`}
+                          <p
+                            className={`text-xs font-bold mt-1 ${selectedDeliveryData.price === 0 ? 'text-emerald-400' : 'text-amber-500'}`}
+                          >
+                            {selectedDeliveryData.price === 0
+                              ? 'Бесплатно'
+                              : `${selectedDeliveryData.price} ₽`}
                           </p>
                         </div>
                       </>
@@ -227,8 +281,12 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
                           <MapPin className="text-stone-400" size={24} />
                         </div>
                         <div className="text-left">
-                          <p className="text-sm font-bold text-white">Выберите способ доставки</p>
-                          <p className="text-xs text-stone-500">СДЭК, Boxberry, Почта России...</p>
+                          <p className="text-sm font-bold text-white">
+                            Выберите способ доставки
+                          </p>
+                          <p className="text-xs text-stone-500">
+                            СДЭК, Boxberry, Почта России...
+                          </p>
                         </div>
                       </>
                     )}
@@ -245,17 +303,38 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
                     <span>{(subtotal || 0).toLocaleString()} ₽</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className={deliveryPrice === 0 ? 'text-emerald-400' : 'text-stone-400'}>
-                      Доставка {selectedDeliveryData ? `(${selectedDeliveryData.service.name})` : ''}
+                    <span
+                      className={
+                        deliveryPrice === 0
+                          ? 'text-emerald-400'
+                          : 'text-stone-400'
+                      }
+                    >
+                      Доставка{' '}
+                      {selectedDeliveryData
+                        ? `(${selectedDeliveryData.service.name})`
+                        : ''}
                     </span>
-                    <span className={deliveryPrice === 0 ? 'text-emerald-400 font-bold' : 'text-stone-400'}>
-                      {!selectedDeliveryData ? 'Не выбрана' : deliveryPrice === 0 ? 'Бесплатно' : `${deliveryPrice.toLocaleString()} ₽`}
+                    <span
+                      className={
+                        deliveryPrice === 0
+                          ? 'text-emerald-400 font-bold'
+                          : 'text-stone-400'
+                      }
+                    >
+                      {!selectedDeliveryData
+                        ? 'Не выбрана'
+                        : deliveryPrice === 0
+                          ? 'Бесплатно'
+                          : `${deliveryPrice.toLocaleString()} ₽`}
                     </span>
                   </div>
                   <div className="h-px bg-white/5 my-2" />
                   <div className="flex justify-between font-bold text-lg text-white">
                     <span>К оплате</span>
-                    <span className="text-amber-500">{(cartTotal || 0).toLocaleString()} ₽</span>
+                    <span className="text-amber-500">
+                      {(cartTotal || 0).toLocaleString()} ₽
+                    </span>
                   </div>
                 </div>
               </div>
@@ -268,18 +347,27 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
                   </div>
                 )}
                 <div className="space-y-1">
-                  <label htmlFor="name" className="text-xs text-stone-400 ml-1">Ваше имя</label>
+                  <label htmlFor="name" className="text-xs text-stone-400 ml-1">
+                    Ваше имя
+                  </label>
                   <input
                     id="name"
                     required
                     placeholder="Иван Иванов"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full p-4 bg-stone-800/50 border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-xl"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label htmlFor="phone" className="text-xs text-stone-400 ml-1">Телефон</label>
+                  <label
+                    htmlFor="phone"
+                    className="text-xs text-stone-400 ml-1"
+                  >
+                    Телефон
+                  </label>
                   <input
                     id="phone"
                     required
@@ -287,11 +375,13 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
                     placeholder="+7 (999) 000-00-00"
                     value={formData.phone}
                     onFocus={() => {
-                      if (!formData.phone) setFormData({ ...formData, phone: '+7' });
+                      if (!formData.phone)
+                        setFormData({ ...formData, phone: '+7' });
                     }}
                     onChange={(e) => {
                       let val = e.target.value;
-                      if (!val.startsWith('+7')) val = `+7${val.replace(/^\+7/, '')}`;
+                      if (!val.startsWith('+7'))
+                        val = `+7${val.replace(/^\+7/, '')}`;
                       if (/^[\d\s()+-]*$/.test(val)) {
                         setFormData({ ...formData, phone: val });
                       }
@@ -300,13 +390,20 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
                   />
                 </div>
                 <div className="space-y-1">
-                  <label htmlFor="email" className="text-xs text-stone-400 ml-1">Email (для чека)</label>
+                  <label
+                    htmlFor="email"
+                    className="text-xs text-stone-400 ml-1"
+                  >
+                    Email (для чека)
+                  </label>
                   <input
                     id="email"
                     type="email"
                     placeholder="example@mail.ru"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     className="w-full p-4 bg-stone-800/50 border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-xl"
                   />
                 </div>
@@ -328,9 +425,14 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
 
           {step === 'processing' && (
             <div className="p-12 text-center">
-              <Loader2 size={32} className="text-amber-500 animate-spin mx-auto mb-4" />
+              <Loader2
+                size={32}
+                className="text-amber-500 animate-spin mx-auto mb-4"
+              />
               <h3 className="font-bold text-white">Обработка платежа...</h3>
-              <p className="text-stone-400 text-sm mt-2">Пожалуйста, не закрывайте окно</p>
+              <p className="text-stone-400 text-sm mt-2">
+                Пожалуйста, не закрывайте окно
+              </p>
             </div>
           )}
 
@@ -339,7 +441,9 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
               <div className="w-16 h-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/20">
                 <Check size={32} />
               </div>
-              <h3 className="font-bold text-xl mb-2 text-white">Заказ оформлен!</h3>
+              <h3 className="font-bold text-xl mb-2 text-white">
+                Заказ оформлен!
+              </h3>
               <p className="text-stone-400 text-sm mb-6">
                 Мы свяжемся с вами в ближайшее время для подтверждения деталей.
               </p>

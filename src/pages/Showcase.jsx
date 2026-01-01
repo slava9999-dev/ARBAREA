@@ -132,7 +132,7 @@ const Showcase = ({ onBuy, onOpenModal }) => {
           </div>
 
           {/* Декоративная линия градиента снизу панели */}
-          <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+          <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         </div>
 
         {/* Hero Banners */}
@@ -144,7 +144,11 @@ const Showcase = ({ onBuy, onOpenModal }) => {
               key={p.id}
               className="h-full transition-transform duration-300 hover:scale-[1.02]"
             >
-              <FlipProductCard product={p} onBuy={onBuy} onOpenModal={onOpenModal} />
+              <FlipProductCard
+                product={p}
+                onBuy={onBuy}
+                onOpenModal={onOpenModal}
+              />
             </div>
           ))}
         </div>

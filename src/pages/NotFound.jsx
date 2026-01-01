@@ -31,8 +31,8 @@ const NotFound = () => {
           Страница не найдена
         </h2>
         <p className="text-stone-400 mb-8 leading-relaxed">
-          Похоже, вы забрели в неизведанные уголки нашей мастерской. 
-          Эта страница не существует или была перемещена.
+          Похоже, вы забрели в неизведанные уголки нашей мастерской. Эта
+          страница не существует или была перемещена.
         </p>
       </motion.div>
 
@@ -51,7 +51,7 @@ const NotFound = () => {
           <ArrowLeft size={18} />
           Назад
         </button>
-        
+
         <button
           type="button"
           onClick={() => navigate('/')}
@@ -64,7 +64,7 @@ const NotFound = () => {
 
       {/* Decorative wood grain pattern */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-stone-900/50 to-transparent pointer-events-none" />
-      
+
       {/* Floating decorative elements */}
       <motion.div
         animate={{
@@ -73,7 +73,7 @@ const NotFound = () => {
         }}
         transition={{
           duration: 4,
-          repeat: Infinity,
+          repeat: Number.POSITIVE_INFINITY,
           ease: 'easeInOut',
         }}
         className="absolute top-1/4 left-10 w-8 h-8 bg-amber-500/20 rounded-lg blur-sm"
@@ -85,7 +85,7 @@ const NotFound = () => {
         }}
         transition={{
           duration: 3,
-          repeat: Infinity,
+          repeat: Number.POSITIVE_INFINITY,
           ease: 'easeInOut',
         }}
         className="absolute top-1/3 right-12 w-6 h-6 bg-amber-600/20 rounded-full blur-sm"

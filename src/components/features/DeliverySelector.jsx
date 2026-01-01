@@ -42,7 +42,12 @@ const DELIVERY_SERVICES = [
   },
 ];
 
-const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false }) => {
+const DeliverySelector = ({
+  isOpen,
+  onClose,
+  onSelect,
+  isFreeShipping = false,
+}) => {
   const [selectedService, setSelectedService] = useState(null);
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
@@ -116,7 +121,10 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
                   onClick={handleBack}
                   className="p-2 hover:bg-white/5 rounded-full transition-colors"
                 >
-                  <ChevronRight className="text-stone-400 rotate-180" size={20} />
+                  <ChevronRight
+                    className="text-stone-400 rotate-180"
+                    size={20}
+                  />
                 </button>
               )}
               <div>
@@ -126,7 +134,9 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
                   {step === 'confirm' && 'Подтвердите'}
                 </h3>
                 {isFreeShipping && (
-                  <p className="text-xs text-emerald-400">✨ Бесплатная доставка для вас</p>
+                  <p className="text-xs text-emerald-400">
+                    ✨ Бесплатная доставка для вас
+                  </p>
                 )}
               </div>
             </div>
@@ -141,7 +151,6 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-4">
-            
             {/* Step 1: Service Selection */}
             {step === 'service' && (
               <div className="space-y-3">
@@ -164,7 +173,9 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
                       </span>
                       <div className="text-left">
                         <p className="font-bold text-white">{service.name}</p>
-                        <p className="text-xs text-stone-500">{service.description}</p>
+                        <p className="text-xs text-stone-500">
+                          {service.description}
+                        </p>
                         <div className="flex items-center gap-3 mt-1">
                           <span className="text-[10px] text-stone-400 flex items-center gap-1">
                             <Clock size={10} /> {service.days} дн.
@@ -173,13 +184,20 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={`font-bold ${isFreeShipping ? 'text-emerald-400' : 'text-amber-500'}`}>
+                      <p
+                        className={`font-bold ${isFreeShipping ? 'text-emerald-400' : 'text-amber-500'}`}
+                      >
                         {isFreeShipping ? '0 ₽' : `${service.basePrice} ₽`}
                       </p>
                       {isFreeShipping && service.basePrice > 0 && (
-                        <p className="text-[10px] text-stone-500 line-through">{service.basePrice} ₽</p>
+                        <p className="text-[10px] text-stone-500 line-through">
+                          {service.basePrice} ₽
+                        </p>
                       )}
-                      <ChevronRight className="text-stone-600 group-hover:text-stone-400 ml-auto mt-1" size={16} />
+                      <ChevronRight
+                        className="text-stone-600 group-hover:text-stone-400 ml-auto mt-1"
+                        size={16}
+                      />
                     </div>
                   </button>
                 ))}
@@ -197,14 +215,24 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
                     {selectedService.logo}
                   </span>
                   <div>
-                    <p className="font-bold text-white text-sm">{selectedService.name}</p>
-                    <p className="text-xs text-stone-500">{selectedService.days} дней</p>
+                    <p className="font-bold text-white text-sm">
+                      {selectedService.name}
+                    </p>
+                    <p className="text-xs text-stone-500">
+                      {selectedService.days} дней
+                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs text-stone-400 ml-1">Город</label>
+                  <label
+                    htmlFor="delivery-city"
+                    className="text-xs text-stone-400 ml-1"
+                  >
+                    Город
+                  </label>
                   <input
+                    id="delivery-city"
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
@@ -214,15 +242,22 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs text-stone-400 ml-1">
-                    {selectedService.id === 'courier' ? 'Полный адрес доставки' : 'Адрес (улица, дом, квартира)'}
+                  <label
+                    htmlFor="delivery-address"
+                    className="text-xs text-stone-400 ml-1"
+                  >
+                    {selectedService.id === 'courier'
+                      ? 'Полный адрес доставки'
+                      : 'Адрес (улица, дом, квартира)'}
                   </label>
                   <textarea
+                    id="delivery-address"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    placeholder={selectedService.id === 'courier' 
-                      ? "ул. Ленина 15, кв. 42, домофон 42#" 
-                      : "ул. Ленина 15 (ближайший ПВЗ найду сам)"
+                    placeholder={
+                      selectedService.id === 'courier'
+                        ? 'ул. Ленина 15, кв. 42, домофон 42#'
+                        : 'ул. Ленина 15 (ближайший ПВЗ найду сам)'
                     }
                     rows={3}
                     className="w-full p-4 bg-stone-800/50 border border-white/10 rounded-xl text-white placeholder-stone-500 focus:border-amber-500 focus:outline-none resize-none"
@@ -231,7 +266,8 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
 
                 {selectedService.id !== 'courier' && (
                   <p className="text-xs text-stone-500 bg-stone-800/30 p-3 rounded-lg">
-                    💡 Мы найдём ближайший пункт выдачи {selectedService.name} к вашему адресу и отправим трек-номер в SMS/Telegram
+                    💡 Мы найдём ближайший пункт выдачи {selectedService.name} к
+                    вашему адресу и отправим трек-номер в SMS/Telegram
                   </p>
                 )}
 
@@ -251,7 +287,9 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
             {step === 'confirm' && selectedService && (
               <div className="space-y-4">
                 <div className="p-4 bg-stone-800/30 rounded-2xl border border-white/5">
-                  <p className="text-[10px] text-stone-500 uppercase tracking-wider mb-3">Способ доставки</p>
+                  <p className="text-[10px] text-stone-500 uppercase tracking-wider mb-3">
+                    Способ доставки
+                  </p>
                   <div className="flex items-center gap-4">
                     <span
                       className="text-3xl w-14 h-14 flex items-center justify-center rounded-xl"
@@ -260,16 +298,25 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
                       {selectedService.logo}
                     </span>
                     <div>
-                      <p className="font-bold text-white text-lg">{selectedService.name}</p>
-                      <p className="text-xs text-stone-400">{selectedService.days} дней</p>
+                      <p className="font-bold text-white text-lg">
+                        {selectedService.name}
+                      </p>
+                      <p className="text-xs text-stone-400">
+                        {selectedService.days} дней
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="p-4 bg-stone-800/30 rounded-2xl border border-white/5">
-                  <p className="text-[10px] text-stone-500 uppercase tracking-wider mb-3">Адрес доставки</p>
+                  <p className="text-[10px] text-stone-500 uppercase tracking-wider mb-3">
+                    Адрес доставки
+                  </p>
                   <div className="flex items-start gap-3">
-                    <MapPin className="text-amber-500 shrink-0 mt-0.5" size={20} />
+                    <MapPin
+                      className="text-amber-500 shrink-0 mt-0.5"
+                      size={20}
+                    />
                     <div>
                       <p className="font-bold text-white">{city}</p>
                       <p className="text-sm text-stone-400">{address}</p>
@@ -280,13 +327,21 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
                 <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-stone-400">Стоимость доставки</p>
+                      <p className="text-sm text-stone-400">
+                        Стоимость доставки
+                      </p>
                       {isFreeShipping && selectedService.basePrice > 0 && (
-                        <p className="text-xs text-stone-500 line-through">{selectedService.basePrice} ₽</p>
+                        <p className="text-xs text-stone-500 line-through">
+                          {selectedService.basePrice} ₽
+                        </p>
                       )}
                     </div>
-                    <p className={`text-2xl font-bold ${isFreeShipping ? 'text-emerald-400' : 'text-amber-500'}`}>
-                      {isFreeShipping ? '0 ₽' : `${selectedService.basePrice} ₽`}
+                    <p
+                      className={`text-2xl font-bold ${isFreeShipping ? 'text-emerald-400' : 'text-amber-500'}`}
+                    >
+                      {isFreeShipping
+                        ? '0 ₽'
+                        : `${selectedService.basePrice} ₽`}
                     </p>
                   </div>
                 </div>
@@ -294,7 +349,8 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
                 <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
                   <p className="text-xs text-blue-300 flex items-start gap-2">
                     <Truck size={14} className="shrink-0 mt-0.5" />
-                    После оплаты мы отправим ваш заказ и пришлём трек-номер для отслеживания
+                    После оплаты мы отправим ваш заказ и пришлём трек-номер для
+                    отслеживания
                   </p>
                 </div>
               </div>

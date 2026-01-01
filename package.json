@@ -24,6 +24,8 @@
     "scan": "node scripts/full-scan.cjs",
     "audit": "npm audit --audit-level=moderate",
     "audit:fix": "npm audit fix",
+    "generate:yml": "node scripts/generate-yml.mjs",
+    "generate:sitemap": "node scripts/generate-sitemap.mjs",
     "prepare": "husky"
   },
   "lint-staged": {

@@ -22,7 +22,7 @@ const TelegramLoginButton = ({ botName = 'ArbareaBot', onAuthSuccess }) => {
       window.onTelegramAuth = async (user) => {
         console.log('Telegram User:', user);
         showToast('Вход через Telegram временно недоступен', 'info');
-        
+
         /* 
         TODO: Implement Telegram Auth with Supabase
         1. Send user data to backend
@@ -30,7 +30,7 @@ const TelegramLoginButton = ({ botName = 'ArbareaBot', onAuthSuccess }) => {
         3. Get/Create user in Supabase
         4. Return session
         */
-        
+
         /*
         try {
           const response = await fetch('/api/auth-telegram', {
@@ -55,7 +55,7 @@ const TelegramLoginButton = ({ botName = 'ArbareaBot', onAuthSuccess }) => {
       script.setAttribute('data-onauth', 'onTelegramAuth(user)');
       containerRef.current.appendChild(script);
     }
-  }, [botName, showToast, onAuthSuccess]);
+  }, [botName, showToast]);
 
   return <div ref={containerRef} className="flex justify-center" />;
 };
