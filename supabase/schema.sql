@@ -277,6 +277,65 @@ grant select, insert, update on public.profiles to authenticated;
 -- Для products: чтение доступно всем (если хотите), но изменения — только admin
 -- (grants можно настроить отдельно в зависимости от приложения)
 
+-- ---------------------------------------------------------------------
+-- 7. INDIVIDUAL ORDERS (Индивидуальные заказы)
+-- ---------------------------------------------------------------------
+create table if not exists public.individual_orders (
+  id uuid default gen_random_uuid() primary key,
+  order_id text not null,
+  user_id uuid references auth.users(id) on delete cascade,
+  user_email text,
+  user_name text,
+  user_phone text,
+  description text not null,
+  dimensions jsonb,
+  details text,
+  file_url text,
+  file_name text,
+  status text default 'pending',
+  notes text,
+  created_at timestamptz default timezone('utc'::text, now()) not null,
+  updated_at timestamptz default timezone('utc'::text, now()) not null
+);
+
+alter table public.individual_orders enable row level security;
+
+-- SELECT: пользователь видит свои заявки, админ — все
+drop policy if exists ind_orders_select on public.individual_orders;
+create policy ind_orders_select
+  on public.individual_orders
+  for select
+  to authenticated
+  using (
+    auth.uid() = user_id
+    OR (auth.jwt() ->> 'role') = 'admin'
+  );
+
+-- INSERT: только аутентифицированный пользователь для себя
+drop policy if exists ind_orders_insert on public.individual_orders;
+create policy ind_orders_insert
+  on public.individual_orders
+  for insert
+  to authenticated
+  with check (
+    auth.uid() = user_id
+  );
+
+-- UPDATE: админ может менять статус
+drop policy if exists ind_orders_update_admin on public.individual_orders;
+create policy ind_orders_update_admin
+  on public.individual_orders
+  for update
+  to authenticated
+  using ((auth.jwt() ->> 'role') = 'admin')
+  with check ((auth.jwt() ->> 'role') = 'admin');
+
+-- Триггер updated_at
+drop trigger if exists on_ind_orders_updated on public.individual_orders;
+create trigger on_ind_orders_updated
+  before update on public.individual_orders
+  for each row execute procedure handle_updated_at();
+
 -- =====================================================================
 -- Конец скрипта
 -- =====================================================================

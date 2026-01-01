@@ -48,9 +48,10 @@ const IndividualOrderForm = () => {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     };
-    
+
     // Construct user display string safely
-    const userDisplay = user?.user_metadata?.name || user?.email || user?.phone || 'Неизвестно';
+    const userDisplay =
+      user?.user_metadata?.name || user?.email || user?.phone || 'Неизвестно';
 
     const message = `
 🔔 <b>Новая заявка на индивидуальный заказ!</b>
@@ -69,7 +70,12 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
         `.trim();
 
     try {
-      const result = await sendTelegramNotification(message);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const result = await sendTelegramNotification(message, token);
       if (result && result.ok === false) {
         throw new Error(result.description || 'Telegram API error');
       }
@@ -106,9 +112,9 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
           // Don't block submission if file upload fails, just warn
           alert('Не удалось загрузить файл, но заявка будет отправлена.');
         } else {
-          const { data: { publicUrl } } = supabase.storage
-            .from('orders')
-            .getPublicUrl(filePath);
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from('orders').getPublicUrl(filePath);
           fileUrl = publicUrl;
         }
       }
@@ -143,7 +149,7 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
         // Let's put details in 'items' as a special item type or create a table on the fly?
         // Better: create a dedicated table in schema instructions. I'll add providedSQL.
       };
-      
+
       // Let's create a dedicated table for individual orders in SQL
       const { error: dbError } = await supabase
         .from('individual_orders')
@@ -151,20 +157,24 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
 
       if (dbError) {
         // Fallback: if table doesn't exist, try putting in 'orders' table as a fallback
-        console.warn('individual_orders table might be missing, trying main orders table');
+        console.warn(
+          'individual_orders table might be missing, trying main orders table',
+        );
         const fallbackOrder = {
-            order_id: orderId,
-            user_id: user.id,
-            user_phone: orderData.user_phone,
-            user_name: orderData.user_name,
-            notes: orderData.notes,
-            status: 'pending_individual',
-            total: 0
+          order_id: orderId,
+          user_id: user.id,
+          user_phone: orderData.user_phone,
+          user_name: orderData.user_name,
+          notes: orderData.notes,
+          status: 'pending_individual',
+          total: 0,
         };
-        const { error: fallbackError } = await supabase.from('orders').insert([fallbackOrder]);
+        const { error: fallbackError } = await supabase
+          .from('orders')
+          .insert([fallbackOrder]);
         if (fallbackError) throw fallbackError;
       } else {
-         // success
+        // success
       }
 
       await handleSendNotification(orderData);
@@ -195,8 +205,13 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-4">
-           <div className="space-y-1">
-            <label htmlFor="userName" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Ваше имя</label>
+          <div className="space-y-1">
+            <label
+              htmlFor="userName"
+              className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+            >
+              Ваше имя
+            </label>
             <input
               id="userName"
               required
@@ -206,8 +221,13 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
               className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
             />
           </div>
-           <div className="space-y-1">
-            <label htmlFor="userPhone" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Телефон для связи</label>
+          <div className="space-y-1">
+            <label
+              htmlFor="userPhone"
+              className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+            >
+              Телефон для связи
+            </label>
             <input
               id="userPhone"
               required
@@ -221,60 +241,80 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
         </div>
 
         <div className="space-y-1">
-            <label htmlFor="description" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Что будем создавать?</label>
-            <input
-              id="description"
-              required
-              placeholder="Например: Обеденный стол из дуба"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
-            />
+          <label
+            htmlFor="description"
+            className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+          >
+            Что будем создавать?
+          </label>
+          <input
+            id="description"
+            required
+            placeholder="Например: Обеденный стол из дуба"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+          />
         </div>
 
         <div className="flex gap-3">
           <div className="w-1/2 space-y-1">
-            <label htmlFor="length" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Длина (см)</label>
+            <label
+              htmlFor="length"
+              className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+            >
+              Длина (см)
+            </label>
             <input
-                id="length"
-                type="number"
-                placeholder="0"
-                value={formData.length}
-                onChange={(e) =>
+              id="length"
+              type="number"
+              placeholder="0"
+              value={formData.length}
+              onChange={(e) =>
                 setFormData({ ...formData, length: e.target.value })
-                }
-                className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+              }
+              className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
             />
           </div>
           <div className="w-1/2 space-y-1">
-            <label htmlFor="width" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Ширина (см)</label>
+            <label
+              htmlFor="width"
+              className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+            >
+              Ширина (см)
+            </label>
             <input
-                id="width"
-                type="number"
-                placeholder="0"
-                value={formData.width}
-                onChange={(e) =>
+              id="width"
+              type="number"
+              placeholder="0"
+              value={formData.width}
+              onChange={(e) =>
                 setFormData({ ...formData, width: e.target.value })
-                }
-                className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+              }
+              className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
             />
           </div>
         </div>
 
         <div className="space-y-1">
-            <label htmlFor="details" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Детали и пожелания</label>
-            <textarea
-              id="details"
-              placeholder="Опишите желаемый цвет, материал, стиль и другие важные детали..."
-              rows={4}
-              value={formData.details}
-              onChange={(e) =>
-                setFormData({ ...formData, details: e.target.value })
-              }
-              className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all resize-none"
-            />
+          <label
+            htmlFor="details"
+            className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+          >
+            Детали и пожелания
+          </label>
+          <textarea
+            id="details"
+            placeholder="Опишите желаемый цвет, материал, стиль и другие важные детали..."
+            rows={4}
+            value={formData.details}
+            onChange={(e) =>
+              setFormData({ ...formData, details: e.target.value })
+            }
+            className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all resize-none"
+          />
         </div>
 
         <input
@@ -311,7 +351,10 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
               </div>
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); removeFile(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeFile();
+                }}
                 className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-full transition-colors text-stone-400 hover:text-red-500"
               >
                 <X size={20} />
@@ -320,7 +363,10 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
           ) : (
             <>
               <div className="w-12 h-12 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <Upload size={24} className="text-stone-400 group-hover:text-amber-500 transition-colors" />
+                <Upload
+                  size={24}
+                  className="text-stone-400 group-hover:text-amber-500 transition-colors"
+                />
               </div>
               <span className="text-sm font-medium text-stone-600 dark:text-stone-300">
                 Прикрепить эскиз или фото
