@@ -92,8 +92,29 @@ const MapController = ({ center }) => {
   return null;
 };
 
-// Mock pickup points generator (in production, fetch from real APIs)
-const generateMockPickupPoints = (center, serviceId, count = 15) => {
+// Fetch real pickup points from API
+const fetchPickupPoints = async (center, serviceId) => {
+  // For CDEK, use real API
+  if (serviceId === 'cdek') {
+    try {
+      const response = await fetch(
+        `/api/cdek?action=points&lat=${center[0]}&lng=${center[1]}`
+      );
+      const data = await response.json();
+      if (data.success && data.points) {
+        return data.points;
+      }
+    } catch (error) {
+      console.error('CDEK API error:', error);
+    }
+  }
+  
+  // For other services or if API fails, use mock data
+  return generateMockPoints(center, serviceId);
+};
+
+// Mock pickup points generator (fallback for services without API)
+const generateMockPoints = (center, serviceId, count = 15) => {
   const points = [];
   const service = DELIVERY_SERVICES.find(s => s.id === serviceId);
   
@@ -125,6 +146,7 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
   const [mapCenter, setMapCenter] = useState([55.7558, 37.6173]); // Moscow default
   const [pickupPoints, setPickupPoints] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingPoints, setIsLoadingPoints] = useState(false);
   const [step, setStep] = useState('service'); // service, map, confirm
 
   // Geocode address
@@ -175,10 +197,17 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
   // Load pickup points when service or center changes
   useEffect(() => {
     if (selectedService && step === 'map') {
-      const points = generateMockPickupPoints(mapCenter, selectedService.id);
-      setPickupPoints(points);
+      setIsLoadingPoints(true);
+      fetchPickupPoints(mapCenter, selectedService.id)
+        .then(points => {
+          setPickupPoints(points);
+        })
+        .finally(() => {
+          setIsLoadingPoints(false);
+        });
     }
   }, [selectedService, mapCenter, step]);
+
 
   const handleServiceSelect = (service) => {
     setSelectedService(service);
@@ -394,9 +423,19 @@ const DeliverySelector = ({ isOpen, onClose, onSelect, isFreeShipping = false })
 
                   {/* Points count badge */}
                   <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full z-[1000]">
-                    <MapPin size={12} className="inline mr-1" />
-                    {pickupPoints.length} пунктов рядом
+                    {isLoadingPoints ? (
+                      <>
+                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin inline-block mr-1.5" />
+                        Загрузка...
+                      </>
+                    ) : (
+                      <>
+                        <MapPin size={12} className="inline mr-1" />
+                        {pickupPoints.length} пунктов рядом
+                      </>
+                    )}
                   </div>
+
                 </div>
 
                 {/* Points List (collapsed) */}
