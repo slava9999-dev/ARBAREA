@@ -1,30 +1,56 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
     // ✅ Public products catalog (READ-ONLY)
     match /products/{productId} {
       allow read: if true;
-      allow write: if false; // Явный запрет записи
+      allow write: if false; 
     }
 
-    // ✅ User specific data
+    // ✅ User data and cart
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isOwner(userId) || isAdmin();
 
-      // Cart items
       match /cart/{cartItemId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if isOwner(userId) || isAdmin();
       }
     }
 
-    // ✅ Orders (Root collection)
+    // ✅ Orders (Standard)
     match /orders/{orderId} {
-      // Пользователь может читать свои заказы
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      // Создавать можно, если userId совпадает
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      // Обновлять (например, статус оплаты) - пока разрешим владельцу, но лучше через сервер
-      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Authenticated users can read their own orders
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Creating an order: must be owner of the data
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // ❌ SECURITY FIX: Only Admins can update orders (e.g., change status to 'paid')
+      allow update: if isAdmin();
+      
+      // Prevent deletion for audit purposes
+      allow delete: if isAdmin();
+    }
+
+    // ✅ Individual Orders (Custom requests)
+    match /individual-orders/{orderId} {
+      allow create: if isAuthenticated();
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update, delete: if isAdmin();
     }
   }
 }
+

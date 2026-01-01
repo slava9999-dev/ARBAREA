@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import { applyCors } from './_cors.js';
+import admin from './_firebase-admin.js';
 
 export default async function handler(req, res) {
   // Apply secure CORS
@@ -13,6 +14,19 @@ export default async function handler(req, res) {
 
   if (!token || !chatId)
     return res.status(500).json({ error: 'Server config missing' });
+
+  // ✅ SECURITY: Verify Authentication Token
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const idToken = authHeader.split('Bearer ')[1];
+  try {
+    await admin.auth().verifyIdToken(idToken);
+  } catch (_error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
 
   try {
     const response = await fetch(
@@ -29,16 +43,12 @@ export default async function handler(req, res) {
     );
     const data = await response.json();
     
-    // Log for debugging
-    if (!data.ok) {
-      console.error('Telegram API Error:', data);
-    } else {
-      console.log('Telegram message sent successfully');
-    }
+    // Log success for auditing
+    console.log('Telegram message sent');
     
     return res.status(200).json(data);
-  } catch (error) {
-    console.error('Telegram API Exception:', error);
-    return res.status(500).json({ error: error.message });
+  } catch (err) {
+    console.error('Telegram API Exception:', err.message);
+    return res.status(500).json({ error: 'Failed to send notification' });
   }
 }

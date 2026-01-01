@@ -1,10 +1,13 @@
-export const sendTelegramNotification = async (text) => {
+export const sendTelegramNotification = async (text, token) => {
   try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch('/api/send-telegram', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({ message: text }),
     });
     return await response.json();

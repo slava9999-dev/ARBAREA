@@ -1,8 +1,10 @@
 import { Bot, Loader2, Send, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { sendMessageToGemini } from '../lib/gemini';
+import { useAuth } from '../context/AuthContext';
 
 const AIChat = () => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState([
     {
       text: 'Добро пожаловать в Arbarea! Я помогу вам выбрать изделия из натурального дерева. Что вас интересует: панно, рейлинги или освещение?',
@@ -27,7 +29,9 @@ const AIChat = () => {
     setIsLoading(true);
 
     try {
-      const responseText = await sendMessageToGemini(messages, input);
+      const token = user ? await user.getIdToken() : null;
+      const responseText = await sendMessageToGemini(messages, input, token);
+
       setMessages((prev) => [...prev, { text: responseText, sender: 'ai' }]);
     } catch (_error) {
       setMessages((prev) => [

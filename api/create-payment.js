@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import fetch from 'node-fetch';
 import { applyCors } from './_cors.js';
+import admin from './_firebase-admin.js';
 
 export default async function handler(req, res) {
   // Apply secure CORS
@@ -22,6 +23,23 @@ export default async function handler(req, res) {
       receipt,
     } = req.body;
 
+    // ✅ SECURITY: Verify Authentication Token
+    let isUserAuthenticated = false;
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      const idToken = authHeader.split('Bearer ')[1];
+      try {
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        if (decodedToken) {
+          isUserAuthenticated = true;
+          console.log(`Verified user: ${decodedToken.uid}`);
+        }
+      } catch (error) {
+        console.warn('Invalid auth token provided:', error.message);
+        // Fallback to non-authenticated
+      }
+    }
+
     // ✅ SECURITY: Get credentials ONLY from server-side env vars
     const terminalKey = process.env.TINKOFF_TERMINAL_KEY;
     const password = process.env.TINKOFF_PASSWORD || process.env.TINKOFF_SECRET;
@@ -33,93 +51,72 @@ export default async function handler(req, res) {
         .json({ success: false, error: 'Server configuration error' });
     }
 
-    // ✅ CRITICAL: Calculate total amount on SERVER (not trusting client)
-    // Base product prices (without variants)
-    const BASE_PRODUCT_PRICES = {
-      // Products with variants (base price)
-      101: 2500, // Рейлинг Ясень (60см base)
-      102: 2000, // Держатель Ясень (60см base)
-
-      // Fixed price products
-      103: 8500, // Панно Эхо Леса
-      104: 4900, // Панно Зимние Горы
-      105: 600, // Подставка Малый Дом
-
-      // Donation fallback
-      'donate-100': 100,
-    };
-
-    // Variant price modifiers
-    const VARIANT_MODIFIERS = {
-      101: {
-        // Рейлинг Ясень
-        size: { 600: 0, 800: 500, 1000: 1000 },
-      },
-      102: {
-        // Держатель Ясень
-        size: { 600: 0, 800: 500, 1000: 1000 },
-      },
-      'railing-premium-01': {
-        size: { 60: 0, 80: 1200, 100: 2500 },
-      },
-    };
-
-    function calculateProductPrice(itemId) {
-      // Check if it's a donation (format: "donate-500")
-      if (String(itemId).startsWith('donate-')) {
-        const amount = parseInt(String(itemId).split('-')[1], 10);
-        if (amount && amount >= 10 && amount <= 100000) {
-          return amount;
-        }
-        return null; // Invalid donation amount
-      }
-
-      // Check if it's a variant ID (format: "101-bronze-600")
-      const itemIdStr = String(itemId);
-      const parts = itemIdStr.split('-');
-      const baseId = parts[0];
-
-      // Get base price
-      let price = BASE_PRODUCT_PRICES[itemId] || BASE_PRODUCT_PRICES[baseId];
-
-      if (!price) {
-        return null; // Invalid product
-      }
-
-      // Add variant modifiers if applicable
-      if (parts.length > 1 && VARIANT_MODIFIERS[baseId]) {
-        const sizeValue = parseInt(parts[parts.length - 1], 10); // Last part is size
-        const sizeModifier = VARIANT_MODIFIERS[baseId].size?.[sizeValue] || 0;
-        price += sizeModifier;
-      }
-
-      return price;
-    }
-
+    // ✅ SECURE PRICING: Fetch actual prices from Firestore
+    const db = admin.firestore();
+    const productRefs = items.map(item => db.collection('products').doc(String(item.id).split('-')[0]));
+    
     let calculatedAmount = 0;
     const receiptItems = [];
+    let hasDonation = false;
+
+    // Fetch all products in parallel for performance
+    const productSnapshots = await db.getAll(...productRefs);
+    const productDataMap = {};
+    productSnapshots.forEach(snap => {
+      if (snap.exists) {
+        productDataMap[snap.id] = snap.data();
+      }
+    });
 
     if (items && Array.isArray(items)) {
-      let hasDonation = false;
       for (const item of items) {
-        const serverPrice = calculateProductPrice(item.id);
-        if (!serverPrice) {
-          return res.status(400).json({
-            success: false,
-            error: `Invalid product ID: ${item.id}`,
-          });
+        const itemIdStr = String(item.id);
+        
+        // Handle Donations
+        if (itemIdStr.startsWith('donate-')) {
+          const amount = parseInt(itemIdStr.split('-')[1], 10);
+          if (amount && amount >= 10 && amount <= 100000) {
+            hasDonation = true;
+            const itemTotal = amount * (item.quantity || 1);
+            calculatedAmount += itemTotal;
+            receiptItems.push({
+              Name: item.name || 'Благотворительный взнос',
+              Price: amount * 100,
+              Quantity: item.quantity || 1,
+              Amount: itemTotal * 100,
+              Tax: 'none',
+            });
+            continue;
+          }
+          return res.status(400).json({ success: false, error: `Invalid donation: ${item.id}` });
         }
 
-        if (String(item.id).startsWith('donate-')) {
-          hasDonation = true;
+        // Handle Standard Products
+        const baseId = itemIdStr.split('-')[0];
+        const productData = productDataMap[baseId];
+
+        if (!productData) {
+          return res.status(400).json({ success: false, error: `Product not found: ${baseId}` });
         }
 
-        const itemTotal = serverPrice * (item.quantity || 1);
+        let price = productData.basePrice || productData.price;
+        
+        // Add variant modifiers from DB if applicable
+        const parts = itemIdStr.split('-');
+        if (parts.length > 1 && productData.variants?.sizes) {
+           const requestedSize = parseInt(parts[parts.length - 1], 10);
+           const sizeOption = productData.variants.sizes.find(s => s.value === requestedSize);
+           if (sizeOption) {
+             price += (sizeOption.priceMod || 0);
+           }
+        }
+
+        const itemTotal = price * (item.quantity || 1);
         calculatedAmount += itemTotal;
 
         receiptItems.push({
-          Name: item.name || 'Товар',
-          Price: serverPrice * 100, // Копейки
+          Name: item.name || productData.name,
+          Price: price * 100,
           Quantity: item.quantity || 1,
           Amount: itemTotal * 100,
           Tax: 'none',
@@ -128,7 +125,7 @@ export default async function handler(req, res) {
 
       // Add shipping cost for non-authorized users (if not a donation)
       const SHIPPING_COST = 500;
-      if (!req.body.isAuth && !hasDonation) {
+      if (!isUserAuthenticated && !hasDonation) {
         calculatedAmount += SHIPPING_COST;
         
         // Add shipping as a separate receipt item

@@ -1,8 +1,8 @@
 :root {
-  /* Primary palette (HSL) */
-  --color-primary-h: 220;
-  --color-primary-s: 90%;
-  --color-primary-l: 55%;
+  /* Primary palette (Arbarea Amber / Warm Wood) */
+  --color-primary-h: 38;
+  --color-primary-s: 92%;
+  --color-primary-l: 50%;
   --color-primary: hsl(
     var(--color-primary-h),
     var(--color-primary-s),
@@ -11,7 +11,7 @@
   --color-primary-dark: hsl(
     var(--color-primary-h),
     var(--color-primary-s),
-    45%
+    40%
   );
   --color-primary-light: hsl(
     var(--color-primary-h),
@@ -19,23 +19,23 @@
     65%
   );
 
-  /* Accent palette */
-  --color-accent-h: 340;
-  --color-accent-s: 80%;
-  --color-accent-l: 60%;
+  /* Accent palette (Natural Forest / Deep Green) */
+  --color-accent-h: 120;
+  --color-accent-s: 15%;
+  --color-accent-l: 40%;
   --color-accent: hsl(
     var(--color-accent-h),
     var(--color-accent-s),
     var(--color-accent-l)
   );
 
-  /* Neutral palette */
-  --color-bg: hsl(0, 0%, 100%);
-  --color-bg-dark: hsl(0, 0%, 10%);
-  --color-surface: hsl(0, 0%, 98%);
-  --color-surface-dark: hsl(0, 0%, 12%);
-  --color-text: hsl(0, 0%, 10%);
-  --color-text-dark: hsl(0, 0%, 90%);
+  /* Neutral palette (Stone & Soil) */
+  --color-bg: hsl(20, 10%, 98%);
+  --color-bg-dark: hsl(24, 10%, 10%);
+  --color-surface: hsl(24, 6%, 95%);
+  --color-surface-dark: hsl(24, 6%, 12%);
+  --color-text: hsl(24, 15%, 15%);
+  --color-text-dark: hsl(24, 10%, 90%);
 
   /* Spacing */
   --spacing-xxs: 0.25rem;
@@ -44,12 +44,12 @@
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
-  --spacing-xxl: 3rem;
+  --spacing-xxl: 3.2rem;
 
-  /* Border radius */
-  --radius-sm: 0.4rem;
-  --radius-md: 0.8rem;
-  --radius-lg: 1.2rem;
+  /* Border radius (More organic) */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
 }
 
 /* Dark mode overrides */

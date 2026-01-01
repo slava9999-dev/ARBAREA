@@ -68,12 +68,18 @@ const CheckoutModal = ({ onClose }) => {
         quantity: item.quantity || 1,
       }));
 
+      // Get Auth Token if user is logged in
+      let token = null;
+      if (user) {
+        token = await user.getIdToken();
+      }
+
       // Call Tinkoff API
       const paymentUrl = await initPayment(orderId, items, description, {
         email: formData.email,
         phone: formData.phone,
-        isAuth: !!user,
-      });
+      }, token);
+
 
       if (paymentUrl) {
         // Сохранение заказа в Firestore

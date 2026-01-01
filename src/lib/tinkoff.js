@@ -1,17 +1,23 @@
-export async function initPayment(orderId, items, description, customerData) {
+export async function initPayment(orderId, items, description, customerData, token) {
   try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch('/api/create-payment', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         orderId,
         items, // ✅ Send items for server-side price calculation
         description,
         customerEmail: customerData?.email || '',
         customerPhone: customerData?.phone || '',
-        isAuth: customerData?.isAuth || false,
+        // isAuth is now verified on server via token
       }),
     });
+
     const data = await response.json();
     if (!response.ok) {
       throw new Error(

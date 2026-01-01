@@ -1,5 +1,6 @@
 // AI Ассистент на базе OpenAI GPT
 import { applyCors } from './_cors.js';
+import admin from './_firebase-admin.js';
 
 const SYSTEM_PROMPT = `Ты — Интеллектуальный Консьерж премиальной столярной студии "Arbarea".
 Твоя миссия: Помогать клиентам выбирать предметы интерьера из натурального дерева, транслируя философию "Тактильной эстетики".
@@ -41,6 +42,23 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // ✅ SECURITY: Optional Authentication for AI usage
+  let isUserAuthenticated = false;
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith('Bearer ')) {
+    const idToken = authHeader.split('Bearer ')[1];
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      if (decodedToken) {
+        isUserAuthenticated = true;
+      }
+    } catch (error) {
+      console.warn('Invalid AI Chat token:', error.message);
+    }
+  }
+
+  // Potential for rate-limiting non-authenticated users here
+
   try {
     const { message, history } = req.body;
 
@@ -68,8 +86,12 @@ export default async function handler(req, res) {
     // Добавляем текущее сообщение пользователя
     messages.push({
       role: 'user',
-      content: message,
+      content: isUserAuthenticated 
+        ? `${message} (Примечание для AI: Пользователь авторизован и имеет право на скидку 10%)`
+        : message,
     });
+
+    // Вызов OpenAI API
 
     // Вызов OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
