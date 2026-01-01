@@ -3,7 +3,7 @@
  * Receives payment status updates and updates orders in Supabase
  */
 
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { supabaseAdmin } from './_supabase.js';
 
 export default async function handler(req, res) {
@@ -44,8 +44,8 @@ export default async function handler(req, res) {
     // Verify token signature
     const password = process.env.TINKOFF_PASSWORD;
     if (password && Token) {
-      const tokenData = { ...req.body };
-      delete tokenData.Token;
+      // Create token data without Token field using destructuring
+      const { Token: _, ...tokenData } = req.body;
       tokenData.Password = password;
 
       const sortedKeys = Object.keys(tokenData).sort();
@@ -94,6 +94,12 @@ export default async function handler(req, res) {
       return res.status(200).send('OK');
     }
 
+    // Idempotency check: Don't process if already paid/final
+    if (order.status === 'paid' && orderStatus === 'paid') {
+      console.log(`ℹ️ Order ${OrderId} is already paid. Skipping update.`);
+      return res.status(200).send('OK');
+    }
+
     // Update order status
     const { error: updateError } = await supabaseAdmin
       .from('orders')
@@ -108,11 +114,11 @@ export default async function handler(req, res) {
       console.error('❌ Error updating order:', updateError);
     } else {
       console.log(`✅ Order ${OrderId} updated to status: ${orderStatus}`);
-    }
-
-    // Send Telegram notification for successful payment
-    if (Status === 'CONFIRMED' && Success) {
-      await sendPaymentSuccessNotification(order, Amount);
+      
+      // Send Telegram notification ONLY if this is a fresh payment confirmation
+      if (Status === 'CONFIRMED' && Success && order.status !== 'paid') {
+        await sendPaymentSuccessNotification(order, Amount);
+      }
     }
 
     // Tinkoff expects "OK" response
@@ -120,8 +126,8 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('❌ Webhook error:', error);
-    // Return OK anyway to prevent retries
-    return res.status(200).send('OK');
+    // Return 500 for server errors so Tinkoff retries the request
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
 

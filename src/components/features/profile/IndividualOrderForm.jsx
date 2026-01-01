@@ -135,7 +135,6 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
           length: formData.length,
           width: formData.width,
         },
-        items: [], // Required by schema constraint if strict, but JSONB usually optional
         details: formData.details,
         file_url: fileUrl, // Custom field, ensures needed in schema or JSON items
         file_name: file?.name || null,
@@ -150,31 +149,13 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
         // Better: create a dedicated table in schema instructions. I'll add providedSQL.
       };
 
-      // Let's create a dedicated table for individual orders in SQL
+      // Insert into individual_orders table
       const { error: dbError } = await supabase
         .from('individual_orders')
         .insert([orderData]);
 
       if (dbError) {
-        // Fallback: if table doesn't exist, try putting in 'orders' table as a fallback
-        console.warn(
-          'individual_orders table might be missing, trying main orders table',
-        );
-        const fallbackOrder = {
-          order_id: orderId,
-          user_id: user.id,
-          user_phone: orderData.user_phone,
-          user_name: orderData.user_name,
-          notes: orderData.notes,
-          status: 'pending_individual',
-          total: 0,
-        };
-        const { error: fallbackError } = await supabase
-          .from('orders')
-          .insert([fallbackOrder]);
-        if (fallbackError) throw fallbackError;
-      } else {
-        // success
+        throw dbError;
       }
 
       await handleSendNotification(orderData);
