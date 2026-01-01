@@ -1,5 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ShoppingBag, Maximize2 } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ShoppingBag,
+  Maximize2,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
@@ -51,7 +56,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
       id: `${product.id}-${selectedColor?.id || 'def'}-${selectedSize?.value || 'def'}`,
       name: `${product.name} ${selectedSize ? `(${selectedSize.label})` : ''} ${selectedColor ? `(${selectedColor.name})` : ''}`,
       price: currentPrice,
-      image: images[0] // Ensure correct image is passed
+      image: images[0], // Ensure correct image is passed
     });
     showToast('Товар добавлен в корзину', 'success');
   };
@@ -61,9 +66,9 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
       <motion.div
         className={`
           relative group rounded-xl overflow-hidden
-          bg-stone-800/40 backdrop-blur-sm
+          bg-stone-800
           border border-white/10
-          shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]
+          shadow-lg
           transition-all duration-300 ease-out
           h-full flex flex-col
           touch-manipulation
@@ -80,13 +85,14 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
             key={imgIndex}
             src={images[imgIndex]}
             alt={product.name}
+            loading="lazy"
             className="w-full h-full object-cover absolute inset-0"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
             style={{ cursor: 'pointer' }}
           />
-          
+
           {/* Navigation Dots */}
           {images.length > 1 && (
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 pointer-events-none">
@@ -103,57 +109,57 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
 
           {/* Controls Overlay */}
           <div className="absolute inset-0 z-10 opacity-0 group-hover/image:opacity-100 transition-opacity duration-300">
-             {/* Navigation Arrows */}
-             {images.length > 1 && (
-               <>
-                 <button
-                   type="button"
-                   className="absolute left-1 top-1/2 -translate-y-1/2 p-2 bg-black/40 text-white rounded-full hover:bg-black/60 active:scale-95 transition-all"
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     paginate(-1);
-                   }}
-                 >
-                   <ChevronLeft size={20} />
-                 </button>
-                 <button
-                   type="button"
-                   className="absolute right-1 top-1/2 -translate-y-1/2 p-2 bg-black/40 text-white rounded-full hover:bg-black/60 active:scale-95 transition-all"
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     paginate(1);
-                   }}
-                 >
-                   <ChevronRight size={20} />
-                 </button>
-               </>
-             )}
+            {/* Navigation Arrows */}
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="absolute left-1 top-1/2 -translate-y-1/2 p-2 bg-black/60 text-white rounded-full hover:bg-black/80 active:scale-95 transition-all"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    paginate(-1);
+                  }}
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  type="button"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-2 bg-black/60 text-white rounded-full hover:bg-black/80 active:scale-95 transition-all"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    paginate(1);
+                  }}
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            )}
 
-             {/* Maximize Button */}
-             <button
-                type="button"
-                className="absolute top-2 left-2 p-2 bg-black/40 text-white rounded-lg hover:bg-black/60 active:scale-95 transition-all z-30"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowFullScreen(true);
-                }}
-             >
-                <Maximize2 size={18} />
-             </button>
+            {/* Maximize Button */}
+            <button
+              type="button"
+              className="absolute top-2 left-2 p-2 bg-black/60 text-white rounded-lg hover:bg-black/80 active:scale-95 transition-all z-30"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowFullScreen(true);
+              }}
+            >
+              <Maximize2 size={18} />
+            </button>
           </div>
 
           {product.isSold && (
-            <div className="absolute bottom-3 left-3 bg-stone-900/80 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-white border border-stone-700 z-20 pointer-events-none">
+            <div className="absolute bottom-3 left-3 bg-stone-900 px-3 py-1.5 rounded-lg text-xs font-bold text-white border border-stone-700 z-20 pointer-events-none">
               ПРОДАНО
             </div>
           )}
-          <div className="absolute top-3 right-3 bg-stone-900/60 backdrop-blur px-2 py-1 rounded text-xs font-bold text-amber-500 border border-amber-500/20 z-20 pointer-events-none">
+          <div className="absolute top-3 right-3 bg-stone-900/90 px-2 py-1 rounded text-xs font-bold text-amber-500 border border-amber-500/20 z-20 pointer-events-none">
             {currentPrice.toLocaleString()} ₽
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-4 flex flex-col flex-grow bg-stone-900/30 backdrop-blur-sm">
+        <div className="p-4 flex flex-col flex-grow bg-stone-800">
           <div className="text-[10px] text-stone-400 mb-1 uppercase tracking-widest font-bold">
             {product.category}
           </div>
@@ -228,8 +234,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                 onClick={handleBuy}
                 className="flex-1 bg-amber-600 text-white hover:bg-amber-500 active:scale-95 transition-all duration-300 rounded-lg py-3 font-medium tracking-wide flex items-center justify-center gap-2 text-sm border-2 border-amber-500 animate-neon-pulse"
               >
-                <ShoppingBag size={16} />
-                В корзину
+                <ShoppingBag size={16} />В корзину
               </button>
               <button
                 type="button"

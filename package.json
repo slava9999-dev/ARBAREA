@@ -26,6 +26,7 @@
     "audit:fix": "npm audit fix",
     "generate:yml": "node scripts/generate-yml.mjs",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
+    "add-product": "node scripts/add-product.mjs",
     "prepare": "husky"
   },
   "lint-staged": {
