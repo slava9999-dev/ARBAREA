@@ -1,9 +1,8 @@
-import { addDoc, collection } from 'firebase/firestore';
 import { CreditCard, Loader2, X, MapPin, ChevronRight, Check } from 'lucide-react';
 import { useState, lazy, Suspense } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { db } from '../../lib/firebase';
+import { supabase } from '../../lib/supabase';
 import { sendTelegramNotification } from '../../lib/telegram';
 import { initPayment } from '../../lib/tinkoff';
 import DiscountBanner from './DiscountBanner';
@@ -16,8 +15,8 @@ const CheckoutModal = ({ onClose }) => {
   const { user } = useAuth();
   const [step, setStep] = useState('form'); // form, processing, success
   const [formData, setFormData] = useState({
-    name: user?.displayName || '',
-    phone: user?.phoneNumber || '',
+    name: user?.user_metadata?.name || '',
+    phone: user?.phone || '',
     address: '',
     email: user?.email || '',
   });
@@ -29,17 +28,17 @@ const CheckoutModal = ({ onClose }) => {
   const deliveryPrice = selectedDeliveryData?.price || 0;
   const cartTotal = subtotal + deliveryPrice;
 
-  const saveOrderToFirestore = async (orderId, paymentUrl) => {
+  const saveOrderToDatabase = async (orderId, paymentUrl) => {
     try {
       const orderData = {
-        orderId,
-        userId: user?.uid || 'guest',
-        userEmail: formData.email,
-        userPhone: formData.phone,
-        userName: formData.name,
-        deliveryAddress: selectedDeliveryData?.point?.address || selectedDeliveryData?.address || formData.address,
-        deliveryMethod: selectedDeliveryData?.service?.name || 'Не выбрано',
-        deliveryPrice: deliveryPrice,
+        order_id: orderId,
+        user_id: user?.id || null,
+        user_email: formData.email,
+        user_phone: formData.phone,
+        user_name: formData.name,
+        delivery_address: selectedDeliveryData?.address || formData.address,
+        delivery_method: selectedDeliveryData?.service?.name || 'Не выбрано',
+        delivery_price: deliveryPrice,
         items: cartItems.map((item) => ({
           id: item.id,
           name: item.name,
@@ -52,14 +51,17 @@ const CheckoutModal = ({ onClose }) => {
         shipping: deliveryPrice,
         total: cartTotal,
         status: 'pending_payment',
-        paymentUrl,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        payment_url: paymentUrl,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
-      await addDoc(collection(db, 'orders'), orderData);
+      const { error } = await supabase.from('orders').insert([orderData]);
+      if (error) {
+        console.error('Error saving order:', error);
+      }
     } catch (_error) {
-      // Don't interrupt payment if Firestore save fails
+      // Don't interrupt payment if database save fails
     }
   };
 
@@ -85,9 +87,11 @@ const CheckoutModal = ({ onClose }) => {
         quantity: item.quantity || 1,
       }));
 
+      // Get access token if user is logged in
       let token = null;
       if (user) {
-        token = await user.getIdToken();
+        const { data: { session } } = await supabase.auth.getSession();
+        token = session?.access_token;
       }
 
       const paymentUrl = await initPayment(orderId, items, description, {
@@ -96,7 +100,7 @@ const CheckoutModal = ({ onClose }) => {
       }, token, selectedDeliveryData?.service?.id);
 
       if (paymentUrl) {
-        await saveOrderToFirestore(orderId, paymentUrl);
+        await saveOrderToDatabase(orderId, paymentUrl);
 
         const escapeHtml = (text) => {
           if (!text) return '';
@@ -115,7 +119,7 @@ const CheckoutModal = ({ onClose }) => {
 <b>Телефон:</b> ${escapeHtml(formData.phone)}
 <b>Email:</b> ${escapeHtml(formData.email)}
 <b>Доставка:</b> ${escapeHtml(selectedDeliveryData?.service?.name || 'Не указано')}
-<b>Адрес:</b> ${escapeHtml(selectedDeliveryData?.point?.address || selectedDeliveryData?.address || formData.address)}
+<b>Адрес:</b> ${escapeHtml(selectedDeliveryData?.address || formData.address)}
 <b>Сумма:</b> ${cartTotal} ₽
 
 <b>Товары:</b>
@@ -209,13 +213,9 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
                         </span>
                         <div className="text-left">
                           <p className="text-sm font-bold text-white">{selectedDeliveryData.service.name}</p>
-                          {selectedDeliveryData.point ? (
-                            <p className="text-xs text-stone-400 truncate max-w-[180px]">
-                              {selectedDeliveryData.point.address}
-                            </p>
-                          ) : (
-                            <p className="text-xs text-stone-400">{selectedDeliveryData.address || 'Курьерская доставка'}</p>
-                          )}
+                          <p className="text-xs text-stone-400 truncate max-w-[180px]">
+                            {selectedDeliveryData.address}
+                          </p>
                           <p className={`text-xs font-bold mt-1 ${selectedDeliveryData.price === 0 ? 'text-emerald-400' : 'text-amber-500'}`}>
                             {selectedDeliveryData.price === 0 ? 'Бесплатно' : `${selectedDeliveryData.price} ₽`}
                           </p>
@@ -228,7 +228,7 @@ ${cartItems.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('
                         </div>
                         <div className="text-left">
                           <p className="text-sm font-bold text-white">Выберите способ доставки</p>
-                          <p className="text-xs text-stone-500">СДЭК, Wildberries, Ozon, Почта России...</p>
+                          <p className="text-xs text-stone-500">СДЭК, Boxberry, Почта России...</p>
                         </div>
                       </>
                     )}

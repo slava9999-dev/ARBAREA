@@ -1,16 +1,10 @@
-import {
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  RecaptchaVerifier,
-  signInWithEmailAndPassword,
-  signInWithPhoneNumber,
-  signInWithPopup,
-  signOut,
-  signInWithCustomToken,
-} from 'firebase/auth';
+/**
+ * Auth Context - Supabase Edition
+ * Provides authentication via Email, Phone, and Magic Link
+ */
+
 import { createContext, useContext, useEffect, useState } from 'react';
-import { auth } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext({});
 export const useAuth = () => useContext(AuthContext);
@@ -20,70 +14,140 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
       setLoading(false);
     });
-    return unsubscribe;
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
+  // ========== Email Authentication ==========
+  
+  const loginWithEmail = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  const registerWithEmail = async (email, password, metadata = {}) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: metadata, // name, phone, etc.
+      },
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  // ========== Magic Link (Email without password) ==========
+  
+  const sendMagicLink = async (email) => {
+    const { data, error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  // ========== Phone Authentication ==========
+  
+  const sendPhoneOtp = async (phone) => {
+    // Format phone to E.164 (+79991234567)
+    const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
+    
+    const { data, error } = await supabase.auth.signInWithOtp({
+      phone: formattedPhone,
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  const verifyPhoneOtp = async (phone, token) => {
+    const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
+    
+    const { data, error } = await supabase.auth.verifyOtp({
+      phone: formattedPhone,
+      token,
+      type: 'sms',
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  // ========== OAuth (Google, etc.) ==========
+  
   const loginWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) throw error;
+    return data;
   };
 
-  const loginWithEmail = (email, password) =>
-    signInWithEmailAndPassword(auth, email, password);
-
-  const registerWithEmail = (email, password) =>
-    createUserWithEmailAndPassword(auth, email, password);
-
-  const setupRecaptcha = (elementId) => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, elementId, {
-        size: 'invisible',
-        callback: () => {},
-      });
-    }
+  // ========== Logout ==========
+  
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
-  const clearRecaptcha = () => {
-    if (window.recaptchaVerifier) {
-      try {
-        window.recaptchaVerifier.clear();
-      } catch (e) {
-        console.error('Error clearing recaptcha', e);
-      }
-      window.recaptchaVerifier = null;
-    }
+  // ========== Update Profile ==========
+  
+  const updateProfile = async (updates) => {
+    const { data, error } = await supabase.auth.updateUser({
+      data: updates,
+    });
+    if (error) throw error;
+    return data;
   };
 
-  const loginWithPhone = async (phoneNumber, appVerifier) => {
-    return await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+  // ========== Get Access Token (for API calls) ==========
+  
+  const getAccessToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token;
   };
-
-
-
-  const logout = () => signOut(auth);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
-        loginWithGoogle,
-        logout,
+        // Email
         loginWithEmail,
         registerWithEmail,
-        setupRecaptcha,
-        clearRecaptcha,
-        loginWithPhone,
-        loginWithCustomToken: (token) => signInWithCustomToken(auth, token),
+        // Magic Link
+        sendMagicLink,
+        // Phone
+        sendPhoneOtp,
+        verifyPhoneOtp,
+        // OAuth
+        loginWithGoogle,
+        // General
+        logout,
+        updateProfile,
+        getAccessToken,
+        // Supabase client for direct access if needed
+        supabase,
       }}
     >
       {!loading && children}

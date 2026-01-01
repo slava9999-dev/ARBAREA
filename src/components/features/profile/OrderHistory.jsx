@@ -1,13 +1,7 @@
-import {
-  collection,
-  onSnapshot,
-  query,
-  where,
-} from 'firebase/firestore';
 import { CheckCircle, Clock, Package, Truck, XCircle, MapPin, Copy, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { db } from '../../../lib/firebase';
+import { supabase } from '../../../lib/supabase';
 
 // Order status progression
 const ORDER_STEPS = [
@@ -29,33 +23,50 @@ const OrderHistory = () => {
       return;
     }
 
-    const ordersRef = collection(db, 'orders');
-    const q = query(
-      ordersRef,
-      where('userId', '==', user.uid)
-    );
+    const fetchOrders = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const ordersData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate(),
-        }));
-        
-        ordersData.sort((a, b) => b.createdAt - a.createdAt);
-        
-        setOrders(ordersData);
-        setLoading(false);
-      },
-      (error) => {
+        if (error) {
+          console.error('Error fetching orders:', error);
+        } else {
+          setOrders(data || []);
+        }
+      } catch (error) {
         console.error('Error fetching orders:', error);
+      } finally {
         setLoading(false);
-      },
-    );
+      }
+    };
 
-    return unsubscribe;
+    fetchOrders();
+
+    // Subscribe to realtime updates
+    const subscription = supabase
+      .channel('orders')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'orders',
+        filter: `user_id=eq.${user.id}`,
+      }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setOrders(prev => [payload.new, ...prev]);
+        } else if (payload.eventType === 'UPDATE') {
+          setOrders(prev => prev.map(o => o.id === payload.new.id ? payload.new : o));
+        } else if (payload.eventType === 'DELETE') {
+          setOrders(prev => prev.filter(o => o.id !== payload.old.id));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [user]);
 
   const getStatusIndex = (status) => {
@@ -102,6 +113,18 @@ const OrderHistory = () => {
     navigator.clipboard.writeText(orderId);
     setCopiedId(orderId);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   if (!user) {
@@ -172,20 +195,14 @@ const OrderHistory = () => {
                 <div>
                   <button
                     type="button"
-                    onClick={() => copyOrderId(order.orderId)}
+                    onClick={() => copyOrderId(order.order_id)}
                     className="flex items-center gap-1.5 text-sm font-bold text-stone-100 hover:text-amber-400 transition-colors"
                   >
-                    {order.orderId}
-                    <Copy size={12} className={copiedId === order.orderId ? 'text-green-400' : 'text-stone-500'} />
+                    {order.order_id}
+                    <Copy size={12} className={copiedId === order.order_id ? 'text-green-400' : 'text-stone-500'} />
                   </button>
                   <p className="text-xs text-stone-500">
-                    {order.createdAt?.toLocaleDateString('ru-RU', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                    {formatDate(order.created_at)}
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 bg-stone-800 px-2 py-1 rounded-full">
@@ -238,16 +255,16 @@ const OrderHistory = () => {
               )}
 
               {/* Delivery Info */}
-              {order.deliveryMethod && (
+              {order.delivery_method && (
                 <div className="mb-3 p-2 bg-stone-800/50 rounded-xl flex items-center gap-2">
                   <MapPin size={14} className="text-amber-500 shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-stone-300 truncate">{order.deliveryMethod}</p>
-                    <p className="text-[10px] text-stone-500 truncate">{order.deliveryAddress || 'Адрес не указан'}</p>
+                    <p className="text-xs font-medium text-stone-300 truncate">{order.delivery_method}</p>
+                    <p className="text-[10px] text-stone-500 truncate">{order.delivery_address || 'Адрес не указан'}</p>
                   </div>
-                  {order.trackingNumber && (
+                  {order.tracking_number && (
                     <a
-                      href={`https://www.cdek.ru/tracking?order_id=${order.trackingNumber}`}
+                      href={`https://www.cdek.ru/tracking?order_id=${order.tracking_number}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="ml-auto text-amber-500 hover:text-amber-400"

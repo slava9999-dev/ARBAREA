@@ -12,16 +12,20 @@ const ProfileView = () => {
   const navigate = useNavigate();
   const [showDonateModal, setShowDonateModal] = useState(false);
 
+  // Helper to safely get user display name and avatar
+  const displayName = user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || user?.phone || 'Гость';
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+
   return (
     <div className="pb-32 pt-20 px-4 animate-slide-up">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div className="flex gap-4 items-center">
           <div className="w-16 h-16 bg-stone-800 rounded-full overflow-hidden border-2 border-stone-700 shadow-lg flex items-center justify-center">
-            {user?.photoURL ? (
+            {avatarUrl ? (
               <img
-                src={user.photoURL}
-                alt={user.displayName}
+                src={avatarUrl}
+                alt={displayName}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -30,7 +34,7 @@ const ProfileView = () => {
           </div>
           <div>
             <h2 className="text-xl font-bold font-serif text-white">
-              {user?.displayName || user?.phoneNumber || 'Гость'}
+              {displayName}
             </h2>
             <span className="inline-block mt-1 px-3 py-1 bg-stone-800 text-amber-500 text-[10px] font-bold uppercase tracking-wider rounded-full border border-stone-700">
               Ценитель дерева

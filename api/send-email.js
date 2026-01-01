@@ -3,10 +3,9 @@
  * Sends transactional emails for order confirmations
  * 
  * Uses Resend API (requires RESEND_API_KEY env variable)
- * Alternative: Can be adapted for SendGrid, Mailgun, etc.
  */
 
-import admin from './_firebase-admin.js';
+import { supabaseAdmin } from './_supabase.js';
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -35,14 +34,16 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Fetch order data from Firestore
-    const db = admin.firestore();
-    const ordersRef = db.collection('orders');
-    const snapshot = await ordersRef.where('orderId', '==', orderId).limit(1).get();
+    // Fetch order data from Supabase instead of Firestore
+    const { data: orderData, error: fetchError } = await supabaseAdmin
+      .from('orders')
+      .select('*')
+      .eq('order_id', orderId)
+      .single();
 
-    let orderData = null;
-    if (!snapshot.empty) {
-      orderData = snapshot.docs[0].data();
+    if (fetchError) {
+      console.error('Error fetching order for email:', fetchError);
+      // We continue even if fetch fails to at least try sending generic email
     }
 
     // Generate email content based on type
@@ -174,8 +175,8 @@ function generateOrderCreatedEmail(orderId, name, order) {
       </div>
       
       <p style="margin-top: 30px;">
-        <strong>Доставка:</strong> ${order?.deliveryMethod || 'Уточняется'}<br>
-        <strong>Адрес:</strong> ${order?.deliveryAddress || 'Будет уточнен'}
+        <strong>Доставка:</strong> ${order?.delivery_method || 'Уточняется'}<br>
+        <strong>Адрес:</strong> ${order?.delivery_address || 'Будет уточнен'}
       </p>
       
       <center>
@@ -208,7 +209,7 @@ function generatePaymentConfirmedEmail(orderId, name, order) {
       <p>Сейчас мы начинаем готовить ваш заказ. Каждое изделие создаётся вручную с любовью и заботой о деталях.</p>
       <p style="background: #292524; padding: 15px; border-radius: 12px;">
         💰 <strong>Сумма:</strong> ${order?.total?.toLocaleString() || '—'} ₽<br>
-        📦 <strong>Доставка:</strong> ${order?.deliveryMethod || 'Уточняется'}
+        📦 <strong>Доставка:</strong> ${order?.delivery_method || 'Уточняется'}
       </p>
       <p>Мы сообщим вам, когда заказ будет готов к отправке!</p>
     </div>
@@ -237,11 +238,11 @@ function generateShippedEmail(orderId, name, order) {
       
       <div style="background: #292524; padding: 20px; border-radius: 12px; margin: 20px 0;">
         <p style="margin: 0 0 10px; color: #a8a29e; font-size: 12px;">СПОСОБ ДОСТАВКИ</p>
-        <p style="margin: 0; color: white; font-size: 18px; font-weight: bold;">${order?.deliveryMethod || 'Курьерская служба'}</p>
-        <p style="margin: 10px 0 0; color: #a8a29e;">${order?.deliveryAddress || ''}</p>
-        ${order?.trackingNumber ? `
+        <p style="margin: 0; color: white; font-size: 18px; font-weight: bold;">${order?.delivery_method || 'Курьерская служба'}</p>
+        <p style="margin: 10px 0 0; color: #a8a29e;">${order?.delivery_address || ''}</p>
+        ${order?.tracking_number ? `
         <p style="margin: 15px 0 0;">
-          <strong>Трек-номер:</strong> <span style="color: #fbbf24;">${order.trackingNumber}</span>
+          <strong>Трек-номер:</strong> <span style="color: #fbbf24;">${order.tracking_number}</span>
         </p>
         ` : ''}
       </div>
@@ -263,7 +264,7 @@ function generateShippedEmail(orderId, name, order) {
   `;
 }
 
-function generateDeliveredEmail(orderId, name, _order) {
+function generateDeliveredEmail(orderId, name, order) {
   return `
 <!DOCTYPE html>
 <html>

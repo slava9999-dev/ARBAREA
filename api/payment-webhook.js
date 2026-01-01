@@ -1,13 +1,21 @@
 /**
  * Tinkoff Payment Webhook Handler
- * Receives payment status notifications and updates order status in Firestore
+ * Receives payment status updates and updates orders in Supabase
  */
 
 import crypto from 'crypto';
-import admin from './_firebase-admin.js';
+import { supabaseAdmin } from './_supabase.js';
 
 export default async function handler(req, res) {
-  // Only accept POST requests
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -24,97 +32,87 @@ export default async function handler(req, res) {
       Token,
     } = req.body;
 
-    console.log('📩 Payment webhook received:', { OrderId, Status, Success });
-
-    // Verify the notification token
-    const password = process.env.TINKOFF_PASSWORD;
-    const terminalKey = process.env.TINKOFF_TERMINAL_KEY;
-
-    if (!password || !terminalKey) {
-      console.error('❌ Missing Tinkoff credentials');
-      return res.status(500).json({ error: 'Server configuration error' });
-    }
+    console.log(`📥 Webhook received: Order ${OrderId}, Status: ${Status}`);
 
     // Verify terminal key
-    if (TerminalKey !== terminalKey) {
+    const expectedTerminalKey = process.env.TINKOFF_TERMINAL_KEY;
+    if (TerminalKey !== expectedTerminalKey) {
       console.error('❌ Invalid TerminalKey');
       return res.status(403).json({ error: 'Invalid terminal key' });
     }
 
     // Verify token signature
-    const params = { ...req.body };
-    delete params.Token;
-    params.Password = password;
+    const password = process.env.TINKOFF_PASSWORD;
+    if (password && Token) {
+      const tokenData = { ...req.body };
+      delete tokenData.Token;
+      tokenData.Password = password;
 
-    const sortedKeys = Object.keys(params).sort();
-    const concatenatedString = sortedKeys.map(key => params[key]).join('');
-    const expectedToken = crypto.createHash('sha256').update(concatenatedString).digest('hex');
+      const sortedKeys = Object.keys(tokenData).sort();
+      const concatenated = sortedKeys.map(key => tokenData[key]).join('');
+      const expectedToken = crypto.createHash('sha256').update(concatenated).digest('hex');
 
-    if (Token !== expectedToken) {
-      console.error('❌ Invalid token signature');
-      return res.status(403).json({ error: 'Invalid token' });
+      if (Token.toLowerCase() !== expectedToken.toLowerCase()) {
+        console.error('❌ Invalid signature');
+        return res.status(403).json({ error: 'Invalid signature' });
+      }
     }
 
-    // Determine new order status based on payment status
-    let newStatus = 'pending_payment';
-    let shouldUpdate = false;
-
+    // Map Tinkoff status to our status
+    let orderStatus;
     switch (Status) {
       case 'AUTHORIZED':
-        newStatus = 'authorized';
-        shouldUpdate = true;
-        break;
       case 'CONFIRMED':
-        newStatus = 'paid';
-        shouldUpdate = true;
-        break;
-      case 'REVERSED':
-      case 'REFUNDED':
-        newStatus = 'refunded';
-        shouldUpdate = true;
+        orderStatus = 'paid';
         break;
       case 'REJECTED':
-        newStatus = 'payment_failed';
-        shouldUpdate = true;
+      case 'AUTH_FAIL':
+        orderStatus = 'payment_failed';
         break;
       case 'CANCELED':
-      case 'DEADLINE_EXPIRED':
-        newStatus = 'cancelled';
-        shouldUpdate = true;
+      case 'REVERSED':
+        orderStatus = 'cancelled';
+        break;
+      case 'REFUNDED':
+      case 'PARTIAL_REFUNDED':
+        orderStatus = 'refunded';
         break;
       default:
-        console.log(`ℹ️ Unhandled status: ${Status}`);
+        orderStatus = 'pending_payment';
     }
 
-    // Update order in Firestore
-    if (shouldUpdate && OrderId) {
-      const db = admin.firestore();
-      
-      // Find order by orderId
-      const ordersRef = db.collection('orders');
-      const snapshot = await ordersRef.where('orderId', '==', OrderId).limit(1).get();
+    // Update order in Supabase
+    const { data: order, error: fetchError } = await supabaseAdmin
+      .from('orders')
+      .select('*')
+      .eq('order_id', OrderId)
+      .single();
 
-      if (!snapshot.empty) {
-        const orderDoc = snapshot.docs[0];
-        
-        await orderDoc.ref.update({
-          status: newStatus,
-          paymentId: PaymentId,
-          paymentStatus: Status,
-          paymentAmount: Amount / 100, // Convert from kopecks
-          paymentErrorCode: ErrorCode || null,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+    if (fetchError || !order) {
+      console.error('❌ Order not found:', OrderId);
+      // Still return OK to Tinkoff
+      return res.status(200).send('OK');
+    }
 
-        console.log(`✅ Order ${OrderId} updated to status: ${newStatus}`);
+    // Update order status
+    const { error: updateError } = await supabaseAdmin
+      .from('orders')
+      .update({
+        status: orderStatus,
+        payment_id: PaymentId?.toString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('order_id', OrderId);
 
-        // Send Telegram notification for successful payments
-        if (newStatus === 'paid') {
-          await sendPaymentSuccessNotification(orderDoc.data(), OrderId);
-        }
-      } else {
-        console.warn(`⚠️ Order not found: ${OrderId}`);
-      }
+    if (updateError) {
+      console.error('❌ Error updating order:', updateError);
+    } else {
+      console.log(`✅ Order ${OrderId} updated to status: ${orderStatus}`);
+    }
+
+    // Send Telegram notification for successful payment
+    if (Status === 'CONFIRMED' && Success) {
+      await sendPaymentSuccessNotification(order, Amount);
     }
 
     // Tinkoff expects "OK" response
@@ -122,37 +120,47 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('❌ Webhook error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    // Return OK anyway to prevent retries
+    return res.status(200).send('OK');
   }
 }
 
-/**
- * Send Telegram notification for successful payment
- */
-async function sendPaymentSuccessNotification(orderData, orderId) {
-  try {
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
+async function sendPaymentSuccessNotification(order, amount) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
 
-    if (!botToken || !chatId) {
-      console.warn('⚠️ Telegram credentials not configured');
-      return;
-    }
+  if (!botToken || !chatId) {
+    console.warn('⚠️ Telegram credentials not configured');
+    return;
+  }
 
-    const message = `
-✅ <b>Оплата подтверждена!</b>
+  const itemsList = order.items?.map(item => 
+    `• ${item.name} x${item.quantity}`
+  ).join('\n') || 'Нет данных';
 
-<b>Заказ:</b> ${orderId}
-<b>Сумма:</b> ${orderData.total?.toLocaleString()} ₽
-<b>Клиент:</b> ${orderData.userName || 'Не указано'}
-<b>Телефон:</b> ${orderData.userPhone || 'Не указано'}
-<b>Доставка:</b> ${orderData.deliveryMethod || 'Не выбрана'}
-<b>Адрес:</b> ${orderData.deliveryAddress || 'Не указан'}
+  const message = `
+💰 <b>ОПЛАТА ПОЛУЧЕНА!</b>
 
-🎉 Можно начинать обработку!
+<b>Заказ:</b> ${order.order_id}
+<b>Сумма:</b> ${(amount / 100).toLocaleString()} ₽
+
+<b>Клиент:</b>
+📱 ${order.user_phone || 'Не указан'}
+📧 ${order.user_email || 'Не указан'}
+👤 ${order.user_name || 'Не указано'}
+
+<b>Доставка:</b>
+🚚 ${order.delivery_method || 'Не выбрано'}
+📍 ${order.delivery_address || 'Не указан'}
+
+<b>Товары:</b>
+${itemsList}
+
+✅ Можно начинать сборку!
 `;
 
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+  try {
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -161,11 +169,8 @@ async function sendPaymentSuccessNotification(orderData, orderId) {
         parse_mode: 'HTML',
       }),
     });
-
-    if (!response.ok) {
-      console.error('Failed to send Telegram notification');
-    }
+    console.log('✅ Telegram notification sent');
   } catch (error) {
-    console.error('Error sending Telegram notification:', error);
+    console.error('❌ Telegram notification error:', error);
   }
 }

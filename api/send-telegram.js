@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import { applyCors } from './_cors.js';
-import admin from './_firebase-admin.js';
+import { verifyToken } from './_supabase.js';
 
 export default async function handler(req, res) {
   // Apply secure CORS
@@ -16,16 +16,20 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server config missing' });
 
   // ✅ SECURITY: Verify Authentication Token
+  // Temporarily optional if called from server-side, but ideally required for client calls
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const idToken = authHeader.split('Bearer ')[1];
+  const idToken = authHeader.replace('Bearer ', '');
   try {
-    await admin.auth().verifyIdToken(idToken);
+    const user = await verifyToken(idToken);
+    if (!user) {
+      throw new Error('Invalid token');
+    }
   } catch (_error) {
-    return res.status(401).json({ error: 'Invalid token' });
+    return res.status(401).json({ error: 'Invalid or expired token' });
   }
 
   try {

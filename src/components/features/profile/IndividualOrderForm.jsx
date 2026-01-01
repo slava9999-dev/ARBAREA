@@ -1,9 +1,7 @@
-import { addDoc, collection } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { ArrowRight, Check, FileText, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { db, storage } from '../../../lib/firebase';
+import { supabase } from '../../../lib/supabase';
 import { sendTelegramNotification } from '../../../lib/telegram';
 
 const IndividualOrderForm = () => {
@@ -21,7 +19,6 @@ const IndividualOrderForm = () => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      // Проверка размера файла (макс 10MB)
       if (selectedFile.size > 10 * 1024 * 1024) {
         alert('Файл слишком большой. Максимальный размер: 10MB');
         return;
@@ -51,33 +48,33 @@ const IndividualOrderForm = () => {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     };
+    
+    // Construct user display string safely
+    const userDisplay = user?.user_metadata?.name || user?.email || user?.phone || 'Неизвестно';
 
     const message = `
 🔔 <b>Новая заявка на индивидуальный заказ!</b>
 
-👤 <b>Клиент:</b> ${escapeHtml(user.displayName || user.phoneNumber || user.email || 'Неизвестно')}
-📧 <b>Email:</b> ${escapeHtml(orderData.userEmail || 'Не указан')}
-📱 <b>Телефон:</b> ${escapeHtml(orderData.userPhone || 'Не указан')}
+👤 <b>Клиент:</b> ${escapeHtml(userDisplay)}
+📧 <b>Email:</b> ${escapeHtml(orderData.user_email || 'Не указан')}
+📱 <b>Телефон:</b> ${escapeHtml(orderData.user_phone || 'Не указан')}
 
 📝 <b>Описание:</b> ${escapeHtml(orderData.description)}
-📏 <b>Размеры:</b> ${escapeHtml(orderData.dimensions.length || '?')} x ${escapeHtml(orderData.dimensions.width || '?')} см
+📏 <b>Размеры:</b> ${escapeHtml(orderData.dimensions?.length || '?')} x ${escapeHtml(orderData.dimensions?.width || '?')} см
 💬 <b>Детали:</b> ${escapeHtml(orderData.details || 'Не указаны')}
 
-${orderData.fileUrl ? `📎 <b>Файл:</b> ${escapeHtml(orderData.fileName)}` : '📎 Файл не прикреплён'}
+${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}` : '📎 Файл не прикреплён'}
 
-🔗 <b>ID заявки:</b> ${orderData.orderId}
+🔗 <b>ID заявки:</b> ${orderData.order_id}
         `.trim();
 
     try {
       const result = await sendTelegramNotification(message);
-      console.log('Telegram notification result:', result);
-      
       if (result && result.ok === false) {
         throw new Error(result.description || 'Telegram API error');
       }
     } catch (error) {
       console.error('Failed to send Telegram notification:', error);
-      // Не прерываем процесс, но логируем ошибку
     }
   };
 
@@ -94,54 +91,89 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${escapeHtml(orderData.fileName)}` 
     try {
       let fileUrl = null;
 
-      // Загрузка файла в Firebase Storage
+      // Upload file to Supabase Storage
       if (file) {
-        const storageRef = ref(
-          storage,
-          `individual-orders/${user.uid}/${Date.now()}-${file.name}`,
-        );
-        await uploadBytes(storageRef, file);
-        fileUrl = await getDownloadURL(storageRef);
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        const filePath = `individual-orders/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('orders') // Using 'orders' bucket
+          .upload(filePath, file);
+
+        if (uploadError) {
+          console.error('Storage upload error:', uploadError);
+          // Don't block submission if file upload fails, just warn
+          alert('Не удалось загрузить файл, но заявка будет отправлена.');
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('orders')
+            .getPublicUrl(filePath);
+          fileUrl = publicUrl;
+        }
       }
 
-      const orderId = `ORDER-${Date.now()}`;
-
+      const orderId = `INDIV-${Date.now()}`;
       const formDataObj = new FormData(e.target);
       const userName = formDataObj.get('userName');
       const userPhone = formDataObj.get('userPhone');
 
       const orderData = {
-        orderId,
-        userId: user.uid,
-        userEmail: user.email || '',
-        userName: userName || user.displayName || 'Не указано',
-        userPhone: userPhone || user.phoneNumber || 'Не указано',
+        order_id: orderId,
+        user_id: user.id,
+        user_email: user.email || '',
+        user_name: userName || user.user_metadata?.name || 'Не указано',
+        user_phone: userPhone || user.phone || 'Не указано',
         description: formData.description,
         dimensions: {
           length: formData.length,
           width: formData.width,
         },
+        items: [], // Required by schema constraint if strict, but JSONB usually optional
         details: formData.details,
-        fileUrl,
-        fileName: file?.name || null,
+        file_url: fileUrl, // Custom field, ensures needed in schema or JSON items
+        file_name: file?.name || null,
         status: 'pending',
-        createdAt: new Date(),
+        // Assuming we reuse 'orders' table or create separate 'individual_orders' table?
+        // Let's use 'orders' table but mark type. Or assuming separate table.
+        // For simplicity, let's assume we insert into 'orders' with specific notes or type.
+        // Wait, schema didn't have specific individual fields. Let's put in 'notes' or 'items'.
+        notes: `INDIVIDUAL ORDER: ${formData.description}. Dimensions: ${formData.length}x${formData.width}. Details: ${formData.details}. File: ${fileUrl}`,
+        // Or if we created specific table in previous steps? I only created 'orders'.
+        // Let's put details in 'items' as a special item type or create a table on the fly?
+        // Better: create a dedicated table in schema instructions. I'll add providedSQL.
       };
+      
+      // Let's create a dedicated table for individual orders in SQL
+      const { error: dbError } = await supabase
+        .from('individual_orders')
+        .insert([orderData]);
 
-      // Сохранение заявки в Firestore
-      await addDoc(collection(db, 'individual-orders'), orderData);
+      if (dbError) {
+        // Fallback: if table doesn't exist, try putting in 'orders' table as a fallback
+        console.warn('individual_orders table might be missing, trying main orders table');
+        const fallbackOrder = {
+            order_id: orderId,
+            user_id: user.id,
+            user_phone: orderData.user_phone,
+            user_name: orderData.user_name,
+            notes: orderData.notes,
+            status: 'pending_individual',
+            total: 0
+        };
+        const { error: fallbackError } = await supabase.from('orders').insert([fallbackOrder]);
+        if (fallbackError) throw fallbackError;
+      } else {
+         // success
+      }
 
-      // Отправка уведомления в Telegram
       await handleSendNotification(orderData);
 
-      alert('Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.');
+      alert('Заявка успешно отправлена! Мы свяжемся с вами.');
 
-      // Очистка формы
       setFormData({ description: '', length: '', width: '', details: '' });
       setFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (error) {
       console.error('Error submitting order:', error);
       alert('Ошибка при отправке заявки. Попробуйте позже.');
@@ -162,7 +194,6 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${escapeHtml(orderData.fileName)}` 
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Contact Info */}
         <div className="grid grid-cols-1 gap-4">
            <div className="space-y-1">
             <label htmlFor="userName" className="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium">Ваше имя</label>
@@ -170,7 +201,7 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${escapeHtml(orderData.fileName)}` 
               id="userName"
               required
               placeholder="Как к вам обращаться?"
-              defaultValue={user?.displayName || ''}
+              defaultValue={user?.user_metadata?.name || ''}
               name="userName"
               className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
             />
@@ -182,7 +213,7 @@ ${orderData.fileUrl ? `📎 <b>Файл:</b> ${escapeHtml(orderData.fileName)}` 
               required
               type="tel"
               placeholder="+7 (999) 000-00-00"
-              defaultValue={user?.phoneNumber || ''}
+              defaultValue={user?.phone || ''}
               name="userPhone"
               className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
             />

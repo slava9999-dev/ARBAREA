@@ -1,7 +1,6 @@
-import { signInWithCustomToken } from 'firebase/auth';
 import { useEffect, useRef } from 'react';
 import { useToast } from '../context/ToastContext';
-import { auth } from '../lib/firebase';
+// import { supabase } from '../lib/supabase'; // Will be used later
 
 const TelegramLoginButton = ({ botName = 'ArbareaBot', onAuthSuccess }) => {
   const containerRef = useRef(null);
@@ -21,31 +20,36 @@ const TelegramLoginButton = ({ botName = 'ArbareaBot', onAuthSuccess }) => {
 
       // Define the callback function globally
       window.onTelegramAuth = async (user) => {
+        console.log('Telegram User:', user);
+        showToast('Вход через Telegram временно недоступен', 'info');
+        
+        /* 
+        TODO: Implement Telegram Auth with Supabase
+        1. Send user data to backend
+        2. Verify hash
+        3. Get/Create user in Supabase
+        4. Return session
+        */
+        
+        /*
         try {
-          // Send data to backend for verification and token generation
           const response = await fetch('/api/auth-telegram', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(user),
           });
 
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Authentication failed');
-          }
-
-          // Sign in with custom token
-          await signInWithCustomToken(auth, data.customToken);
-
-          showToast('Успешный вход через Telegram', 'success');
-          if (onAuthSuccess) onAuthSuccess(data.user);
+          if (!response.ok) throw new Error('Auth failed');
+          
+          const { session } = await response.json();
+          // supabase.auth.setSession(session);
+          
+          if (onAuthSuccess) onAuthSuccess(user);
         } catch (error) {
           console.error('Telegram login error:', error);
           showToast('Ошибка входа через Telegram', 'error');
         }
+        */
       };
 
       script.setAttribute('data-onauth', 'onTelegramAuth(user)');

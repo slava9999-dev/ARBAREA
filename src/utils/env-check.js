@@ -1,7 +1,7 @@
 export const checkEnv = () => {
   const requiredKeys = [
-    'VITE_FIREBASE_API_KEY',
-    'VITE_FIREBASE_PROJECT_ID',
+    'VITE_SUPABASE_URL',
+    'VITE_SUPABASE_ANON_KEY',
   ];
 
   const missingKeys = requiredKeys.filter(
@@ -19,7 +19,7 @@ export const checkEnv = () => {
     );
   } else {
     console.log(
-      '%c✅ Environment Validated',
+      '%c✅ Environment Validated (Supabase)',
       'background: #10b981; color: white; padding: 2px 6px; border-radius: 4px;'
     );
   }
