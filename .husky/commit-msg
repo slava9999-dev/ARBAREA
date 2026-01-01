@@ -1,9 +1,1 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-# ============================================
-# COMMIT-MSG HOOK
-# Validates commit message format
-# ============================================
-
 npx --no -- commitlint --edit "$1"

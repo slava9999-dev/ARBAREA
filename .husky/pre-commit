@@ -1,11 +1,2 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-# ============================================
-# PRE-COMMIT HOOK
-# Runs lint-staged for quality checks
-# ============================================
-
 echo "🔍 Running pre-commit checks..."
-
 npx lint-staged
