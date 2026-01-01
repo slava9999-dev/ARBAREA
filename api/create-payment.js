@@ -1,156 +1,185 @@
 import crypto from 'node:crypto';
 import fetch from 'node-fetch';
 import { applyCors } from './_cors.js';
-import { verifyToken } from './_supabase.js';
+import { verifyToken, supabaseAdmin } from './_supabase.js';
+
+// Delivery methods configuration (Server Side Truth)
+const DELIVERY_METHODS = {
+  cdek: { name: 'СДЭК', price: 350 },
+  wildberries: { name: 'Wildberries', price: 0 },
+  ozon: { name: 'Ozon', price: 0 },
+  boxberry: { name: 'Boxberry', price: 300 },
+  pochta: { name: 'Почта России', price: 400 },
+  courier: { name: 'Курьер до двери', price: 600 },
+};
 
 export default async function handler(req, res) {
-  // Apply secure CORS
-  if (applyCors(req, res)) return; // Handle preflight
+  if (applyCors(req, res)) return;
 
   if (req.method !== 'POST') {
-    return res
-      .status(405)
-      .json({ success: false, error: 'Method Not Allowed' });
+    return res.status(405).json({ success: false, error: 'Method Not Allowed' });
   }
 
   try {
     const {
       items,
-      orderId,
+      orderId: clientOrderId,
       description,
       customerEmail,
       customerPhone,
+      customerName,
       deliveryId,
+      deliveryAddress,
     } = req.body;
 
-    // ✅ SECURITY: Verify Authentication Token (Supabase)
+    // 1. Authenticate user
+    let userId = null;
     let isUserAuthenticated = false;
     const authHeader = req.headers.authorization;
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.replace('Bearer ', '');
       const user = await verifyToken(token);
       if (user) {
+        userId = user.id;
         isUserAuthenticated = true;
-        console.log(`Verified user: ${user.id}`);
       }
     }
 
-    // ✅ SECURITY: Get credentials ONLY from server-side env vars
+    // 2. Configuration check
     const terminalKey = process.env.TINKOFF_TERMINAL_KEY;
     const password = process.env.TINKOFF_PASSWORD;
-
     if (!terminalKey || !password) {
-      return res
-        .status(500)
-        .json({ success: false, error: 'Server configuration error' });
+      return res.status(500).json({ success: false, error: 'Server configuration missing' });
     }
 
-    let calculatedAmount = 0;
+    // 3. SECURE PRICE CALCULATION
+    let calculatedSubtotal = 0;
+    const validatedItems = [];
     const receiptItems = [];
-    let hasDonation = false;
 
-    // Delivery methods configuration
-    const DELIVERY_METHODS = {
-      cdek: { name: 'СДЭК', price: 350 },
-      wildberries: { name: 'Wildberries', price: 0 }, // Usually free to pick-up point
-      ozon: { name: 'Ozon', price: 0 },
-      boxberry: { name: 'Boxberry', price: 300 },
-      pochta: { name: 'Почта России', price: 400 },
-      courier: { name: 'Курьер до двери', price: 600 },
-    };
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, error: 'Empty cart' });
+    }
 
-    if (items && Array.isArray(items)) {
-      for (const item of items) {
-        const itemIdStr = String(item.id);
-        
-        // Handle Donations
-        if (itemIdStr.startsWith('donate-')) {
-          const amount = parseInt(itemIdStr.split('-')[1], 10);
-          if (amount && amount >= 10 && amount <= 100000) {
-            hasDonation = true;
-            const itemTotal = amount * (item.quantity || 1);
-            calculatedAmount += itemTotal;
-            receiptItems.push({
-              Name: item.name || 'Благотворительный взнос',
-              Price: amount * 100,
-              Quantity: item.quantity || 1,
-              Amount: itemTotal * 100,
-              Tax: 'none',
-            });
-            continue;
-          }
-          return res.status(400).json({ success: false, error: `Invalid donation: ${item.id}` });
+    // Fetch all products from DB for validation
+    const productIds = items
+      .filter(item => !String(item.id).startsWith('donate-'))
+      .map(item => item.id);
+    
+    let dbProducts = [];
+    if (productIds.length > 0) {
+      const { data, error } = await supabaseAdmin
+        .from('products')
+        .select('*')
+        .in('id', productIds);
+      
+      if (error) throw error;
+      dbProducts = data;
+    }
+
+    for (const item of items) {
+      const itemIdStr = String(item.id);
+      let price = 0;
+      let name = item.name;
+
+      if (itemIdStr.startsWith('donate-')) {
+        price = Number.parseInt(itemIdStr.split('-')[1], 10);
+        if (Number.isNaN(price) || price < 10 || price > 100000) {
+          return res.status(400).json({ success: false, error: `Invalid donation amount` });
         }
-
-        // Handle Standard Products
-        // TODO: Validate prices against Supabase 'products' table in the future
-        // For now trusting client prices to allow smooth migration
-        const price = item.price || 0;
-        const itemTotal = price * (item.quantity || 1);
-        calculatedAmount += itemTotal;
-
-        receiptItems.push({
-          Name: item.name,
-          Price: price * 100,
-          Quantity: item.quantity || 1,
-          Amount: itemTotal * 100,
-          Tax: 'none',
-        });
+      } else {
+        const dbProduct = dbProducts.find(p => p.id === item.id);
+        if (!dbProduct) {
+          return res.status(400).json({ success: false, error: `Product not found: ${item.id}` });
+        }
+        price = Number(dbProduct.price);
+        name = dbProduct.name;
       }
 
-      // Add shipping cost
-      if (!hasDonation) {
-        const selectedMethod = DELIVERY_METHODS[deliveryId] || DELIVERY_METHODS.cdek;
-        // Free shipping for authenticated users logic is temporarily disabled logic to prevent loss,
-        // or re-enable if that's the business rule.
-        // Assuming user rule: authenticated users get free shipping check?
-        // Let's keep it as per previous logic:
-        const shippingCost = isUserAuthenticated ? 0 : selectedMethod.price;
-        
-        if (shippingCost > 0) {
-          calculatedAmount += shippingCost;
-          receiptItems.push({
-            Name: `Доставка (${selectedMethod.name})`,
-            Price: shippingCost * 100,
-            Quantity: 1,
-            Amount: shippingCost * 100,
-            Tax: 'none',
-          });
-        }
-      }
+      const quantity = Math.max(1, Number.parseInt(item.quantity) || 1);
+      const itemTotal = price * quantity;
+      calculatedSubtotal += itemTotal;
 
-    } else {
-      return res.status(400).json({
-        success: false,
-        error: 'No items provided for payment',
+      validatedItems.push({
+        ...item,
+        name,
+        price,
+        quantity,
+        total: itemTotal
+      });
+
+      receiptItems.push({
+        Name: name.substring(0, 128),
+        Price: price * 100,
+        Quantity: quantity,
+        Amount: itemTotal * 100,
+        Tax: 'none',
       });
     }
 
-    const amountInKopecks = calculatedAmount * 100;
+    // 4. Delivery Calculation
+    const selectedMethod = DELIVERY_METHODS[deliveryId] || DELIVERY_METHODS.cdek;
+    // Rule: Auth users get free delivery
+    const shippingCost = isUserAuthenticated ? 0 : selectedMethod.price;
+    const totalAmount = calculatedSubtotal + shippingCost;
 
-    // Data for token generation
+    if (shippingCost > 0) {
+      receiptItems.push({
+        Name: `Доставка: ${selectedMethod.name}`,
+        Price: shippingCost * 100,
+        Quantity: 1,
+        Amount: shippingCost * 100,
+        Tax: 'none',
+      });
+    }
+
+    const orderId = clientOrderId || `ORDER-${Date.now()}`;
+
+    // 5. CREATE ORDER RECORD (SERVER-SIDE)
+    const { error: orderError } = await supabaseAdmin
+      .from('orders')
+      .insert([{
+        order_id: orderId,
+        user_id: userId,
+        user_email: customerEmail,
+        user_phone: customerPhone,
+        user_name: customerName,
+        items: validatedItems,
+        subtotal: calculatedSubtotal,
+        shipping: shippingCost,
+        total: totalAmount,
+        delivery_method: selectedMethod.name,
+        delivery_address: deliveryAddress,
+        delivery_price: shippingCost,
+        status: 'pending_payment',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }]);
+
+    if (orderError) {
+      console.error('Database Error:', orderError);
+      return res.status(500).json({ success: false, error: 'Failed to create order' });
+    }
+
+    // 6. TINKOFF INITIALIZATION
+    const amountInKopecks = totalAmount * 100;
     const params = {
       TerminalKey: terminalKey,
       Amount: amountInKopecks,
       OrderId: orderId,
-      Description: description,
+      Description: description || `Заказ ${orderId}`,
       Password: password,
     };
 
-    // Generate Signature Token
     const sortedKeys = Object.keys(params).sort();
     const concatenatedValues = sortedKeys.map((key) => params[key]).join('');
-    const token = crypto
-      .createHash('sha256')
-      .update(concatenatedValues)
-      .digest('hex');
+    const token = crypto.createHash('sha256').update(concatenatedValues).digest('hex');
 
-    // Init request body
     const requestBody = {
       TerminalKey: terminalKey,
       Amount: amountInKopecks,
       OrderId: orderId,
-      Description: description,
+      Description: params.Description,
       Token: token,
       Receipt: {
         Email: customerEmail,
@@ -160,34 +189,39 @@ export default async function handler(req, res) {
       },
     };
 
-    const response = await fetch('https://securepay.tinkoff.ru/v2/Init', {
+    const tinkoffResponse = await fetch('https://securepay.tinkoff.ru/v2/Init', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
     });
 
-    const data = await response.json();
+    const data = await tinkoffResponse.json();
 
     if (!data.Success) {
       return res.status(400).json({
         success: false,
         error: data.Message || 'Payment initialization failed',
-        details: data.Details,
       });
     }
+
+    // Update order with payment details
+    await supabaseAdmin
+      .from('orders')
+      .update({ 
+        payment_id: data.PaymentId?.toString(),
+        payment_url: data.PaymentURL 
+      })
+      .eq('order_id', orderId);
 
     return res.status(200).json({
       success: true,
       paymentUrl: data.PaymentURL,
       paymentId: data.PaymentId,
+      orderId: orderId
     });
+
   } catch (error) {
-    console.error('Payment API Error:', error);
-    return res.status(500).json({
-      success: false,
-      error: `Server Error: ${error.message}`,
-    });
+    console.error('Critical Payment Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 }

@@ -5,6 +5,7 @@ export async function initPayment(
   customerData,
   token,
   deliveryId,
+  deliveryAddress,
 ) {
   try {
     const headers = { 'Content-Type': 'application/json' };
@@ -21,7 +22,9 @@ export async function initPayment(
         description,
         customerEmail: customerData?.email || '',
         customerPhone: customerData?.phone || '',
+        customerName: customerData?.name || '',
         deliveryId,
+        deliveryAddress,
       }),
     });
 

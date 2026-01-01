@@ -44,43 +44,6 @@ const CheckoutModal = ({ onClose }) => {
     });
   }, [subtotal, cartItems.length]);
 
-  const saveOrderToDatabase = async (orderId, paymentUrl) => {
-    try {
-      const orderData = {
-        order_id: orderId,
-        user_id: user?.id || null,
-        user_email: formData.email,
-        user_phone: formData.phone,
-        user_name: formData.name,
-        delivery_address: selectedDeliveryData?.address || formData.address,
-        delivery_method: selectedDeliveryData?.service?.name || 'Не выбрано',
-        delivery_price: deliveryPrice,
-        items: cartItems.map((item) => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity || 1,
-          selectedSize: item.selectedSize || null,
-          selectedColor: item.selectedColor || null,
-        })),
-        subtotal,
-        shipping: deliveryPrice,
-        total: cartTotal,
-        status: 'pending_payment',
-        payment_url: paymentUrl,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      const { error } = await supabase.from('orders').insert([orderData]);
-      if (error) {
-        console.error('Error saving order:', error);
-      }
-    } catch (_error) {
-      // Don't interrupt payment if database save fails
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -119,14 +82,14 @@ const CheckoutModal = ({ onClose }) => {
         {
           email: formData.email,
           phone: formData.phone,
+          name: formData.name,
         },
         token,
         selectedDeliveryData?.service?.id,
+        selectedDeliveryData?.address || formData.address,
       );
 
       if (paymentUrl) {
-        await saveOrderToDatabase(orderId, paymentUrl);
-
         const escapeHtml = (text) => {
           if (!text) return '';
           return String(text)

@@ -4,7 +4,7 @@ import { sendMessageToAI } from '../lib/ai-assistant';
 import { useAuth } from '../context/AuthContext';
 
 const AIChat = () => {
-  const { user } = useAuth();
+  const { user, getAccessToken } = useAuth();
   const [messages, setMessages] = useState([
     {
       text: 'Добро пожаловать в Arbarea! Я помогу вам выбрать изделия из натурального дерева. Что вас интересует: панно, рейлинги или освещение?',
@@ -29,7 +29,7 @@ const AIChat = () => {
     setIsLoading(true);
 
     try {
-      const token = user ? await user.getIdToken() : null;
+      const token = user ? await getAccessToken() : null;
       const responseText = await sendMessageToAI(messages, input, token);
 
       setMessages((prev) => [...prev, { text: responseText, sender: 'ai' }]);
