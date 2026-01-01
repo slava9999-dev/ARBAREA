@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# ============================================
+# PRE-PUSH HOOK
+# Runs full build verification before push
+# ============================================
+
+echo "🏗️ Running pre-push verification..."
+
+# Run tests
+npm test -- --passWithNoTests
+
+# Verify build
+npm run build
+
+echo "✅ Pre-push checks passed!"
