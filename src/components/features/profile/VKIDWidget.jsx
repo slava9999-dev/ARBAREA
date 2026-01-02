@@ -143,11 +143,11 @@ const VKIDWidget = ({
         // Otherwise, reload or show success.
         if (data.session) {
           await supabase.auth.setSession(data.session);
+        } else if (data.redirectUrl) {
+          // Auto-login via Magic Link
+          window.location.href = data.redirectUrl;
         } else if (data.success) {
-          // Fallback: If we synced but don't have a session,
-          // we might need to redirect to standard login or refresh
           console.log('VK User Synced:', data);
-          // window.location.reload(); // Simple reload to refresh state if cookies were set (unlikely)
         }
       }
     } catch (err) {

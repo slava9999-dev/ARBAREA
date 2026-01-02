@@ -11,7 +11,7 @@
 export const VKID_CONFIG = {
   appId: 54413816,
   redirectUrl: 'https://arbarea-bice.vercel.app/',
-  scope: 'email phone', // Запрашиваем email и телефон
+  scope: '', // Empty scope as per working snippet (was 'email phone')
 };
 
 // Load VK ID SDK script
@@ -33,7 +33,8 @@ export const loadVKIDScript = () => {
 
     // Load script
     const script = document.createElement('script');
-    script.src = 'https://unpkg.com/@vkid/sdk@2.0.0/dist-sdk/umd/index.js';
+    // Use the specific version tag requested by user
+    script.src = 'https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js';
     script.async = true;
     script.onload = () => {
       if (window.VKIDSDK) {
@@ -49,7 +50,17 @@ export const loadVKIDScript = () => {
 
 // Initialize VK ID
 export const initVKID = async () => {
-  const VKID = await loadVKIDScript();
+  await loadVKIDScript();
+
+  const VKID = window.VKIDSDK;
+  if (!VKID)
+    throw new Error('VK ID SDK loaded but window.VKIDSDK is undefined');
+
+  // Verify critical properties exist
+  if (!VKID.Config || !VKID.ConfigResponseMode) {
+    console.error('VK SDK Structure:', VKID);
+    throw new Error('VK ID SDK missing Config or ConfigResponseMode');
+  }
 
   VKID.Config.init({
     app: VKID_CONFIG.appId,
