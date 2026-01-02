@@ -128,8 +128,8 @@ export default async function handler(req, res) {
 
     // 4. Delivery Calculation
     const selectedMethod = DELIVERY_METHODS[deliveryId] || DELIVERY_METHODS.cdek;
-    // Rule: Auth users get free delivery
-    const shippingCost = isUserAuthenticated ? 0 : selectedMethod.price;
+    // Rule: Delivery is free for everyone
+    const shippingCost = 0; // selectedMethod.price check removed as all are 0
     const totalAmount = calculatedSubtotal + shippingCost;
 
     if (shippingCost > 0) {

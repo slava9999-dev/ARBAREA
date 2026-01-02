@@ -195,12 +195,10 @@ DROP POLICY IF EXISTS orders_update ON public.orders;
 CREATE POLICY orders_update ON public.orders
   FOR UPDATE TO authenticated
   USING (
-    auth.uid() = user_id 
-    OR (auth.jwt() ->> 'role') = 'admin'
+    (auth.jwt() ->> 'role') = 'admin'
   )
   WITH CHECK (
-    auth.uid() = user_id 
-    OR (auth.jwt() ->> 'role') = 'admin'
+    (auth.jwt() ->> 'role') = 'admin'
   );
 
 -- DELETE: admin only
