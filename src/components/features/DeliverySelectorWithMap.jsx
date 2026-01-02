@@ -10,6 +10,7 @@ import {
   Search,
   Navigation,
   Loader2,
+  Package,
 } from 'lucide-react';
 
 // Lazy load map components for performance
@@ -26,66 +27,37 @@ const Popup = lazy(() =>
   import('react-leaflet').then((m) => ({ default: m.Popup })),
 );
 
-// Доступные службы доставки — ВСЕ БЕСПЛАТНО
+// ═══════════════════════════════════════════════════════════════
+// PRODUCTION-READY DELIVERY SERVICES (NO MARKETPLACE COMMISSIONS)
+// ═══════════════════════════════════════════════════════════════
+
 const DELIVERY_SERVICES = [
-  // === МАРКЕТПЛЕЙСЫ ===
-  {
-    id: 'wildberries',
-    name: 'Wildberries',
-    logo: '🟣',
-    color: '#7B2D8E',
-    description: 'В любой ПВЗ Wildberries',
-    basePrice: 0, // БЕСПЛАТНО
-    days: '3-7',
-    category: 'marketplace',
-    popular: true,
-    hasPickupPoints: true,
-  },
-  {
-    id: 'ozon',
-    name: 'Ozon',
-    logo: '🔵',
-    color: '#005BFF',
-    description: 'В любой ПВЗ Ozon',
-    basePrice: 0, // БЕСПЛАТНО
-    days: '2-5',
-    category: 'marketplace',
-    popular: true,
-    hasPickupPoints: true,
-  },
-  // === ТРАНСПОРТНЫЕ КОМПАНИИ ===
+  // === ТРАНСПОРТНЫЕ КОМПАНИИ (ОСНОВНЫЕ) ===
   {
     id: 'cdek',
     name: 'СДЭК',
     logo: '📦',
     color: '#00A651',
-    description: 'Пункты выдачи и постаматы',
-    basePrice: 0, // БЕСПЛАТНО
+    description: '15,000+ ПВЗ по всей России',
+    basePrice: 0, // Бесплатно для клиента
     days: '2-5',
     category: 'transport',
     popular: true,
     hasPickupPoints: true,
+    hasAPI: true,
   },
   {
     id: 'boxberry',
     name: 'Boxberry',
-    logo: '🟢',
+    logo: '🟠',
     color: '#FF6600',
-    description: 'Пункты выдачи по России',
-    basePrice: 0, // БЕСПЛАТНО
+    description: '10,000+ пунктов выдачи',
+    basePrice: 0,
     days: '3-7',
     category: 'transport',
+    popular: true,
     hasPickupPoints: true,
-  },
-  {
-    id: 'dpd',
-    name: 'DPD',
-    logo: '🔴',
-    color: '#DC0032',
-    description: 'Экспресс-доставка',
-    basePrice: 0, // БЕСПЛАТНО
-    days: '2-4',
-    category: 'transport',
+    hasAPI: true,
   },
   {
     id: '5post',
@@ -93,53 +65,45 @@ const DELIVERY_SERVICES = [
     logo: '🟡',
     color: '#FFD600',
     description: 'Постаматы в Пятёрочке',
-    basePrice: 0, // БЕСПЛАТНО
+    basePrice: 0,
     days: '3-6',
     category: 'transport',
     hasPickupPoints: true,
+    hasAPI: true,
   },
-  // === КУРЬЕРСКИЕ СЛУЖБЫ ===
-  {
-    id: 'yandex',
-    name: 'Яндекс.Доставка',
-    logo: '🚕',
-    color: '#FFCC00',
-    description: 'Быстрая доставка от 1 часа',
-    basePrice: 0, // БЕСПЛАТНО
-    days: '1',
-    category: 'courier',
-    fast: true,
-  },
-  {
-    id: 'courier',
-    name: 'Курьер до двери',
-    logo: '🏠',
-    color: '#D97706',
-    description: 'Доставка на дом',
-    basePrice: 0, // БЕСПЛАТНО
-    days: '1-3',
-    category: 'courier',
-  },
-  // === ПОЧТА ===
+  // === ПОЧТА РОССИИ ===
   {
     id: 'pochta',
     name: 'Почта России',
     logo: '📮',
     color: '#0033A0',
-    description: 'Отделения почты',
-    basePrice: 0, // БЕСПЛАТНО
+    description: '42,000+ отделений (вся Россия)',
+    basePrice: 0,
     days: '5-14',
     category: 'post',
     hasPickupPoints: true,
+    hasAPI: true,
+  },
+  // === АВИТО ДОСТАВКА ===
+  {
+    id: 'avito',
+    name: 'Авито Доставка',
+    logo: '🔵',
+    color: '#0AF',
+    description: 'Удобно для покупателей Авито',
+    basePrice: 0,
+    days: '3-7',
+    category: 'marketplace',
+    hasPickupPoints: true,
+    note: 'Использует СДЭК внутри',
   },
 ];
 
-// Категории для группировки (ВСЕ БЕСПЛАТНО)
+// Категории для группировки
 const CATEGORIES = {
-  marketplace: { name: '🎁 Маркетплейсы', order: 1 },
-  transport: { name: '🚚 Транспортные компании', order: 2 },
-  courier: { name: '🏃 Курьерская доставка', order: 3 },
-  post: { name: '📮 Почта России', order: 4 },
+  transport: { name: '🚚 Транспортные компании', order: 1 },
+  post: { name: '📮 Почта России', order: 2 },
+  marketplace: { name: '🛒 Маркетплейсы', order: 3 },
 };
 
 // Geocoding через OpenStreetMap (бесплатно)
@@ -164,7 +128,7 @@ const DeliverySelectorWithMap = ({
   isOpen,
   onClose,
   onSelect,
-  isFreeShipping = false,
+  isFreeShipping = true, // Всегда бесплатно
 }) => {
   const [selectedService, setSelectedService] = useState(null);
   const [address, setAddress] = useState('');
@@ -174,7 +138,7 @@ const DeliverySelectorWithMap = ({
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [mapCenter, setMapCenter] = useState([55.7558, 37.6173]); // Москва
+  const [mapCenter, setMapCenter] = useState([55.7558, 37.6173]); // Москва по умолчанию
   const [showMap, setShowMap] = useState(false);
 
   // Группируем сервисы по категориям
@@ -242,7 +206,7 @@ const DeliverySelectorWithMap = ({
       address: selectedLocation?.display_name || `${city}, ${address}`,
       city: city || selectedLocation?.display_name?.split(',')[0] || '',
       fullAddress: address,
-      price: isFreeShipping ? 0 : selectedService.basePrice,
+      price: 0, // Всегда бесплатно
       coordinates: selectedLocation
         ? { lat: selectedLocation.lat, lng: selectedLocation.lng }
         : null,
@@ -324,11 +288,11 @@ const DeliverySelectorWithMap = ({
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="bg-[#1c1917] w-full sm:w-[500px] max-h-[90vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col border border-white/10"
+          className="bg-[#1c1917] w-full sm:w-[500px] max-h-[90vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col border border-white/10 shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="p-4 border-b border-white/5 shrink-0 flex items-center justify-between">
+          <div className="p-4 border-b border-white/5 shrink-0 flex items-center justify-between bg-gradient-to-r from-amber-500/10 to-transparent">
             <div className="flex items-center gap-3">
               {step !== 'service' && (
                 <button
@@ -343,17 +307,16 @@ const DeliverySelectorWithMap = ({
                 </button>
               )}
               <div>
-                <h3 className="font-serif font-bold text-lg text-white">
+                <h3 className="font-serif font-bold text-lg text-white flex items-center gap-2">
+                  <Package size={20} className="text-amber-500" />
                   {step === 'service' && 'Выберите доставку'}
-                  {step === 'map' && 'Укажите адрес на карте'}
+                  {step === 'map' && 'Укажите адрес'}
                   {step === 'address' && 'Укажите адрес'}
                   {step === 'confirm' && 'Подтвердите'}
                 </h3>
-                {isFreeShipping && (
-                  <p className="text-xs text-emerald-400">
-                    ✨ Бесплатная доставка для вас
-                  </p>
-                )}
+                <p className="text-xs text-emerald-400 flex items-center gap-1">
+                  ✨ Доставка бесплатно
+                </p>
               </div>
             </div>
             <button
@@ -366,13 +329,13 @@ const DeliverySelectorWithMap = ({
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
             {/* Step 1: Service Selection with Categories */}
             {step === 'service' && (
               <div className="p-4 space-y-6">
                 {sortedCategories.map(([category, services]) => (
                   <div key={category}>
-                    <p className="text-xs text-stone-400 font-bold uppercase tracking-wider mb-3">
+                    <p className="text-xs text-stone-400 font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
                       {CATEGORIES[category]?.name || category}
                     </p>
                     <div className="space-y-2">
@@ -381,7 +344,7 @@ const DeliverySelectorWithMap = ({
                           key={service.id}
                           type="button"
                           onClick={() => handleServiceSelect(service)}
-                          className="w-full flex items-center justify-between p-4 bg-stone-800/30 hover:bg-stone-800/50 rounded-2xl border border-white/5 hover:border-white/10 transition-all group"
+                          className="w-full flex items-center justify-between p-4 bg-stone-800/30 hover:bg-stone-800/50 rounded-2xl border border-white/5 hover:border-amber-500/30 transition-all group"
                         >
                           <div className="flex items-center gap-4">
                             <span
@@ -400,15 +363,20 @@ const DeliverySelectorWithMap = ({
                                     ⭐ Популярное
                                   </span>
                                 )}
-                                {service.fast && (
-                                  <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full">
-                                    ⚡ Быстро
+                                {service.hasAPI && (
+                                  <span className="text-[9px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-full">
+                                    🤖 Авто
                                   </span>
                                 )}
                               </div>
                               <p className="text-xs text-stone-500">
                                 {service.description}
                               </p>
+                              {service.note && (
+                                <p className="text-[10px] text-stone-600 mt-0.5">
+                                  {service.note}
+                                </p>
+                              )}
                               <div className="flex items-center gap-3 mt-1">
                                 <span className="text-[10px] text-stone-400 flex items-center gap-1">
                                   <Clock size={10} /> {service.days} дн.
@@ -422,22 +390,11 @@ const DeliverySelectorWithMap = ({
                             </div>
                           </div>
                           <div className="text-right">
-                            <p
-                              className={`font-bold ${service.basePrice === 0 ? 'text-emerald-400' : isFreeShipping ? 'text-emerald-400' : 'text-amber-500'}`}
-                            >
-                              {service.basePrice === 0
-                                ? 'Бесплатно'
-                                : isFreeShipping
-                                  ? '0 ₽'
-                                  : `${service.basePrice} ₽`}
+                            <p className="font-bold text-emerald-400 text-lg">
+                              Бесплатно
                             </p>
-                            {isFreeShipping && service.basePrice > 0 && (
-                              <p className="text-[10px] text-stone-500 line-through">
-                                {service.basePrice} ₽
-                              </p>
-                            )}
                             <ChevronRight
-                              className="text-stone-600 group-hover:text-stone-400 ml-auto mt-1"
+                              className="text-stone-600 group-hover:text-amber-500 ml-auto mt-1 transition-colors"
                               size={16}
                             />
                           </div>
@@ -446,6 +403,15 @@ const DeliverySelectorWithMap = ({
                     </div>
                   </div>
                 ))}
+
+                {/* Info Banner */}
+                <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                  <p className="text-xs text-blue-300 flex items-start gap-2">
+                    <Truck size={14} className="shrink-0 mt-0.5" />
+                    После оплаты мы отправим ваш заказ в выбранный пункт и
+                    пришлём трек-номер для отслеживания
+                  </p>
+                </div>
               </div>
             )}
 
@@ -465,16 +431,9 @@ const DeliverySelectorWithMap = ({
                       {selectedService.name}
                     </p>
                     <p className="text-xs text-stone-500">
-                      {selectedService.days} дней
+                      {selectedService.days} дней • Бесплатно
                     </p>
                   </div>
-                  <p
-                    className={`font-bold ${selectedService.basePrice === 0 ? 'text-emerald-400' : 'text-amber-500'}`}
-                  >
-                    {selectedService.basePrice === 0
-                      ? 'Бесплатно'
-                      : `${selectedService.basePrice} ₽`}
-                  </p>
                 </div>
 
                 {/* Search Box */}
@@ -510,7 +469,7 @@ const DeliverySelectorWithMap = ({
 
                   {/* Search Results */}
                   {searchResults.length > 0 && (
-                    <div className="bg-stone-800/80 rounded-xl border border-white/10 overflow-hidden">
+                    <div className="bg-stone-800/80 rounded-xl border border-white/10 overflow-hidden max-h-[200px] overflow-y-auto custom-scrollbar">
                       {searchResults.map((result) => (
                         <button
                           key={`${result.lat}-${result.lng}`}
@@ -601,7 +560,7 @@ const DeliverySelectorWithMap = ({
                     <button
                       type="button"
                       onClick={() => setStep('confirm')}
-                      className="w-full mt-3 bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                      className="w-full mt-3 bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-[0_0_20px_rgba(217,119,6,0.3)]"
                     >
                       Продолжить
                       <ChevronRight size={18} />
@@ -611,7 +570,7 @@ const DeliverySelectorWithMap = ({
               </div>
             )}
 
-            {/* Step 2 Alt: Simple Address Input (for courier/services without pickup points) */}
+            {/* Step 2 Alt: Simple Address Input (for services without pickup points) */}
             {step === 'address' && selectedService && (
               <div className="p-4 space-y-4">
                 <div className="p-3 bg-stone-800/30 rounded-xl flex items-center gap-3 mb-4">
@@ -626,7 +585,7 @@ const DeliverySelectorWithMap = ({
                       {selectedService.name}
                     </p>
                     <p className="text-xs text-stone-500">
-                      {selectedService.days} дней
+                      {selectedService.days} дней • Бесплатно
                     </p>
                   </div>
                 </div>
@@ -653,13 +612,13 @@ const DeliverySelectorWithMap = ({
                     htmlFor="delivery-address"
                     className="text-xs text-stone-400 ml-1"
                   >
-                    Полный адрес доставки
+                    Полный адрес
                   </label>
                   <textarea
                     id="delivery-address"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    placeholder="ул. Ленина 15, кв. 42, домофон 42#"
+                    placeholder="ул. Ленина 15, кв. 42"
                     rows={3}
                     className="w-full p-4 bg-stone-800/50 border border-white/10 rounded-xl text-white placeholder-stone-500 focus:border-amber-500 focus:outline-none resize-none"
                   />
@@ -717,25 +676,15 @@ const DeliverySelectorWithMap = ({
                   </div>
                 </div>
 
-                <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
+                <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-stone-400">
                         Стоимость доставки
                       </p>
-                      {(isFreeShipping || selectedService.basePrice === 0) &&
-                        selectedService.basePrice > 0 && (
-                          <p className="text-xs text-stone-500 line-through">
-                            {selectedService.basePrice} ₽
-                          </p>
-                        )}
                     </div>
-                    <p
-                      className={`text-2xl font-bold ${selectedService.basePrice === 0 || isFreeShipping ? 'text-emerald-400' : 'text-amber-500'}`}
-                    >
-                      {selectedService.basePrice === 0 || isFreeShipping
-                        ? 'Бесплатно'
-                        : `${selectedService.basePrice} ₽`}
+                    <p className="text-2xl font-bold text-emerald-400">
+                      Бесплатно
                     </p>
                   </div>
                 </div>
