@@ -15,8 +15,8 @@ import { initPayment } from '../../lib/tinkoff';
 import { reachGoal, ecommercePurchase } from '../../lib/yandex-metrica';
 import DiscountBanner from './DiscountBanner';
 
-// Lazy load delivery selector for performance
-const DeliverySelector = lazy(() => import('./DeliverySelector'));
+// Lazy load delivery selector with map for performance
+const DeliverySelector = lazy(() => import('./DeliverySelectorWithMap'));
 
 const CheckoutModal = ({ onClose }) => {
   const { cartItems, subtotal } = useCart();

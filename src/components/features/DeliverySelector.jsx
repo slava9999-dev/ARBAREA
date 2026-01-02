@@ -2,26 +2,96 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, X, Check, ChevronRight, Clock, Truck } from 'lucide-react';
 
-// Доступные службы доставки (без API, просто список)
+// Доступные службы доставки — ВСЕ БЕСПЛАТНО
 const DELIVERY_SERVICES = [
+  // === МАРКЕТПЛЕЙСЫ ===
+  {
+    id: 'wildberries',
+    name: 'Wildberries',
+    logo: '🟣',
+    color: '#7B2D8E',
+    description: 'В любой ПВЗ WB',
+    basePrice: 0,
+    days: '3-7',
+    category: 'marketplace',
+    popular: true,
+  },
+  {
+    id: 'ozon',
+    name: 'Ozon',
+    logo: '🔵',
+    color: '#005BFF',
+    description: 'В любой ПВЗ Ozon',
+    basePrice: 0,
+    days: '2-5',
+    category: 'marketplace',
+    popular: true,
+  },
+  // === ТРАНСПОРТНЫЕ КОМПАНИИ ===
   {
     id: 'cdek',
     name: 'СДЭК',
     logo: '📦',
     color: '#00A651',
-    description: 'Пункты выдачи по всей России',
-    basePrice: 350,
+    description: 'Пункты выдачи и постаматы',
+    basePrice: 0,
     days: '2-5',
+    category: 'transport',
+    popular: true,
   },
   {
     id: 'boxberry',
     name: 'Boxberry',
     logo: '🟢',
     color: '#FF6600',
-    description: 'Пункты выдачи',
-    basePrice: 300,
+    description: 'Пункты выдачи по России',
+    basePrice: 0,
     days: '3-7',
+    category: 'transport',
   },
+  {
+    id: 'dpd',
+    name: 'DPD',
+    logo: '🔴',
+    color: '#DC0032',
+    description: 'Экспресс-доставка',
+    basePrice: 0,
+    days: '2-4',
+    category: 'transport',
+  },
+  {
+    id: '5post',
+    name: '5Post',
+    logo: '🟡',
+    color: '#FFD600',
+    description: 'Постаматы в Пятёрочке',
+    basePrice: 0,
+    days: '3-6',
+    category: 'transport',
+  },
+  // === КУРЬЕРСКИЕ СЛУЖБЫ ===
+  {
+    id: 'yandex',
+    name: 'Яндекс.Доставка',
+    logo: '🚕',
+    color: '#FFCC00',
+    description: 'Быстрая доставка от 1 часа',
+    basePrice: 0,
+    days: '1',
+    category: 'courier',
+    fast: true,
+  },
+  {
+    id: 'courier',
+    name: 'Курьер до двери',
+    logo: '🏠',
+    color: '#D97706',
+    description: 'Доставка на дом',
+    basePrice: 0,
+    days: '1-3',
+    category: 'courier',
+  },
+  // === ПОЧТА ===
   {
     id: 'pochta',
     name: 'Почта России',
@@ -30,15 +100,7 @@ const DELIVERY_SERVICES = [
     description: 'Отделения почты',
     basePrice: 400,
     days: '5-14',
-  },
-  {
-    id: 'courier',
-    name: 'Курьер до двери',
-    logo: '🏠',
-    color: '#D97706',
-    description: 'Доставка на дом',
-    basePrice: 600,
-    days: '1-3',
+    category: 'post',
   },
 ];
 

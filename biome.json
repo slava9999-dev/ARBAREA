@@ -31,6 +31,16 @@
       "formatter": {
         "enabled": false
       }
+    },
+    {
+      "include": ["src/__tests__/**", "e2e/**"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noForEach": "off"
+          }
+        }
+      }
     }
   ]
 }

@@ -1,18 +1,38 @@
-import { Loader2, Mail, Phone, User, Send } from 'lucide-react';
-import { useState } from 'react';
+/**
+ * AuthScreen - Расширенный экран авторизации для России
+ * Поддерживает: Email, Phone OTP, VK, Yandex, Google, Apple
+ */
+
+import {
+  Loader2,
+  Mail,
+  Phone,
+  User,
+  Send,
+  KeyRound,
+  ChevronLeft,
+} from 'lucide-react';
+import { useState, lazy, Suspense } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+
+// Lazy load VK ID Widget for performance
+const VKIDWidget = lazy(() => import('./VKIDWidget'));
 
 const AuthScreen = () => {
   const {
     loginWithGoogle,
+    loginWithVK,
+    loginWithYandex,
+    loginWithApple,
     loginWithEmail,
     registerWithEmail,
     sendMagicLink,
     sendPhoneOtp,
     verifyPhoneOtp,
+    resetPassword,
   } = useAuth();
 
-  const [method, setMethod] = useState('main'); // main, email, phone, magic
+  const [method, setMethod] = useState('main'); // main, email, phone, magic, reset
   const [emailMode, setEmailMode] = useState('login'); // login, register
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -21,6 +41,7 @@ const AuthScreen = () => {
   // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [phone, setPhone] = useState('+7');
   const [otp, setOtp] = useState('');
   const [showOtpInput, setShowOtpInput] = useState(false);
@@ -40,14 +61,20 @@ const AuthScreen = () => {
       return 'Слишком много попыток. Подождите немного.';
     if (msg.includes('Supabase not configured'))
       return 'Регистрация временно недоступна (технические работы).';
+    if (msg.includes('provider is not enabled'))
+      return 'Данный способ входа временно недоступен.';
+    if (msg.includes('Phone number')) return 'Неверный формат номера телефона';
 
     return 'Ошибка авторизации. Проверьте данные.';
   };
 
-  const handleGoogle = async () => {
+  const handleOAuth = async (provider) => {
     setError('');
     try {
-      await loginWithGoogle();
+      if (provider === 'google') await loginWithGoogle();
+      if (provider === 'vk') await loginWithVK();
+      if (provider === 'yandex') await loginWithYandex();
+      if (provider === 'apple') await loginWithApple();
     } catch (e) {
       setError(getErrorMessage(e));
     }
@@ -61,7 +88,7 @@ const AuthScreen = () => {
       if (emailMode === 'login') {
         await loginWithEmail(email, password);
       } else {
-        await registerWithEmail(email, password);
+        await registerWithEmail(email, password, { name });
         setMessage('Подтвердите регистрацию по ссылке в письме!');
       }
     } catch (e) {
@@ -85,6 +112,20 @@ const AuthScreen = () => {
     }
   };
 
+  const handleResetPassword = async () => {
+    setError('');
+    setMessage('');
+    setLoading(true);
+    try {
+      await resetPassword(email);
+      setMessage('Ссылка для сброса пароля отправлена на Email!');
+    } catch (e) {
+      setError(getErrorMessage(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSendCode = async () => {
     setError('');
     setLoading(true);
@@ -93,7 +134,7 @@ const AuthScreen = () => {
       const formattedPhone = phone.replace(/[^\d+]/g, '');
       await sendPhoneOtp(formattedPhone);
       setShowOtpInput(true);
-      setMessage('Код отправлен в SMS/WhatsApp');
+      setMessage('Код отправлен в SMS');
     } catch (e) {
       setError(getErrorMessage(e));
     } finally {
@@ -114,6 +155,41 @@ const AuthScreen = () => {
     }
   };
 
+  const goBack = () => {
+    setMethod('main');
+    setShowOtpInput(false);
+    setError('');
+    setMessage('');
+  };
+
+  // VK Icon Component
+  const VKIcon = () => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <title>VK</title>
+      <path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.118-5.335-3.202C4.624 10.857 4 8.57 4 8.097c0-.254.102-.491.593-.491h1.744c.44 0 .61.203.78.678.847 2.45 2.27 4.596 2.853 4.596.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.813-.542 1.27-1.422 2.18-3.608 2.18-3.608.119-.254.322-.491.763-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.778 1.202 1.253.745.848 1.32 1.558 1.473 2.05.17.488-.085.743-.576.743z" />
+    </svg>
+  );
+
+  // Yandex Icon Component
+  const YandexIcon = () => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <title>Yandex</title>
+      <path d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12zm11.5-6v3.757a11.4 11.4 0 0 0-3 5.743h2a9.5 9.5 0 0 1 1-3.5V18h2V6h-2z" />
+    </svg>
+  );
+
   return (
     <div className="min-h-screen flex flex-col justify-center px-6 pb-32 text-center animate-fade-in">
       <div className="w-24 h-24 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -125,7 +201,7 @@ const AuthScreen = () => {
         <br />в Arbarea
       </h2>
       <p className="text-stone-300 mb-10 text-sm leading-relaxed max-w-xs mx-auto">
-        Войдите, чтобы отслеживать заказы и сохранять товары в избранное
+        Войдите, чтобы отслеживать заказы и получить скидку 10%
       </p>
 
       {error && (
@@ -140,20 +216,16 @@ const AuthScreen = () => {
         </div>
       )}
 
+      {/* ============ MAIN SCREEN ============ */}
       {method === 'main' && (
         <div className="space-y-3">
+          {/* Google */}
           <button
             type="button"
-            onClick={handleGoogle}
+            onClick={() => handleOAuth('google')}
             className="w-full bg-white text-stone-900 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-stone-200 active:scale-95 transition-all"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              aria-labelledby="google-icon-title"
-            >
-              <title id="google-icon-title">Google</title>
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -174,20 +246,59 @@ const AuthScreen = () => {
             Войти через Google
           </button>
 
-          <div className="pt-4 grid grid-cols-2 gap-3 items-center">
+          {/* VK ID Widget - VK, Одноклассники, Mail.ru */}
+          <div className="bg-white rounded-2xl p-3">
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center py-2">
+                  <Loader2 className="animate-spin text-stone-400" size={20} />
+                </div>
+              }
+            >
+              <VKIDWidget
+                onSuccess={() => {
+                  // Refresh page to get new session
+                  window.location.reload();
+                }}
+                onError={(err) => setError('Ошибка авторизации через VK ID')}
+              />
+            </Suspense>
+          </div>
+
+          {/* Secondary Options */}
+          <div className="pt-4 grid grid-cols-3 gap-3 items-center">
             <button
               type="button"
               onClick={() => setMethod('phone')}
-              className="bg-stone-800 border border-stone-700 text-stone-200 py-3 rounded-xl flex items-center justify-center hover:bg-stone-700 active:scale-95 transition-all h-14"
+              className="bg-stone-800 border border-stone-700 text-stone-200 py-3 rounded-xl flex flex-col items-center justify-center hover:bg-stone-700 active:scale-95 transition-all h-16 gap-1"
             >
               <Phone size={20} />
+              <span className="text-[10px]">Телефон</span>
             </button>
             <button
               type="button"
               onClick={() => setMethod('email')}
-              className="bg-stone-800 border border-stone-700 text-stone-200 py-3 rounded-xl flex items-center justify-center hover:bg-stone-700 active:scale-95 transition-all h-14"
+              className="bg-stone-800 border border-stone-700 text-stone-200 py-3 rounded-xl flex flex-col items-center justify-center hover:bg-stone-700 active:scale-95 transition-all h-16 gap-1"
             >
               <Mail size={20} />
+              <span className="text-[10px]">Email</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOAuth('apple')}
+              className="bg-stone-800 border border-stone-700 text-stone-200 py-3 rounded-xl flex flex-col items-center justify-center hover:bg-stone-700 active:scale-95 transition-all h-16 gap-1"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <title>Apple</title>
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+              </svg>
+              <span className="text-[10px]">Apple</span>
             </button>
           </div>
 
@@ -201,8 +312,18 @@ const AuthScreen = () => {
         </div>
       )}
 
+      {/* ============ EMAIL LOGIN/REGISTER ============ */}
       {method === 'email' && (
         <div className="space-y-4 text-left">
+          {emailMode === 'register' && (
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ваше имя"
+              type="text"
+              className="w-full p-4 bg-stone-900 border border-stone-700 text-white rounded-xl outline-none focus:border-amber-500"
+            />
+          )}
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -231,31 +352,79 @@ const AuthScreen = () => {
               'Зарегистрироваться'
             )}
           </button>
+          <div className="flex justify-between">
+            <button
+              type="button"
+              onClick={() =>
+                setEmailMode(emailMode === 'login' ? 'register' : 'login')
+              }
+              className="text-stone-400 text-sm py-2"
+            >
+              {emailMode === 'login'
+                ? 'Нет аккаунта? Создать'
+                : 'Есть аккаунт? Войти'}
+            </button>
+            {emailMode === 'login' && (
+              <button
+                type="button"
+                onClick={() => setMethod('reset')}
+                className="text-amber-500 text-sm py-2"
+              >
+                Забыли пароль?
+              </button>
+            )}
+          </div>
           <button
             type="button"
-            onClick={() =>
-              setEmailMode(emailMode === 'login' ? 'register' : 'login')
-            }
-            className="w-full text-stone-400 text-sm py-2"
+            onClick={goBack}
+            className="w-full text-stone-500 text-sm flex items-center justify-center gap-1"
           >
-            {emailMode === 'login'
-              ? 'Нет аккаунта? Создать'
-              : 'Есть аккаунт? Войти'}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMethod('main');
-              setError('');
-              setMessage('');
-            }}
-            className="w-full text-stone-500 text-sm"
-          >
-            Назад
+            <ChevronLeft size={16} /> Назад
           </button>
         </div>
       )}
 
+      {/* ============ PASSWORD RESET ============ */}
+      {method === 'reset' && (
+        <div className="space-y-4 text-left">
+          <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20 mb-2">
+            <p className="text-xs text-amber-200">
+              <KeyRound size={14} className="inline mr-2" />
+              Введите email и мы отправим ссылку для сброса пароля
+            </p>
+          </div>
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Ваш Email"
+            type="email"
+            className="w-full p-4 bg-stone-900 border border-stone-700 text-white rounded-xl outline-none focus:border-amber-500"
+          />
+          <button
+            type="button"
+            onClick={handleResetPassword}
+            disabled={loading}
+            className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-500"
+          >
+            {loading ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <>
+                <Send size={18} /> Отправить ссылку
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMethod('email')}
+            className="w-full text-stone-500 text-sm flex items-center justify-center gap-1"
+          >
+            <ChevronLeft size={16} /> Назад к входу
+          </button>
+        </div>
+      )}
+
+      {/* ============ MAGIC LINK ============ */}
       {method === 'magic' && (
         <div className="space-y-4 text-left">
           <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20 mb-2">
@@ -287,21 +456,35 @@ const AuthScreen = () => {
           </button>
           <button
             type="button"
-            onClick={() => setMethod('main')}
-            className="w-full text-stone-500 text-sm"
+            onClick={goBack}
+            className="w-full text-stone-500 text-sm flex items-center justify-center gap-1"
           >
-            Назад
+            <ChevronLeft size={16} /> Назад
           </button>
         </div>
       )}
 
+      {/* ============ PHONE OTP ============ */}
       {method === 'phone' && (
         <div className="space-y-4 text-left">
           {!showOtpInput ? (
             <>
+              <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 mb-2">
+                <p className="text-xs text-blue-200">
+                  📱 Введите номер телефона и мы отправим код подтверждения в
+                  SMS
+                </p>
+              </div>
               <input
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  let val = e.target.value;
+                  // Ensure +7 prefix for Russia
+                  if (!val.startsWith('+7') && !val.startsWith('+')) {
+                    val = `+7${val.replace(/^\+7?/, '')}`;
+                  }
+                  setPhone(val);
+                }}
                 placeholder="+7 (999) 000-00-00"
                 type="tel"
                 className="w-full p-4 bg-stone-900 border border-stone-700 text-white rounded-xl outline-none focus:border-amber-500"
@@ -309,8 +492,8 @@ const AuthScreen = () => {
               <button
                 type="button"
                 onClick={handleSendCode}
-                disabled={loading}
-                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-500"
+                disabled={loading || phone.length < 11}
+                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-500 disabled:opacity-50"
               >
                 {loading ? (
                   <Loader2 className="animate-spin" />
@@ -321,32 +504,47 @@ const AuthScreen = () => {
             </>
           ) : (
             <>
+              <div className="bg-green-500/10 p-4 rounded-xl border border-green-500/20 mb-2">
+                <p className="text-xs text-green-200">
+                  ✅ Код отправлен на {phone}
+                </p>
+              </div>
               <input
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+                onChange={(e) =>
+                  setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
+                }
                 placeholder="Код из SMS"
-                className="w-full p-4 bg-stone-900 border border-stone-700 text-white rounded-xl outline-none focus:border-amber-500 text-center tracking-widest text-xl"
+                inputMode="numeric"
+                className="w-full p-4 bg-stone-900 border border-stone-700 text-white rounded-xl outline-none focus:border-amber-500 text-center tracking-[0.5em] text-2xl font-mono"
+                maxLength={6}
               />
               <button
                 type="button"
                 onClick={handleVerifyCode}
-                disabled={loading}
-                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-500"
+                disabled={loading || otp.length < 6}
+                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-500 disabled:opacity-50"
               >
                 {loading ? <Loader2 className="animate-spin" /> : 'Подтвердить'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowOtpInput(false);
+                  setOtp('');
+                }}
+                className="w-full text-stone-400 text-sm"
+              >
+                Отправить код повторно
               </button>
             </>
           )}
           <button
             type="button"
-            onClick={() => {
-              setMethod('main');
-              setShowOtpInput(false);
-              setError('');
-            }}
-            className="w-full text-stone-500 text-sm"
+            onClick={goBack}
+            className="w-full text-stone-500 text-sm flex items-center justify-center gap-1"
           >
-            Назад
+            <ChevronLeft size={16} /> Назад
           </button>
         </div>
       )}

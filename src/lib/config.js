@@ -1,5 +1,6 @@
 export const PAYMENT_CONFIG = {
   currency: 'RUB',
-  deliveryFee: 500,
-  freeDeliveryThreshold: 10000,
+  // Бесплатная доставка для всех заказов
+  deliveryFee: 0,
+  freeDeliveryThreshold: 0, // Всегда бесплатно
 };

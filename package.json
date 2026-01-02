@@ -27,7 +27,11 @@
     "generate:yml": "node scripts/generate-yml.mjs",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
     "add-product": "node scripts/add-product.mjs",
-    "prepare": "husky"
+    "prepare": "husky",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:headed": "playwright test --headed",
+    "e2e:report": "playwright show-report"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx}": [
@@ -66,6 +70,7 @@
     "@biomejs/biome": "^1.6.1",
     "@commitlint/cli": "^20.3.0",
     "@commitlint/config-conventional": "^20.3.0",
+    "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",

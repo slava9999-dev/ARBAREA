@@ -1,6 +1,6 @@
 /**
- * Auth Context - Supabase Edition
- * Provides authentication via Email, Phone, and Magic Link
+ * Auth Context - Supabase Edition for Russia
+ * Provides authentication via Email, Phone, Magic Link, VK and Yandex OAuth
  */
 
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -21,7 +21,9 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -30,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // ========== Email Authentication ==========
-  
+
   const loginWithEmail = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -53,7 +55,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ========== Magic Link (Email without password) ==========
-  
+
   const sendMagicLink = async (email) => {
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
@@ -65,12 +67,12 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  // ========== Phone Authentication ==========
-  
+  // ========== Phone Authentication (SMS OTP) ==========
+
   const sendPhoneOtp = async (phone) => {
     // Format phone to E.164 (+79991234567)
     const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
-    
+
     const { data, error } = await supabase.auth.signInWithOtp({
       phone: formattedPhone,
     });
@@ -80,7 +82,7 @@ export const AuthProvider = ({ children }) => {
 
   const verifyPhoneOtp = async (phone, token) => {
     const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
-    
+
     const { data, error } = await supabase.auth.verifyOtp({
       phone: formattedPhone,
       token,
@@ -90,8 +92,9 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  // ========== OAuth (Google, etc.) ==========
-  
+  // ========== OAuth Providers ==========
+
+  // Google OAuth
   const loginWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -103,15 +106,69 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  // VK (ВКонтакте) OAuth - популярно в России
+  const loginWithVK = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'vk', // Requires VK app registration in Supabase
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  // Yandex OAuth - популярно в России
+  const loginWithYandex = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'yandex', // Requires Yandex OAuth app in Supabase
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  // Apple OAuth (for iOS users)
+  const loginWithApple = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  // ========== Password Reset ==========
+
+  const resetPassword = async (email) => {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  const updatePassword = async (newPassword) => {
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    if (error) throw error;
+    return data;
+  };
+
   // ========== Logout ==========
-  
+
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   };
 
   // ========== Update Profile ==========
-  
+
   const updateProfile = async (updates) => {
     const { data, error } = await supabase.auth.updateUser({
       data: updates,
@@ -121,10 +178,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ========== Get Access Token (for API calls) ==========
-  
+
   const getAccessToken = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     return session?.access_token;
+  };
+
+  // ========== Check if user email is confirmed ==========
+
+  const isEmailConfirmed = () => {
+    return user?.email_confirmed_at != null;
   };
 
   return (
@@ -142,10 +207,17 @@ export const AuthProvider = ({ children }) => {
         verifyPhoneOtp,
         // OAuth
         loginWithGoogle,
+        loginWithVK,
+        loginWithYandex,
+        loginWithApple,
+        // Password
+        resetPassword,
+        updatePassword,
         // General
         logout,
         updateProfile,
         getAccessToken,
+        isEmailConfirmed,
         // Supabase client for direct access if needed
         supabase,
       }}

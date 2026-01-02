@@ -1,0 +1,37 @@
+# Prettier Ignore File
+# Generated assets and dependencies
+
+# Build output
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Generated images
+public/gallery/*
+public/products/*
+public/optimized/*
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+
+# Minified/compiled assets
+*.min.js
+*.min.css
+
+# Supabase generated
+supabase/.branches/
+supabase/.temp/
+
+# IDE/Editor
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment (should not be formatted anyway)
+.env*

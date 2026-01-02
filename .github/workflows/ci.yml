@@ -21,7 +21,7 @@ jobs:
   quality:
     name: 🔍 Code Quality
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -41,6 +41,10 @@ jobs:
       - name: 🎨 Biome Format Check
         run: npx biome format --check src
 
+      - name: 📝 TypeScript Type Check
+        run: npm run typecheck
+        continue-on-error: true
+
   # ============================================
   # 2. BUILD VERIFICATION
   # ============================================
@@ -48,7 +52,7 @@ jobs:
     name: 🏗️ Build
     runs-on: ubuntu-latest
     needs: quality
-    
+
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -92,7 +96,7 @@ jobs:
     name: 🧪 Tests
     runs-on: ubuntu-latest
     needs: quality
-    
+
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -121,7 +125,7 @@ jobs:
   security:
     name: 🔒 Security
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -153,7 +157,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'pull_request'
-    
+
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -180,7 +184,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, test, security]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
+
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
