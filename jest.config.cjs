@@ -28,4 +28,8 @@ module.exports = {
             statements: 50,
         },
     },
+    testPathIgnorePatterns: [
+        '/node_modules/',
+        '/e2e/',
+    ],
 };
