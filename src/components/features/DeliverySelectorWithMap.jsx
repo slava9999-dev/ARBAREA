@@ -1,4 +1,11 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  lazy,
+  Suspense,
+  useRef,
+} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin,
@@ -140,6 +147,24 @@ const DeliverySelectorWithMap = ({
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState([55.7558, 37.6173]); // Москва по умолчанию
   const [showMap, setShowMap] = useState(false);
+  const [mapKey, setMapKey] = useState(0); // Unique key for map remount
+  const mapRef = useRef(null);
+
+  // Reset map when service changes
+  useEffect(() => {
+    if (step === 'map' && selectedService) {
+      setMapKey((prev) => prev + 1);
+    }
+  }, [selectedService, step]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (mapRef.current) {
+        mapRef.current = null;
+      }
+    };
+  }, []);
 
   // Группируем сервисы по категориям
   const groupedServices = DELIVERY_SERVICES.reduce((acc, service) => {
@@ -504,6 +529,7 @@ const DeliverySelectorWithMap = ({
                   >
                     {showMap && (
                       <MapContainer
+                        key={`map-${mapKey}`}
                         center={mapCenter}
                         zoom={14}
                         style={{ height: '100%', width: '100%' }}
