@@ -1,9 +1,16 @@
 import { supabaseAdmin } from './_supabase.js';
+import fetch from 'node-fetch'; // Ensure fetch is available in Node environment
 
 export default async function handler(req, res) {
-  // CORS
+  // CORS with credentials support
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
+
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -20,6 +27,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing VK data' });
     }
 
+    // 0. VERIFY TOKEN WITH VK (Essential Security)
+    // We verify that the access_token belongs to the user claiming it
+    const vkVerifyUrl = `https://api.vk.com/method/users.get?access_token=${access_token}&v=5.131`;
+    const vkResponse = await fetch(vkVerifyUrl);
+    const vkData = await vkResponse.json();
+
+    if (!vkData.response || !vkData.response[0] || String(vkData.response[0].id) !== String(vk_id)) {
+      console.warn('VK Token Verification Failed:', vkData);
+      return res.status(401).json({ error: 'Invalid VK Access Token' });
+    }
+
     // 1. Check if user exists by VK ID in profiles
     const { data: existingProfile } = await supabaseAdmin
       .from('profiles')
@@ -28,22 +46,24 @@ export default async function handler(req, res) {
       .single();
 
     let userId = existingProfile?.id;
-    let emailToUse = email || `vk_${vk_id}@vk.placeholder.com`;
+    // Fallback email if VK didn't provide one
+    const emailToUse = email || `vk_${vk_id}@vk.placeholder.com`;
 
     if (!userId) {
-      // 2. If not, check by email if provided
-      if (email) {
-        const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
-        const match = existingUser.users.find(u => u.email === email);
+      // 2. If not found by VK ID, check by email if we have a real email
+      if (email && email.includes('@')) {
+        // Search in Auth users (requires Admin privileges)
+        const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
+        const match = users.find(u => u.email === email);
         if (match) userId = match.id;
       }
     }
 
     if (!userId) {
-      // 3. Create new user
+      // 3. Create new user in Supabase Auth
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: emailToUse,
-        email_confirm: true,
+        email_confirm: true, // Auto-confirm
         user_metadata: {
           full_name: `${first_name} ${last_name}`.trim(),
           avatar_url: photo,
@@ -57,7 +77,7 @@ export default async function handler(req, res) {
       userId = newUser.user.id;
     }
 
-    // 4. Update profile with VK ID
+    // 4. Upsert Profile (Ensure profile exists and is linked to VK)
     await supabaseAdmin
       .from('profiles')
       .upsert({
@@ -69,23 +89,28 @@ export default async function handler(req, res) {
         updated_at: new Date().toISOString()
       });
 
-    // 5. Generate Session (Passwordless sign-in magic link or similar)
-    // Since we can't easily mint a JWT without internal secret access,
-    // we will return the user info and success.
-    // The client SDK can't "setSession" without access_token and refresh_token.
-    
-    // Workaround: We can't log them in fully purely server-side for the client without password.
-    // We will return a success flag. The client might need to fallback to standard auth
-    // or we use magic link.
-    
+    // 5. Generate Magic Link for Session
+    // We want the user to be logged in on the client.
+    // Since we have the userId and email, we can generate a magic link.
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'magiclink',
+      email: emailToUse,
+    });
+
+    if (linkError) {
+       console.error('Magic Link Gen Error:', linkError);
+       // Fallback: Return success without session link
+       return res.status(200).json({ success: true, userId, message: 'User synced (Session link generation failed)' });
+    }
+
     return res.status(200).json({ 
       success: true,
       userId, 
-      message: 'User synced. Please login with standard VK OAuth for session.' 
+      redirectUrl: linkData.properties.action_link 
     });
 
   } catch (error) {
-    console.error('VK Auth Error:', error);
+    console.error('VK Auth Handler Error:', error);
     return res.status(500).json({ error: error.message });
   }
 }
