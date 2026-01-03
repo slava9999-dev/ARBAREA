@@ -19,7 +19,7 @@ const Cart = ({ cart, onRemove, onCheckout }) => {
   }
 
   return (
-    <div className="pb-96 pt-20 px-4">
+    <div className="pb-52 pt-20 px-4">
       <h2 className="text-2xl font-serif text-white mb-6">Ваша корзина</h2>
 
       <DiscountBanner />
@@ -34,8 +34,9 @@ const Cart = ({ cart, onRemove, onCheckout }) => {
         <PaymentTrustBlock variant="compact" />
       </div>
 
-      <div className="fixed bottom-24 left-4 right-4 bg-[#1c1917]/95 backdrop-blur-xl p-5 z-40 border border-white/10 rounded-2xl shadow-2xl">
-        <div className="flex justify-between items-end mb-4">
+      {/* Fixed checkout panel - positioned above mobile nav with safe area */}
+      <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-4 right-4 bg-[#1c1917]/95 backdrop-blur-xl p-4 z-40 border border-white/10 rounded-2xl shadow-2xl">
+        <div className="flex justify-between items-end mb-3">
           <div className="space-y-1 text-sm">
             <div className="text-stone-400">
               Сумма: {(subtotal || 0).toLocaleString()} ₽
@@ -58,7 +59,7 @@ const Cart = ({ cart, onRemove, onCheckout }) => {
           type="button"
           onClick={onCheckout}
           aria-label="Оформить заказ"
-          className="w-full bg-amber-600 text-white py-3.5 rounded-xl font-bold flex justify-center items-center gap-2 active:scale-95 transition-transform hover:bg-amber-500 shadow-[0_0_20px_rgba(217,119,6,0.3)] text-lg"
+          className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex justify-center items-center gap-2 active:scale-95 transition-transform hover:bg-amber-500 shadow-[0_0_20px_rgba(217,119,6,0.3)] text-lg"
         >
           <Lock size={20} /> Оформить заказ
         </button>

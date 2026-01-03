@@ -4,29 +4,6 @@ import { MapPin, X, Check, ChevronRight, Clock, Truck } from 'lucide-react';
 
 // Доступные службы доставки — ВСЕ БЕСПЛАТНО
 const DELIVERY_SERVICES = [
-  // === МАРКЕТПЛЕЙСЫ ===
-  {
-    id: 'wildberries',
-    name: 'Wildberries',
-    logo: '🟣',
-    color: '#7B2D8E',
-    description: 'В любой ПВЗ WB',
-    basePrice: 0,
-    days: '3-7',
-    category: 'marketplace',
-    popular: true,
-  },
-  {
-    id: 'ozon',
-    name: 'Ozon',
-    logo: '🔵',
-    color: '#005BFF',
-    description: 'В любой ПВЗ Ozon',
-    basePrice: 0,
-    days: '2-5',
-    category: 'marketplace',
-    popular: true,
-  },
   // === ТРАНСПОРТНЫЕ КОМПАНИИ ===
   {
     id: 'cdek',
@@ -42,22 +19,13 @@ const DELIVERY_SERVICES = [
   {
     id: 'boxberry',
     name: 'Boxberry',
-    logo: '🟢',
+    logo: '�',
     color: '#FF6600',
     description: 'Пункты выдачи по России',
     basePrice: 0,
     days: '3-7',
     category: 'transport',
-  },
-  {
-    id: 'dpd',
-    name: 'DPD',
-    logo: '🔴',
-    color: '#DC0032',
-    description: 'Экспресс-доставка',
-    basePrice: 0,
-    days: '2-4',
-    category: 'transport',
+    popular: true,
   },
   {
     id: '5post',
@@ -69,18 +37,7 @@ const DELIVERY_SERVICES = [
     days: '3-6',
     category: 'transport',
   },
-  // === КУРЬЕРСКИЕ СЛУЖБЫ ===
-  {
-    id: 'yandex',
-    name: 'Яндекс.Доставка',
-    logo: '🚕',
-    color: '#FFCC00',
-    description: 'Быстрая доставка от 1 часа',
-    basePrice: 0,
-    days: '1',
-    category: 'courier',
-    fast: true,
-  },
+  // === КУРЬЕРСКАЯ ДОСТАВКА ===
   {
     id: 'courier',
     name: 'Курьер до двери',
@@ -98,7 +55,7 @@ const DELIVERY_SERVICES = [
     logo: '📮',
     color: '#0033A0',
     description: 'Отделения почты',
-    basePrice: 400,
+    basePrice: 0,
     days: '5-14',
     category: 'post',
   },

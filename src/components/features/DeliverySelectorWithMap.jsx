@@ -34,19 +34,33 @@ const Popup = lazy(() =>
   import('react-leaflet').then((m) => ({ default: m.Popup })),
 );
 
+// Fix Leaflet default marker icon (required for Vite/Webpack bundling)
+import L from 'leaflet';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// biome-ignore lint/performance/noDelete: Leaflet internals require this
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+});
+
 // ═══════════════════════════════════════════════════════════════
-// PRODUCTION-READY DELIVERY SERVICES (NO MARKETPLACE COMMISSIONS)
+// PRODUCTION-READY DELIVERY SERVICES
 // ═══════════════════════════════════════════════════════════════
 
 const DELIVERY_SERVICES = [
-  // === ТРАНСПОРТНЫЕ КОМПАНИИ (ОСНОВНЫЕ) ===
+  // === ТРАНСПОРТНЫЕ КОМПАНИИ ===
   {
     id: 'cdek',
     name: 'СДЭК',
     logo: '📦',
     color: '#00A651',
     description: '15,000+ ПВЗ по всей России',
-    basePrice: 0, // Бесплатно для клиента
+    basePrice: 0,
     days: '2-5',
     category: 'transport',
     popular: true,
@@ -84,7 +98,7 @@ const DELIVERY_SERVICES = [
     name: 'Почта России',
     logo: '📮',
     color: '#0033A0',
-    description: '42,000+ отделений (вся Россия)',
+    description: '42,000+ отделений по всей России',
     basePrice: 0,
     days: '5-14',
     category: 'post',
@@ -96,13 +110,26 @@ const DELIVERY_SERVICES = [
     id: 'avito',
     name: 'Авито Доставка',
     logo: '🔵',
-    color: '#0AF',
+    color: '#00AAFF',
     description: 'Удобно для покупателей Авито',
     basePrice: 0,
     days: '3-7',
-    category: 'marketplace',
+    category: 'avito',
     hasPickupPoints: true,
     note: 'Использует СДЭК внутри',
+  },
+  // === КУРЬЕРСКАЯ ДОСТАВКА ===
+  {
+    id: 'courier',
+    name: 'Курьер до двери',
+    logo: '🏠',
+    color: '#D97706',
+    description: 'Доставка на ваш адрес',
+    basePrice: 0,
+    days: '1-3',
+    category: 'courier',
+    hasPickupPoints: false, // No pickup points, direct delivery
+    hasAPI: false,
   },
 ];
 
@@ -110,7 +137,8 @@ const DELIVERY_SERVICES = [
 const CATEGORIES = {
   transport: { name: '🚚 Транспортные компании', order: 1 },
   post: { name: '📮 Почта России', order: 2 },
-  marketplace: { name: '🛒 Маркетплейсы', order: 3 },
+  avito: { name: '📱 Авито Доставка', order: 3 },
+  courier: { name: '🏠 Курьерская доставка', order: 4 },
 };
 
 // Geocoding через OpenStreetMap (бесплатно)

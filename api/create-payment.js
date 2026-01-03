@@ -4,22 +4,19 @@ import { applyCors } from './_cors.js';
 import { verifyToken, supabaseAdmin } from './_supabase.js';
 
 // Delivery methods configuration (Server Side Truth)
-// ВСЕ ДОСТАВКИ БЕСПЛАТНЫЕ
+// All deliveries FREE for customer
 // Keep in sync with src/components/features/DeliverySelectorWithMap.jsx
 const DELIVERY_METHODS = {
-  // Маркетплейсы
-  wildberries: { name: 'Wildberries', price: 0 },
-  ozon: { name: 'Ozon', price: 0 },
   // Транспортные компании
   cdek: { name: 'СДЭК', price: 0 },
   boxberry: { name: 'Boxberry', price: 0 },
-  dpd: { name: 'DPD', price: 0 },
   '5post': { name: '5Post', price: 0 },
-  // Курьерские службы
-  yandex: { name: 'Яндекс.Доставка', price: 0 },
-  courier: { name: 'Курьер до двери', price: 0 },
-  // Почта
+  // Почта России
   pochta: { name: 'Почта России', price: 0 },
+  // Авито
+  avito: { name: 'Авито Доставка', price: 0 },
+  // Курьерская доставка
+  courier: { name: 'Курьер до двери', price: 0 },
 };
 
 export default async function handler(req, res) {
