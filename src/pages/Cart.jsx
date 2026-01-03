@@ -192,7 +192,7 @@ ${cart.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
   }
 
   return (
-    <div className="pb-40 pt-6 px-4 min-h-screen max-w-lg mx-auto">
+    <div className="pb-24 pt-6 px-4 min-h-screen max-w-lg mx-auto">
       {/* SUCCESS STATE */}
       {step === 'success' && (
         <div className="bg-[#1c1917] rounded-3xl p-8 text-center border border-wood-amber/20 mt-20">
@@ -246,7 +246,7 @@ ${cart.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
           <div className="w-full h-px bg-white/5 mb-10" />
 
           {/* CHECKOUT FORM INLINE */}
-          <div className="space-y-8">
+          <div className="space-y-8 mb-8">
             <h3 className="text-xl font-serif text-white flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-wood-amber/20 text-wood-amber text-xs flex items-center justify-center font-bold border border-wood-amber/20">
                 1
@@ -310,7 +310,7 @@ ${cart.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
               Доставка
             </h3>
 
-            <div id="delivery-section" className="space-y-4">
+            <div id="delivery-section" className="space-y-4 mb-12">
               {/* Address Input for Auto-Map Center if needed, though delivery map usually handles it */}
               <div className="space-y-1">
                 <label
@@ -406,50 +406,50 @@ ${cart.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
               </Suspense>
             </div>
           </div>
-        </>
-      )}
 
-      {/* FIXED BOTTOM BAR (TOTAL + PAY BTN) */}
-      <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-0 right-0 p-4 bg-gradient-to-t from-[#1a1614] via-[#1a1614] to-transparent z-50 pointer-events-none">
-        <div className="max-w-lg mx-auto bg-[#2a2520]/95 backdrop-blur-xl border border-wood-amber/20 rounded-2xl p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.5)] pointer-events-auto">
-          {error && (
-            <div className="text-red-400 text-xs text-center mb-3 bg-red-500/10 py-2 rounded-lg border border-red-500/20">
-              {error}
-            </div>
-          )}
-
-          <div className="flex justify-between items-center mb-4 px-2">
-            <div className="text-sm text-stone-400">
-              Итого к оплате:
-              {deliveryPrice > 0 && (
-                <span className="block text-[10px] text-stone-500">
-                  + доставка {deliveryPrice} ₽
-                </span>
+          {/* PAYMENT SECTION - Now inline after delivery */}
+          <div className="mt-8 space-y-4">
+            <div className="bg-[#2a2520]/90 backdrop-blur-xl border border-wood-amber/20 rounded-2xl p-4 shadow-wood-md">
+              {error && (
+                <div className="text-red-400 text-xs text-center mb-3 bg-red-500/10 py-2 rounded-lg border border-red-500/20">
+                  {error}
+                </div>
               )}
-            </div>
-            <div className="text-2xl font-serif font-bold text-gradient-amber">
-              {finalTotal.toLocaleString()} ₽
+
+              <div className="flex justify-between items-center mb-4 px-2">
+                <div className="text-sm text-stone-400">
+                  Итого к оплате:
+                  {deliveryPrice > 0 && (
+                    <span className="block text-[10px] text-stone-500">
+                      + доставка {deliveryPrice} ₽
+                    </span>
+                  )}
+                </div>
+                <div className="text-2xl font-serif font-bold text-gradient-amber">
+                  {finalTotal.toLocaleString()} ₽
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={step === 'form' ? handlePayment : null}
+                disabled={step === 'processing'}
+                className="btn-primary w-full py-4 text-base font-bold flex items-center justify-center gap-2"
+              >
+                {step === 'processing' ? (
+                  <>
+                    <Loader2 className="animate-spin" /> Обработка...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard size={20} /> Оплатить онлайн
+                  </>
+                )}
+              </button>
             </div>
           </div>
-
-          <button
-            type="button"
-            onClick={step === 'form' ? handlePayment : null}
-            disabled={step === 'processing'}
-            className="btn-primary w-full py-4 text-base font-bold flex items-center justify-center gap-2"
-          >
-            {step === 'processing' ? (
-              <>
-                <Loader2 className="animate-spin" /> Обработка...
-              </>
-            ) : (
-              <>
-                <CreditCard size={20} /> Оплатить онлайн
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };
