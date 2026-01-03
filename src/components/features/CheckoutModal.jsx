@@ -9,7 +9,6 @@ import {
 import { useState, lazy, Suspense, useEffect } from 'react';
 import { useSimpleAuth } from '../../context/SimpleAuthContext';
 import { useCart } from '../../context/CartContext';
-import { supabase } from '../../lib/supabase';
 import { sendTelegramNotification } from '../../lib/telegram';
 import { initPayment } from '../../lib/tinkoff';
 import { reachGoal, ecommercePurchase } from '../../lib/yandex-metrica';
@@ -62,18 +61,13 @@ const CheckoutModal = ({ onClose }) => {
 
       const items = cartItems.map((item) => ({
         id: item.id,
+        productId: item.productId, // Pass original DB ID if available
         name: item.name,
         quantity: item.quantity || 1,
       }));
 
-      // Get access token if user is logged in
-      let token = null;
-      if (user) {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        token = session?.access_token;
-      }
+      // SimpleAuth: No Bearer token needed
+      const token = null;
 
       const paymentUrl = await initPayment(
         orderId,

@@ -53,6 +53,9 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
     e.stopPropagation();
     onBuy({
       ...product,
+      // Store original product ID for DB lookups (numeric or UUID)
+      productId: product.id,
+      // Composite ID for cart uniqueness (handles variants)
       id: `${product.id}-${selectedColor?.id || 'def'}-${selectedSize?.value || 'def'}`,
       name: `${product.name} ${selectedSize ? `(${selectedSize.label})` : ''} ${selectedColor ? `(${selectedColor.name})` : ''}`,
       price: currentPrice,

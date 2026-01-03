@@ -16,7 +16,6 @@ import { PaymentTrustBlock } from '../components/ui/PaymentTrustBlock';
 import { useSimpleAuth } from '../context/SimpleAuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import { supabase } from '../lib/supabase';
 import { sendTelegramNotification } from '../lib/telegram';
 import { initPayment } from '../lib/tinkoff';
 import { ecommercePurchase, reachGoal } from '../lib/yandex-metrica';
@@ -34,7 +33,7 @@ const Cart = ({ cart, onRemove }) => {
   const [step, setStep] = useState('form'); // form | processing | success
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    name: user?.user_metadata?.name || '',
+    name: user?.name || '',
     phone: user?.phone || '',
     email: user?.email || '',
     address: '',
@@ -161,18 +160,14 @@ const Cart = ({ cart, onRemove }) => {
 
       const items = cart.map((item) => ({
         id: item.id,
+        productId: item.productId, // Pass original DB ID if available
         name: item.name,
         quantity: item.quantity || 1,
       }));
 
-      // Get token if auth
-      let token = null;
-      if (user) {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        token = session?.access_token;
-      }
+      // SimpleAuth uses phone-based auth, no Bearer token needed for now
+      // Logic for linking SimpleAuth users to orders can be handled via phone number matching on backend if needed
+      const token = null;
 
       const paymentUrl = await initPayment(
         orderId,

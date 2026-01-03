@@ -47,7 +47,7 @@ export default async function handler(req, res) {
       const user = await verifyToken(token);
       if (user) {
         userId = user.id;
-        isUserAuthenticated = true;
+        // isUserAuthenticated = true; // Unused
       }
     }
 
@@ -67,10 +67,45 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Empty cart' });
     }
 
+    // Helper function to extract original product ID from cart item
+    // Cart items may have composite IDs like "101-bronze-600" for variants
+    const extractProductId = (item) => {
+      // If productId is explicitly set (new cart items), use it
+      if (item.productId) return item.productId;
+      
+      const idStr = String(item.id);
+      
+      // Skip donation items
+      if (idStr.startsWith('donate-')) return null;
+      
+      // Check if it's a composite ID (contains dashes after numeric/uuid part)
+      // Handle: "101-bronze-600" -> "101"
+      // Handle: "uuid-here-bronze-600" -> keep as uuid if valid
+      const parts = idStr.split('-');
+      
+      // If first part is numeric, it's the product ID
+      if (/^\d+$/.test(parts[0])) {
+        return Number(parts[0]);
+      }
+      
+      // If it looks like a UUID (8-4-4-4-12 format), return the full UUID
+      // UUIDs have 5 parts with specific lengths
+      if (parts.length >= 5) {
+        const uuidCandidate = parts.slice(0, 5).join('-');
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuidCandidate)) {
+          return uuidCandidate;
+        }
+      }
+      
+      // Fallback: return the original ID (might fail but allows error to bubble)
+      return item.id;
+    };
+
     // Fetch all products from DB for validation
     const productIds = items
       .filter(item => !String(item.id).startsWith('donate-'))
-      .map(item => item.id);
+      .map(item => extractProductId(item))
+      .filter(id => id !== null);
     
     let dbProducts = [];
     if (productIds.length > 0) {

@@ -25,6 +25,8 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
   const handleAddToCart = () => {
     const itemToAdd = {
       ...product,
+      // Store original product ID for DB lookups
+      productId: product.id,
       price: currentPrice,
       selectedSize,
       selectedColor,
