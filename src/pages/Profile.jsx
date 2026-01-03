@@ -1,10 +1,10 @@
-import AuthScreen from '../components/features/profile/AuthScreen';
+import SimpleAuthScreen from '../components/features/profile/SimpleAuthScreen';
 import ProfileView from '../components/features/profile/ProfileView';
-import { useAuth } from '../context/AuthContext';
+import { useSimpleAuth } from '../context/SimpleAuthContext';
 
 const Profile = () => {
-  const { user } = useAuth();
-  return user ? <ProfileView /> : <AuthScreen />;
+  const { user } = useSimpleAuth();
+  return user ? <ProfileView /> : <SimpleAuthScreen />;
 };
 
 export default Profile;

@@ -4,7 +4,7 @@ import Header from './components/layout/Header';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import InstallPWA from './components/features/InstallPWA';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { SimpleAuthProvider, useSimpleAuth } from './context/SimpleAuthContext';
 import { CartProvider, useCart } from './context/CartContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -32,7 +32,7 @@ import { AnimatePresence } from 'framer-motion';
 import { Route, Routes, useLocation } from 'react-router-dom';
 
 const AppContent = () => {
-  const { loading } = useAuth();
+  const { loading } = useSimpleAuth();
   const { cartItems, addToCart, removeFromCart } = useCart();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -120,13 +120,13 @@ const App = () => (
   <ErrorBoundary>
     <ThemeProvider>
       <ToastProvider>
-        <AuthProvider>
+        <SimpleAuthProvider>
           <CartProvider>
             <WishlistProvider>
               <AppContent />
             </WishlistProvider>
           </CartProvider>
-        </AuthProvider>
+        </SimpleAuthProvider>
       </ToastProvider>
     </ThemeProvider>
   </ErrorBoundary>
