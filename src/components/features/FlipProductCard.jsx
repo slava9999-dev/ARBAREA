@@ -234,9 +234,10 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
               <button
                 type="button"
                 onClick={handleBuy}
-                className="flex-1 btn-primary py-2.5 rounded-xl font-semibold flex items-center justify-center gap-1.5 text-xs shadow-wood-glow hover:shadow-wood-glow-lg"
+                className="flex-1 h-9 btn-primary rounded-full flex items-center justify-center gap-1 shadow-wood-glow hover:shadow-wood-glow-lg active:scale-95 transition-all duration-200 text-[11px] font-semibold px-2"
               >
-                <ShoppingBag size={14} />В корзину
+                <ShoppingBag size={14} />
+                <span>Купить</span>
               </button>
               <button
                 type="button"
@@ -244,9 +245,10 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                   e.stopPropagation();
                   if (onOpenModal) onOpenModal(product);
                 }}
-                className="flex-1 bg-wood-bg-elevated text-wood-text-primary hover:bg-wood-bg-card active:scale-95 transition-all duration-300 rounded-xl py-2.5 font-medium flex items-center justify-center text-xs border border-wood-amber/20 hover:border-wood-amber/50"
+                className="flex-1 h-9 bg-wood-bg-elevated text-wood-text-primary hover:bg-wood-bg-card active:scale-95 transition-all duration-200 rounded-full flex items-center justify-center gap-1 border border-wood-amber/30 hover:border-wood-amber/60 text-[11px] font-medium px-2"
               >
-                Подробнее
+                <Maximize2 size={14} />
+                <span>Детали</span>
               </button>
             </div>
           )}

@@ -1,10 +1,10 @@
 import { Coffee, Loader2, X } from 'lucide-react';
 import { useState } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import { useSimpleAuth } from '../../../context/SimpleAuthContext';
 import { initPayment } from '../../../lib/tinkoff';
 
 const DonateModal = ({ onClose }) => {
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const [amount, setAmount] = useState('100');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');

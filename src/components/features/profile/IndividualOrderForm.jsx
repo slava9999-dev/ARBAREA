@@ -1,11 +1,11 @@
 import { ArrowRight, Check, FileText, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import { useSimpleAuth } from '../../../context/SimpleAuthContext';
 import { supabase } from '../../../lib/supabase';
 import { sendTelegramNotification } from '../../../lib/telegram';
 
 const IndividualOrderForm = () => {
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const [file, setFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -49,9 +49,8 @@ const IndividualOrderForm = () => {
         .replace(/'/g, '&#039;');
     };
 
-    // Construct user display string safely
-    const userDisplay =
-      user?.user_metadata?.name || user?.email || user?.phone || 'Неизвестно';
+    // Construct user display string safely (SimpleAuth)
+    const userDisplay = user?.name || user?.phone || 'Неизвестно';
 
     const message = `
 🔔 <b>Новая заявка на индивидуальный заказ!</b>
@@ -128,7 +127,7 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
         order_id: orderId,
         user_id: user.id,
         user_email: user.email || '',
-        user_name: userName || user.user_metadata?.name || 'Не указано',
+        user_name: userName || user.name || 'Не указано',
         user_phone: userPhone || user.phone || 'Не указано',
         description: formData.description,
         dimensions: {
@@ -197,7 +196,7 @@ ${orderData.file_url ? `📎 <b>Файл:</b> ${escapeHtml(orderData.file_name)}
               id="userName"
               required
               placeholder="Как к вам обращаться?"
-              defaultValue={user?.user_metadata?.name || ''}
+              defaultValue={user?.name || ''}
               name="userName"
               className="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
             />

@@ -1,11 +1,4 @@
-import {
-  useState,
-  useEffect,
-  useCallback,
-  lazy,
-  Suspense,
-  useRef,
-} from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin,
@@ -164,9 +157,11 @@ const DeliverySelectorWithMap = ({
   onClose,
   onSelect,
   isFreeShipping = true, // Всегда бесплатно
+  initialAddress = '',
+  cartTotal = 0,
 }) => {
   const [selectedService, setSelectedService] = useState(null);
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState(initialAddress);
   const [city, setCity] = useState('');
   const [step, setStep] = useState('service'); // service, map, confirm
   const [searchQuery, setSearchQuery] = useState('');
@@ -175,24 +170,36 @@ const DeliverySelectorWithMap = ({
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState([55.7558, 37.6173]); // Москва по умолчанию
   const [showMap, setShowMap] = useState(false);
-  const [mapKey, setMapKey] = useState(0); // Unique key for map remount
-  const mapRef = useRef(null);
+  const [mapKey, setMapKey] = useState(() => Date.now()); // Unique key for map remount
+  const [isMapReady, setIsMapReady] = useState(false);
 
   // Reset map when service changes
   useEffect(() => {
     if (step === 'map' && selectedService) {
-      setMapKey((prev) => prev + 1);
+      setIsMapReady(false);
+      // Small delay to ensure DOM is clean before re-rendering map
+      const timer = setTimeout(() => {
+        setMapKey(Date.now());
+        setIsMapReady(true);
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [selectedService, step]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (mapRef.current) {
-        mapRef.current = null;
-      }
+      setIsMapReady(false);
+      setShowMap(false);
     };
   }, []);
+
+  // Sync initialAddress when it changes (only if address is empty)
+  useEffect(() => {
+    if (initialAddress) {
+      setAddress((prev) => prev || initialAddress);
+    }
+  }, [initialAddress]);
 
   // Группируем сервисы по категориям
   const groupedServices = DELIVERY_SERVICES.reduce((acc, service) => {
@@ -209,12 +216,9 @@ const DeliverySelectorWithMap = ({
 
   const handleServiceSelect = (service) => {
     setSelectedService(service);
-    if (service.hasPickupPoints) {
-      setStep('map');
-      setShowMap(true);
-    } else {
-      setStep('address');
-    }
+    // Сразу переход к подтверждению для всех сервисов
+    // Адрес берётся из формы корзины (initialAddress)
+    setStep('confirm');
   };
 
   // Debounced search
@@ -254,11 +258,13 @@ const DeliverySelectorWithMap = ({
   };
 
   const handleConfirm = () => {
+    // Используем адрес из формы корзины (initialAddress) или введённый адрес
+    const finalAddress = address || initialAddress || 'Адрес будет уточнён';
     const deliveryData = {
       service: selectedService,
-      address: selectedLocation?.display_name || `${city}, ${address}`,
-      city: city || selectedLocation?.display_name?.split(',')[0] || '',
-      fullAddress: address,
+      address: finalAddress,
+      city: city || finalAddress.split(',')[0] || '',
+      fullAddress: finalAddress,
       price: 0, // Всегда бесплатно
       coordinates: selectedLocation
         ? { lat: selectedLocation.lat, lng: selectedLocation.lng }
@@ -269,17 +275,10 @@ const DeliverySelectorWithMap = ({
   };
 
   const handleBack = () => {
-    if (step === 'confirm') {
-      if (selectedService?.hasPickupPoints) {
-        setStep('map');
-      } else {
-        setStep('address');
-      }
-    } else if (step === 'map' || step === 'address') {
-      setStep('service');
-      setSelectedService(null);
-      setShowMap(false);
-    }
+    // Из подтверждения возвращаемся к выбору сервиса
+    setStep('service');
+    setSelectedService(null);
+    setShowMap(false);
   };
 
   const resetAndClose = () => {
@@ -555,7 +554,7 @@ const DeliverySelectorWithMap = ({
                       </div>
                     }
                   >
-                    {showMap && (
+                    {showMap && isMapReady && (
                       <MapContainer
                         key={`map-${mapKey}`}
                         center={mapCenter}
@@ -725,21 +724,37 @@ const DeliverySelectorWithMap = ({
                       size={20}
                     />
                     <p className="text-sm text-white">
-                      {selectedLocation?.display_name || `${city}, ${address}`}
+                      {address ||
+                        initialAddress ||
+                        'Адрес будет указан в форме заказа'}
                     </p>
                   </div>
                 </div>
 
-                <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-stone-400">
-                        Стоимость доставки
+                {/* Итоговая сумма */}
+                <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/30">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-stone-400">Сумма товаров</p>
+                      <p className="text-lg font-bold text-white">
+                        {cartTotal.toLocaleString()} ₽
                       </p>
                     </div>
-                    <p className="text-2xl font-bold text-emerald-400">
-                      Бесплатно
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-stone-400">Доставка</p>
+                      <p className="text-lg font-bold text-emerald-400">
+                        Бесплатно
+                      </p>
+                    </div>
+                    <div className="h-px bg-white/10 my-2" />
+                    <div className="flex items-center justify-between">
+                      <p className="text-base font-bold text-white">
+                        Итого к оплате
+                      </p>
+                      <p className="text-2xl font-bold text-gradient-amber">
+                        {cartTotal.toLocaleString()} ₽
+                      </p>
+                    </div>
                   </div>
                 </div>
 

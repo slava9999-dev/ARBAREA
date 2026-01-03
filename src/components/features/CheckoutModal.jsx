@@ -7,7 +7,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useState, lazy, Suspense, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useSimpleAuth } from '../../context/SimpleAuthContext';
 import { useCart } from '../../context/CartContext';
 import { supabase } from '../../lib/supabase';
 import { sendTelegramNotification } from '../../lib/telegram';
@@ -20,10 +20,10 @@ const DeliverySelector = lazy(() => import('./DeliverySelectorWithMap'));
 
 const CheckoutModal = ({ onClose }) => {
   const { cartItems, subtotal } = useCart();
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const [step, setStep] = useState('form'); // form, processing, success
   const [formData, setFormData] = useState({
-    name: user?.user_metadata?.name || '',
+    name: user?.name || '',
     phone: user?.phone || '',
     address: '',
     email: user?.email || '',

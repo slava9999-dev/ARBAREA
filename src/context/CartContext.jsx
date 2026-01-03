@@ -111,10 +111,16 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: 'CLEAR_CART' });
   };
 
+  // Discount (пока нет логики скидок)
+  const discount = 0;
+  const cartTotal = subtotal - discount;
+
   const value = {
     cartItems: state.items,
     totalItems,
     subtotal,
+    cartTotal,
+    discount,
     addToCart,
     removeFromCart,
     updateQuantity,

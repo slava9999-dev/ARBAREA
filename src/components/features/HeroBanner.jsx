@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
 import { Download, Truck, Sparkles } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useSimpleAuth } from '../../context/SimpleAuthContext';
 
 const HeroBanner = () => {
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
 
   const handleInstallClick = () => {
     // Trigger PWA install prompt
@@ -31,13 +31,14 @@ const HeroBanner = () => {
           </div>
           <div className="flex-1">
             <h3 className="font-bold text-white text-base leading-tight mb-1">
-              {user ? '🎉 Бесплатная доставка!' : 'Бесплатная доставка для вас!'}
+              {user
+                ? '🎉 Бесплатная доставка!'
+                : 'Бесплатная доставка для вас!'}
             </h3>
             <p className="text-xs text-white/95 leading-relaxed">
-              {user 
+              {user
                 ? 'Вы получаете бесплатную доставку на все заказы'
-                : 'Зарегистрируйтесь и получите бесплатную доставку по России'
-              }
+                : 'Зарегистрируйтесь и получите бесплатную доставку по России'}
             </p>
           </div>
         </div>

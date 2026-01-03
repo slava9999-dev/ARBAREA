@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
 import { Truck } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useSimpleAuth } from '../../context/SimpleAuthContext';
 
 const DiscountBanner = () => {
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
 
   // Don't show banner if user is already logged in
   if (user) return null;
@@ -29,7 +29,8 @@ const DiscountBanner = () => {
             Бесплатная доставка!
           </p>
           <p className="text-xs text-white/95 leading-relaxed">
-            Зарегистрируйтесь и получите бесплатную доставку на все заказы по России
+            Зарегистрируйтесь и получите бесплатную доставку на все заказы по
+            России
           </p>
         </div>
       </div>

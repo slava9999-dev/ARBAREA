@@ -5,6 +5,7 @@ import {
   Loader2,
   Lock,
   MapPin,
+  Navigation,
   ShoppingBag,
   Sparkles,
 } from 'lucide-react';
@@ -42,9 +43,79 @@ const Cart = ({ cart, onRemove }) => {
   // Delivery
   const [isDeliveryOpen, setIsDeliveryOpen] = useState(false);
   const [selectedDelivery, setSelectedDelivery] = useState(null);
+  const [isLocating, setIsLocating] = useState(false);
 
   const deliveryPrice = selectedDelivery?.price || 0;
   const finalTotal = subtotal + deliveryPrice - discount;
+
+  // Geolocation: определить адрес по GPS
+  const handleGetLocation = async () => {
+    if (!navigator.geolocation) {
+      showToast('Геолокация не поддерживается', 'error');
+      return;
+    }
+
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          // Reverse geocoding через Nominatim (OpenStreetMap)
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ru`,
+          );
+          const data = await response.json();
+
+          if (data?.display_name) {
+            // Формируем адрес
+            const address = data.address;
+            let formattedAddress = '';
+
+            if (address) {
+              const parts = [];
+              if (address.city || address.town || address.village) {
+                parts.push(address.city || address.town || address.village);
+              }
+              if (address.road) parts.push(address.road);
+              if (address.house_number)
+                parts.push(`д. ${address.house_number}`);
+
+              formattedAddress =
+                parts.length > 0 ? parts.join(', ') : data.display_name;
+            } else {
+              formattedAddress = data.display_name;
+            }
+
+            setFormData({ ...formData, address: formattedAddress });
+            showToast('Адрес определён', 'success');
+          }
+        } catch (error) {
+          console.error('Geocoding error:', error);
+          showToast('Не удалось определить адрес', 'error');
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        setIsLocating(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            showToast('Доступ к геолокации запрещён', 'error');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            showToast('Местоположение недоступно', 'error');
+            break;
+          case error.TIMEOUT:
+            showToast('Время ожидания истекло', 'error');
+            break;
+          default:
+            showToast('Ошибка определения местоположения', 'error');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
+  };
 
   // 🎯 YANDEX METRICA: Track checkout start
   useEffect(() => {
@@ -311,7 +382,7 @@ ${cart.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
             </h3>
 
             <div id="delivery-section" className="space-y-4 mb-12">
-              {/* Address Input for Auto-Map Center if needed, though delivery map usually handles it */}
+              {/* Address Input with Geolocation */}
               <div className="space-y-1">
                 <label
                   htmlFor="client-address"
@@ -319,15 +390,30 @@ ${cart.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
                 >
                   Адрес клиента
                 </label>
-                <input
-                  id="client-address"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  placeholder="г. Москва, ул. Примерная 1..."
-                  className="input-premium w-full bg-[#2a2520] border-transparent focus:bg-[#1a1614] mb-2"
-                />
+                <div className="flex gap-2">
+                  <input
+                    id="client-address"
+                    value={formData.address}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                    placeholder="г. Москва, ул. Примерная 1..."
+                    className="input-premium flex-1 bg-[#2a2520] border-transparent focus:bg-[#1a1614]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleGetLocation}
+                    disabled={isLocating}
+                    className="w-12 h-12 shrink-0 bg-wood-amber/20 hover:bg-wood-amber/30 border border-wood-amber/30 rounded-xl flex items-center justify-center text-wood-amber transition-all disabled:opacity-50 disabled:cursor-wait"
+                    title="Определить местоположение"
+                  >
+                    {isLocating ? (
+                      <Loader2 size={20} className="animate-spin" />
+                    ) : (
+                      <Navigation size={20} />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Delivery Selector Button (Accordion Trigger) */}
@@ -402,6 +488,7 @@ ${cart.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
                   onSelect={handleDeliverySelect}
                   isFreeShipping={!!user}
                   initialAddress={formData.address}
+                  cartTotal={subtotal}
                 />
               </Suspense>
             </div>

@@ -1,6 +1,15 @@
-import { CheckCircle, Clock, Package, Truck, XCircle, MapPin, Copy, ExternalLink } from 'lucide-react';
+import {
+  CheckCircle,
+  Clock,
+  Package,
+  Truck,
+  XCircle,
+  MapPin,
+  Copy,
+  ExternalLink,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import { useSimpleAuth } from '../../../context/SimpleAuthContext';
 import { supabase } from '../../../lib/supabase';
 
 // Order status progression
@@ -12,7 +21,7 @@ const ORDER_STEPS = [
 ];
 
 const OrderHistory = () => {
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
@@ -48,20 +57,26 @@ const OrderHistory = () => {
     // Subscribe to realtime updates
     const subscription = supabase
       .channel('orders')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'orders',
-        filter: `user_id=eq.${user.id}`,
-      }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setOrders(prev => [payload.new, ...prev]);
-        } else if (payload.eventType === 'UPDATE') {
-          setOrders(prev => prev.map(o => o.id === payload.new.id ? payload.new : o));
-        } else if (payload.eventType === 'DELETE') {
-          setOrders(prev => prev.filter(o => o.id !== payload.old.id));
-        }
-      })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setOrders((prev) => [payload.new, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            setOrders((prev) =>
+              prev.map((o) => (o.id === payload.new.id ? payload.new : o)),
+            );
+          } else if (payload.eventType === 'DELETE') {
+            setOrders((prev) => prev.filter((o) => o.id !== payload.old.id));
+          }
+        },
+      )
       .subscribe();
 
     return () => {
@@ -70,7 +85,7 @@ const OrderHistory = () => {
   }, [user]);
 
   const getStatusIndex = (status) => {
-    const index = ORDER_STEPS.findIndex(s => s.key === status);
+    const index = ORDER_STEPS.findIndex((s) => s.key === status);
     return index >= 0 ? index : -1;
   };
 
@@ -172,19 +187,23 @@ const OrderHistory = () => {
         <div className="w-8 h-8 bg-stone-700 rounded-full flex items-center justify-center text-stone-300">
           <Package size={16} />
         </div>
-        <h3 className="font-serif font-bold text-stone-100">
-          История заказов
-        </h3>
+        <h3 className="font-serif font-bold text-stone-100">История заказов</h3>
         <span className="ml-auto text-xs bg-amber-500/20 text-amber-400 px-2 py-1 rounded-full">
-          {orders.length} {orders.length === 1 ? 'заказ' : orders.length < 5 ? 'заказа' : 'заказов'}
+          {orders.length}{' '}
+          {orders.length === 1
+            ? 'заказ'
+            : orders.length < 5
+              ? 'заказа'
+              : 'заказов'}
         </span>
       </div>
 
       <div className="space-y-4">
         {orders.map((order) => {
           const statusIndex = getStatusIndex(order.status);
-          const isActiveOrder = statusIndex >= 0 && statusIndex < ORDER_STEPS.length - 1;
-          
+          const isActiveOrder =
+            statusIndex >= 0 && statusIndex < ORDER_STEPS.length - 1;
+
           return (
             <div
               key={order.id}
@@ -199,7 +218,14 @@ const OrderHistory = () => {
                     className="flex items-center gap-1.5 text-sm font-bold text-stone-100 hover:text-amber-400 transition-colors"
                   >
                     {order.order_id}
-                    <Copy size={12} className={copiedId === order.order_id ? 'text-green-400' : 'text-stone-500'} />
+                    <Copy
+                      size={12}
+                      className={
+                        copiedId === order.order_id
+                          ? 'text-green-400'
+                          : 'text-stone-500'
+                      }
+                    />
                   </button>
                   <p className="text-xs text-stone-500">
                     {formatDate(order.created_at)}
@@ -221,7 +247,7 @@ const OrderHistory = () => {
                       const isComplete = index <= statusIndex;
                       const isCurrent = index === statusIndex;
                       const StepIcon = step.icon;
-                      
+
                       return (
                         <div
                           key={step.key}
@@ -238,7 +264,9 @@ const OrderHistory = () => {
                           >
                             <StepIcon size={12} />
                           </div>
-                          <span className={`text-[9px] mt-1 ${isComplete ? 'text-stone-300' : 'text-stone-600'}`}>
+                          <span
+                            className={`text-[9px] mt-1 ${isComplete ? 'text-stone-300' : 'text-stone-600'}`}
+                          >
                             {step.label}
                           </span>
                         </div>
@@ -248,7 +276,9 @@ const OrderHistory = () => {
                   <div className="h-1 bg-stone-700 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-green-500 to-amber-500 transition-all duration-500"
-                      style={{ width: `${((statusIndex + 1) / ORDER_STEPS.length) * 100}%` }}
+                      style={{
+                        width: `${((statusIndex + 1) / ORDER_STEPS.length) * 100}%`,
+                      }}
                     />
                   </div>
                 </div>
@@ -259,8 +289,12 @@ const OrderHistory = () => {
                 <div className="mb-3 p-2 bg-stone-800/50 rounded-xl flex items-center gap-2">
                   <MapPin size={14} className="text-amber-500 shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-stone-300 truncate">{order.delivery_method}</p>
-                    <p className="text-[10px] text-stone-500 truncate">{order.delivery_address || 'Адрес не указан'}</p>
+                    <p className="text-xs font-medium text-stone-300 truncate">
+                      {order.delivery_method}
+                    </p>
+                    <p className="text-[10px] text-stone-500 truncate">
+                      {order.delivery_address || 'Адрес не указан'}
+                    </p>
                   </div>
                   {order.tracking_number && (
                     <a
@@ -282,7 +316,8 @@ const OrderHistory = () => {
                     key={`${order.id}-item-${index}`}
                     className="text-xs text-stone-400"
                   >
-                    {item.name} x{item.quantity} — {(item.price * item.quantity).toLocaleString()} ₽
+                    {item.name} x{item.quantity} —{' '}
+                    {(item.price * item.quantity).toLocaleString()} ₽
                   </p>
                 ))}
                 {order.items?.length > 2 && (
@@ -295,7 +330,9 @@ const OrderHistory = () => {
               {/* Footer */}
               <div className="flex justify-between items-center pt-3 border-t border-stone-700">
                 <span className="text-xs text-stone-500">
-                  {order.shipping === 0 ? '🎁 Бесплатная доставка' : `Доставка: ${order.shipping?.toLocaleString()} ₽`}
+                  {order.shipping === 0
+                    ? '🎁 Бесплатная доставка'
+                    : `Доставка: ${order.shipping?.toLocaleString()} ₽`}
                 </span>
                 <span className="font-bold text-amber-500">
                   {order.total?.toLocaleString()} ₽

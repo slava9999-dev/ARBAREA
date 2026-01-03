@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/AuthContext';
+import { useSimpleAuth } from '../../../context/SimpleAuthContext';
 import { useWishlist } from '../../../context/WishlistContext';
 import SocialFooter from '../../layout/SocialFooter';
 import DonateModal from './DonateModal';
@@ -35,7 +35,7 @@ import IndividualOrderForm from './IndividualOrderForm';
 import OrderHistory from './OrderHistory';
 
 const ProfileView = () => {
-  const { logout, user, updateProfile } = useAuth();
+  const { logout, user, updateProfile } = useSimpleAuth();
   const { wishlistItems } = useWishlist();
   const navigate = useNavigate();
   const [showDonateModal, setShowDonateModal] = useState(false);
@@ -45,21 +45,15 @@ const ProfileView = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   // Helper to safely get user display name and avatar
+  // SimpleAuth stores data directly on user, not in user_metadata
   const displayName =
-    user?.user_metadata?.name ||
-    user?.user_metadata?.full_name ||
-    user?.email?.split('@')[0] ||
-    user?.phone ||
-    'Гость';
-  const avatarUrl =
-    user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
-  const userPhone = user?.phone || user?.user_metadata?.phone || '';
+    user?.name || user?.user_metadata?.name || user?.phone || 'Гость';
+  const avatarUrl = user?.avatar_url || user?.user_metadata?.avatar_url;
+  const userPhone = user?.phone || '';
   const userEmail = user?.email || '';
 
   const startEditing = () => {
-    setEditName(
-      user?.user_metadata?.name || user?.user_metadata?.full_name || '',
-    );
+    setEditName(user?.name || '');
     setEditPhone(userPhone.replace('+7', ''));
     setIsEditing(true);
   };
