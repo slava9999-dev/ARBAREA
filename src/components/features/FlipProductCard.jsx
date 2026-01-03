@@ -225,7 +225,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
             <button
               type="button"
               disabled
-              className="w-full bg-wood-bg-elevated text-wood-text-muted py-3 rounded-xl font-medium tracking-wide cursor-not-allowed border border-white/5"
+              className="w-full bg-wood-bg-elevated text-wood-text-muted py-2.5 rounded-xl font-medium text-sm cursor-not-allowed border border-white/5"
             >
               Продано
             </button>
@@ -234,9 +234,9 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
               <button
                 type="button"
                 onClick={handleBuy}
-                className="flex-1 btn-primary py-3 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 text-sm shadow-wood-glow hover:shadow-wood-glow-lg"
+                className="flex-1 btn-primary py-2.5 rounded-xl font-semibold flex items-center justify-center gap-1.5 text-xs shadow-wood-glow hover:shadow-wood-glow-lg"
               >
-                <ShoppingBag size={16} />В корзину
+                <ShoppingBag size={14} />В корзину
               </button>
               <button
                 type="button"
@@ -244,7 +244,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                   e.stopPropagation();
                   if (onOpenModal) onOpenModal(product);
                 }}
-                className="flex-1 bg-wood-bg-elevated text-wood-text-primary hover:bg-wood-bg-card active:scale-95 transition-all duration-300 rounded-xl py-3 font-medium tracking-wide flex items-center justify-center text-sm border border-wood-amber/20 hover:border-wood-amber/50"
+                className="flex-1 bg-wood-bg-elevated text-wood-text-primary hover:bg-wood-bg-card active:scale-95 transition-all duration-300 rounded-xl py-2.5 font-medium flex items-center justify-center text-xs border border-wood-amber/20 hover:border-wood-amber/50"
               >
                 Подробнее
               </button>
