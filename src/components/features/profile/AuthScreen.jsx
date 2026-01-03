@@ -89,7 +89,9 @@ const AuthScreen = () => {
         await loginWithEmail(email, password);
       } else {
         await registerWithEmail(email, password, { name });
-        setMessage('Подтвердите регистрацию по ссылке в письме!');
+        setMessage(
+          '✅ Регистрация успешна! Проверьте почту и подтвердите email, чтобы войти.',
+        );
       }
     } catch (e) {
       setError(getErrorMessage(e));
@@ -191,27 +193,27 @@ const AuthScreen = () => {
   );
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-6 pb-32 text-center animate-fade-in">
-      <div className="w-24 h-24 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <User size={40} className="text-stone-400" />
+    <div className="min-h-screen flex flex-col justify-center px-6 pb-32 text-center animate-fade-in bg-gradient-to-b from-wood-bg to-wood-bg-elevated">
+      <div className="w-24 h-24 bg-gradient-to-br from-wood-amber/20 to-wood-amber/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-wood-amber/20 shadow-wood-glow">
+        <User size={40} className="text-wood-amber" />
       </div>
 
-      <h2 className="text-2xl font-serif font-bold mb-3 text-white">
+      <h2 className="text-3xl font-serif font-bold mb-3 text-gradient-amber drop-shadow-wood-glow">
         Добро пожаловать
         <br />в Arbarea
       </h2>
-      <p className="text-stone-300 mb-10 text-sm leading-relaxed max-w-xs mx-auto">
+      <p className="text-wood-text-secondary mb-10 text-sm leading-relaxed max-w-xs mx-auto">
         Войдите, чтобы отслеживать заказы и получить скидку 10%
       </p>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl text-sm mb-4">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl text-sm mb-4 backdrop-blur-sm">
           {error}
         </div>
       )}
 
       {message && (
-        <div className="bg-green-500/10 border border-green-500/20 text-green-400 p-3 rounded-xl text-sm mb-4">
+        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl text-sm mb-4 backdrop-blur-sm">
           {message}
         </div>
       )}
@@ -242,7 +244,7 @@ const AuthScreen = () => {
           <button
             type="button"
             onClick={() => setMethod('email')}
-            className="w-full bg-stone-800 border border-stone-700 text-stone-200 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-stone-700 active:scale-95 transition-all"
+            className="w-full bg-wood-bg-card border border-wood-amber/20 text-wood-text-primary py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-wood-bg-elevated hover:border-wood-amber/40 active:scale-95 transition-all shadow-wood-sm"
           >
             <Mail size={20} />
             Войти через Email
@@ -251,7 +253,7 @@ const AuthScreen = () => {
           <button
             type="button"
             onClick={() => setMethod('magic')}
-            className="w-full mt-2 text-stone-400 text-xs py-2 hover:text-white transition-colors"
+            className="w-full mt-2 text-wood-text-muted text-xs py-2 hover:text-wood-amber transition-colors"
           >
             Войти без пароля (по ссылке на Email)
           </button>
@@ -267,7 +269,7 @@ const AuthScreen = () => {
               onChange={(e) => setName(e.target.value)}
               placeholder="Ваше имя"
               type="text"
-              className="w-full p-4 bg-stone-900 border border-stone-700 text-white rounded-xl outline-none focus:border-amber-500"
+              className="w-full p-4 bg-wood-bg-elevated border border-wood-amber/20 text-wood-text-primary rounded-2xl outline-none focus:border-wood-amber focus:shadow-wood-glow-sm placeholder-wood-text-muted"
             />
           )}
           <input
@@ -275,20 +277,20 @@ const AuthScreen = () => {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
             type="email"
-            className="w-full p-4 bg-stone-900 border border-stone-700 text-white rounded-xl outline-none focus:border-amber-500"
+            className="w-full p-4 bg-wood-bg-elevated border border-wood-amber/20 text-wood-text-primary rounded-2xl outline-none focus:border-wood-amber focus:shadow-wood-glow-sm placeholder-wood-text-muted"
           />
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Пароль"
-            className="w-full p-4 bg-stone-900 border border-stone-700 text-white rounded-xl outline-none focus:border-amber-500"
+            className="w-full p-4 bg-wood-bg-elevated border border-wood-amber/20 text-wood-text-primary rounded-2xl outline-none focus:border-wood-amber focus:shadow-wood-glow-sm placeholder-wood-text-muted"
           />
           <button
             type="button"
             onClick={handleEmail}
             disabled={loading}
-            className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-500"
+            className="w-full btn-primary py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
           >
             {loading ? (
               <Loader2 className="animate-spin" />
@@ -314,7 +316,7 @@ const AuthScreen = () => {
               <button
                 type="button"
                 onClick={() => setMethod('reset')}
-                className="text-amber-500 text-sm py-2"
+                className="text-wood-amber text-sm py-2 hover:text-wood-amber-light"
               >
                 Забыли пароль?
               </button>
