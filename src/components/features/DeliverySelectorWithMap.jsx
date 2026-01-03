@@ -341,11 +341,11 @@ const DeliverySelectorWithMap = ({
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="bg-[#1c1917] w-full sm:w-[500px] max-h-[90vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col border border-white/10 shadow-2xl"
+          className="bg-wood-bg-card w-full sm:w-[500px] max-h-[90vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col border border-wood-amber/20 shadow-wood-glow-lg"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="p-4 border-b border-white/5 shrink-0 flex items-center justify-between bg-gradient-to-r from-amber-500/10 to-transparent">
+          <div className="p-4 border-b border-wood-amber/10 shrink-0 flex items-center justify-between bg-gradient-to-r from-wood-amber/10 to-transparent">
             <div className="flex items-center gap-3">
               {step !== 'service' && (
                 <button
@@ -397,7 +397,7 @@ const DeliverySelectorWithMap = ({
                           key={service.id}
                           type="button"
                           onClick={() => handleServiceSelect(service)}
-                          className="w-full flex items-center justify-between p-4 bg-stone-800/30 hover:bg-stone-800/50 rounded-2xl border border-white/5 hover:border-amber-500/30 transition-all group"
+                          className="w-full flex items-center justify-between p-4 bg-wood-bg-elevated/50 hover:bg-wood-bg-elevated rounded-2xl border border-wood-amber/10 hover:border-wood-amber/40 transition-all group shadow-sm hover:shadow-wood-sm"
                         >
                           <div className="flex items-center gap-4">
                             <span
@@ -493,7 +493,7 @@ const DeliverySelectorWithMap = ({
                 <div className="p-4 space-y-3">
                   <div className="relative">
                     <Search
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-500"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-wood-text-secondary"
                       size={18}
                     />
                     <input
@@ -501,7 +501,7 @@ const DeliverySelectorWithMap = ({
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Введите ваш адрес..."
-                      className="w-full pl-12 pr-12 py-3 bg-stone-800/50 border border-white/10 rounded-xl text-white placeholder-stone-500 focus:border-amber-500 focus:outline-none"
+                      className="w-full pl-12 pr-12 py-3 bg-wood-bg-elevated border border-wood-amber/20 rounded-xl text-wood-text-primary placeholder-wood-text-secondary focus:border-wood-amber focus:outline-none focus:shadow-wood-glow-sm"
                     />
                     {isSearching && (
                       <Loader2
@@ -614,7 +614,7 @@ const DeliverySelectorWithMap = ({
                     <button
                       type="button"
                       onClick={() => setStep('confirm')}
-                      className="w-full mt-3 bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-[0_0_20px_rgba(217,119,6,0.3)]"
+                      className="w-full mt-3 btn-primary text-base font-bold py-4 rounded-xl flex items-center justify-center gap-2"
                     >
                       Продолжить
                       <ChevronRight size={18} />
@@ -760,7 +760,7 @@ const DeliverySelectorWithMap = ({
               <button
                 type="button"
                 onClick={handleConfirm}
-                className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-[0_0_20px_rgba(217,119,6,0.3)]"
+                className="w-full btn-primary text-base font-bold py-4 rounded-xl flex items-center justify-center gap-2"
               >
                 <Check size={20} />
                 Подтвердить доставку

@@ -40,32 +40,35 @@ const Showcase = ({ onBuy, onOpenModal }) => {
         {/* 2. CONTENT LAYER */}
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-24">
           {/* LOGO */}
-          <motion.h1
-            className="font-serif text-7xl md:text-9xl bg-gradient-to-r from-amber-200 via-amber-500 to-amber-700 bg-clip-text text-transparent mb-6 drop-shadow-2xl"
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-8"
           >
-            Arbarea
-          </motion.h1>
+            <h1 className="font-serif text-6xl md:text-8xl tracking-tight leading-none text-gradient-amber drop-shadow-wood-glow">
+              Arbarea
+            </h1>
+            <div className="h-px w-32 mx-auto mt-4 bg-gradient-to-r from-transparent via-wood-amber to-transparent opacity-50" />
+          </motion.div>
 
           {/* DESCRIPTOR */}
           <motion.p
-            className="font-sans text-amber-600 text-lg md:text-xl mb-8 tracking-wide font-medium"
+            className="font-sans text-wood-amber-light text-xs md:text-sm mb-8 tracking-[0.2em] uppercase font-semibold"
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            Эстетика, к которой хочется прикоснуться
+            Мастерская эстетики
           </motion.p>
 
           {/* DESCRIPTION */}
           <motion.p
-            className="font-sans text-stone-300 max-w-2xl leading-relaxed mb-12 text-base md:text-lg font-light opacity-90"
+            className="font-sans text-stone-300 max-w-xl leading-relaxed mb-12 text-base md:text-lg font-light opacity-80"
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
           >
-            Глубина натурального дерева и тишина идеальной формы.
-            <br className="hidden md:block" />
-            Предметы интерьера, создающие атмосферу.
+            Глубина натурального дерева и тишина идеальной формы. Предметы
+            интерьера, создающие атмосферу вашего дома.
           </motion.p>
 
           {/* ACTION BUTTON */}
@@ -76,13 +79,13 @@ const Showcase = ({ onBuy, onOpenModal }) => {
                 .getElementById('catalog')
                 ?.scrollIntoView({ behavior: 'smooth' })
             }
-            className="bg-amber-600 text-white hover:bg-amber-500 active:scale-95 transition-all duration-300 rounded-lg px-8 py-4 font-medium tracking-wide shadow-[0_0_20px_rgba(217,119,6,0.3)]"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+            className="btn-primary shadow-wood-glow hover:shadow-wood-glow-lg text-lg px-10 py-4"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.5 }}
           >
-            Перейти в каталог
+            Открыть каталог
           </motion.button>
         </div>
       </div>
@@ -106,11 +109,11 @@ const Showcase = ({ onBuy, onOpenModal }) => {
                     type="button"
                     onClick={() => setActiveCategory(cat.id)}
                     className={`
-                      relative whitespace-nowrap rounded-full px-6 py-2.5 text-sm font-medium tracking-wide transition-all duration-300
+                      relative whitespace-nowrap px-6 py-2.5 text-sm font-medium tracking-wide transition-all duration-300 rounded-xl
                       ${
                         activeCategory === cat.id
-                          ? 'bg-amber-600 text-white shadow-[0_0_20px_rgba(217,119,6,0.3)] border border-amber-500'
-                          : 'bg-white/5 text-stone-300 border border-white/10 hover:bg-white/10 hover:border-white/20'
+                          ? 'bg-wood-amber text-base shadow-wood-glow font-bold'
+                          : 'bg-white/5 text-stone-400 border border-white/5 hover:bg-white/10 hover:text-wood-amber'
                       }
                     `}
                   >

@@ -1,150 +1,454 @@
-import { Lock, ShoppingBag, Sparkles } from 'lucide-react';
-import CartItem from '../components/features/cart/CartItem';
+import {
+  Check,
+  ChevronRight,
+  CreditCard,
+  Loader2,
+  Lock,
+  MapPin,
+  ShoppingBag,
+  Sparkles,
+} from 'lucide-react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import DiscountBanner from '../components/features/DiscountBanner';
+import CartItem from '../components/features/cart/CartItem';
 import { PaymentTrustBlock } from '../components/ui/PaymentTrustBlock';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
+import { supabase } from '../lib/supabase';
+import { sendTelegramNotification } from '../lib/telegram';
+import { initPayment } from '../lib/tinkoff';
+import { ecommercePurchase, reachGoal } from '../lib/yandex-metrica';
 
-const Cart = ({ cart, onRemove, onCheckout }) => {
+// Lazy load delivery selector
+const DeliverySelector = lazy(
+  () => import('../components/features/DeliverySelectorWithMap'),
+);
+
+const Cart = ({ cart, onRemove }) => {
   const { cartTotal, subtotal, discount } = useCart();
   const { user } = useAuth();
+  const { showToast } = useToast();
 
-  // Empty cart state
+  const [step, setStep] = useState('form'); // form | processing | success
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    name: user?.user_metadata?.name || '',
+    phone: user?.phone || '',
+    email: user?.email || '',
+    address: '',
+  });
+
+  // Delivery
+  const [isDeliveryOpen, setIsDeliveryOpen] = useState(false);
+  const [selectedDelivery, setSelectedDelivery] = useState(null);
+
+  const deliveryPrice = selectedDelivery?.price || 0;
+  const finalTotal = subtotal + deliveryPrice - discount;
+
+  // 🎯 YANDEX METRICA: Track checkout start
+  useEffect(() => {
+    if (cart.length > 0) {
+      reachGoal('CHECKOUT_START', {
+        cart_total: subtotal,
+        items_count: cart.length,
+      });
+    }
+  }, [subtotal, cart.length]);
+
+  const handleDeliverySelect = (deliveryData) => {
+    setSelectedDelivery(deliveryData);
+    if (deliveryData?.service?.id === 'courier' || deliveryData?.address) {
+      setFormData((prev) => ({
+        ...prev,
+        address: deliveryData.address || prev.address,
+      }));
+    }
+  };
+
+  const handlePayment = async () => {
+    if (!selectedDelivery) {
+      setError('Пожалуйста, выберите способ доставки');
+      showToast('Выберите способ доставки', 'error');
+      document
+        .getElementById('delivery-section')
+        ?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (!formData.name || !formData.phone) {
+      setError('Заполните контактные данные');
+      showToast('Заполните обязательные поля', 'error');
+      return;
+    }
+
+    setStep('processing');
+    setError('');
+
+    try {
+      const orderId = `ORDER-${Date.now()}`;
+      const description = `Заказ ${orderId} в Arbarea`;
+
+      const items = cart.map((item) => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity || 1,
+      }));
+
+      // Get token if auth
+      let token = null;
+      if (user) {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        token = session?.access_token;
+      }
+
+      const paymentUrl = await initPayment(
+        orderId,
+        items,
+        description,
+        {
+          email: formData.email,
+          phone: formData.phone,
+          name: formData.name,
+        },
+        token,
+        selectedDelivery?.service?.id,
+        selectedDelivery?.address || formData.address,
+      );
+
+      if (paymentUrl) {
+        // Prepare Telegram Message
+        const escapeHtml = (text) => {
+          if (!text) return '';
+          return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+        };
+
+        const message = `
+<b>Новый заказ!</b> 📦
+<b>ID:</b> ${orderId}
+<b>Имя:</b> ${escapeHtml(formData.name)}
+<b>Телефон:</b> ${escapeHtml(formData.phone)}
+<b>Доставка:</b> ${escapeHtml(selectedDelivery?.service?.name || 'Не указано')}
+<b>Адрес:</b> ${escapeHtml(selectedDelivery?.address || formData.address)}
+<b>Сумма:</b> ${finalTotal} ₽
+
+<b>Товары:</b>
+${cart.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
+`;
+        await sendTelegramNotification(message, token);
+
+        // Track Purchase
+        ecommercePurchase({
+          orderId,
+          total: finalTotal,
+          shipping: deliveryPrice,
+          items: cart.map((item) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            category: item.category || 'Декор',
+            quantity: item.quantity || 1,
+          })),
+        });
+
+        // Redirect
+        window.location.href = paymentUrl;
+      } else {
+        throw new Error('Ссылка на оплату не получена');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Ошибка инициализации оплаты. Попробуйте позже.');
+      setStep('form');
+    }
+  };
+
+  // Empty State
   if (cart.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen pb-32 px-6">
         <div
-          className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+          className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
           style={{
             background:
-              'linear-gradient(135deg, rgba(201, 164, 92, 0.1) 0%, rgba(201, 164, 92, 0.05) 100%)',
-            border: '1px solid rgba(201, 164, 92, 0.15)',
+              'radial-gradient(circle, rgba(201, 164, 92, 0.15) 0%, transparent 70%)',
+            border: '1px solid rgba(201, 164, 92, 0.1)',
           }}
         >
-          <ShoppingBag size={32} className="text-wood-amber opacity-50" />
+          <ShoppingBag size={40} className="text-wood-amber opacity-60" />
         </div>
-        <h3 className="text-xl font-serif text-white mb-2">Корзина пуста</h3>
-        <p className="text-stone-500 text-sm text-center max-w-[240px]">
-          Добавьте изделия из нашей коллекции, чтобы оформить заказ
+        <h3 className="text-2xl font-serif text-white mb-3">Корзина пуста</h3>
+        <p className="text-stone-500 text-base text-center max-w-[280px] leading-relaxed">
+          Наполните её уникальными изделиями из нашей мастерской
         </p>
       </div>
     );
   }
 
   return (
-    <div className="pb-56 pt-6 px-4 min-h-screen">
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-serif text-white mb-1">Ваша корзина</h2>
-        <p className="text-stone-500 text-sm">
-          {cart.length}{' '}
-          {cart.length === 1
-            ? 'изделие'
-            : cart.length < 5
-              ? 'изделия'
-              : 'изделий'}
-        </p>
-      </div>
-
-      {/* Discount Banner */}
-      <DiscountBanner />
-
-      {/* Cart Items */}
-      <div className="space-y-3 mb-8">
-        {cart.map((item, index) => (
-          <div
-            key={item.id}
-            className="animate-fade-in"
-            style={{ animationDelay: `${index * 50}ms` }}
+    <div className="pb-40 pt-6 px-4 min-h-screen max-w-lg mx-auto">
+      {/* SUCCESS STATE */}
+      {step === 'success' && (
+        <div className="bg-[#1c1917] rounded-3xl p-8 text-center border border-wood-amber/20 mt-20">
+          <div className="w-16 h-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/20">
+            <Check size={32} />
+          </div>
+          <h3 className="font-serif text-2xl text-white mb-2">
+            Заказ оформлен!
+          </h3>
+          <p className="text-stone-400 mb-6">
+            Мы свяжемся с вами в ближайшее время.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = '/';
+            }}
+            className="btn-primary w-full"
           >
-            <CartItem item={item} onRemove={() => onRemove(item)} />
-          </div>
-        ))}
-      </div>
-
-      {/* Trust Block */}
-      <div className="mb-8">
-        <PaymentTrustBlock variant="compact" />
-      </div>
-
-      {/* Fixed Checkout Panel */}
-      <div
-        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-4 right-4 z-40 p-5 rounded-2xl"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(42, 37, 32, 0.98) 0%, rgba(26, 22, 20, 0.99) 100%)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(201, 164, 92, 0.15)',
-          boxShadow:
-            '0 -8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.3)',
-        }}
-      >
-        {/* Top glow line */}
-        <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-px"
-          style={{
-            background:
-              'linear-gradient(90deg, transparent, rgba(201, 164, 92, 0.3), transparent)',
-          }}
-        />
-
-        {/* Price Summary */}
-        <div className="flex justify-between items-end mb-4">
-          <div className="space-y-1">
-            <div className="text-stone-400 text-sm">
-              Сумма:{' '}
-              <span className="text-stone-300">
-                {(subtotal || 0).toLocaleString()} ₽
-              </span>
-            </div>
-            {user && discount > 0 && (
-              <div className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
-                <Sparkles size={12} />
-                Скидка: -{(discount || 0).toLocaleString()} ₽
-              </div>
-            )}
-          </div>
-          <div className="text-right">
-            <div className="text-stone-500 text-[11px] uppercase tracking-wider mb-1">
-              Итого
-            </div>
-            <div
-              className="font-bold text-2xl font-mono leading-none"
-              style={{
-                background: 'linear-gradient(135deg, #dbb978 0%, #c9a45c 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              {(cartTotal || 0).toLocaleString()} ₽
-            </div>
-          </div>
+            В каталог
+          </button>
         </div>
+      )}
 
-        {/* Checkout Button */}
-        <button
-          type="button"
-          onClick={onCheckout}
-          aria-label="Оформить заказ"
-          className="w-full py-4 rounded-xl font-semibold text-base flex justify-center items-center gap-2 transition-all duration-300 active:scale-[0.98]"
-          style={{
-            background:
-              'linear-gradient(135deg, #a8834a 0%, #c9a45c 50%, #dbb978 100%)',
-            color: '#1a1614',
-            boxShadow:
-              '0 0 24px rgba(201, 164, 92, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3)',
-          }}
-        >
-          <Lock size={18} />
-          Оформить заказ
-        </button>
+      {/* FORM STATE */}
+      {step !== 'success' && (
+        <>
+          {/* Header */}
+          <div className="mb-6">
+            <h2 className="text-3xl font-serif text-white mb-1">Корзина</h2>
+            <p className="text-stone-500 text-sm font-medium">
+              {cart.length} {cart.length === 1 ? 'изделие' : 'изделия'}
+            </p>
+          </div>
 
-        {/* Security note */}
-        <p className="text-center text-stone-500 text-[11px] mt-3">
-          Безопасная оплата • Гарантия качества
-        </p>
+          <DiscountBanner />
+
+          {/* Items List */}
+          <div className="space-y-4 mb-10">
+            {cart.map((item, index) => (
+              <div
+                key={item.id}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <CartItem item={item} onRemove={() => onRemove(item)} />
+              </div>
+            ))}
+          </div>
+
+          <div className="w-full h-px bg-white/5 mb-10" />
+
+          {/* CHECKOUT FORM INLINE */}
+          <div className="space-y-8">
+            <h3 className="text-xl font-serif text-white flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-wood-amber/20 text-wood-amber text-xs flex items-center justify-center font-bold border border-wood-amber/20">
+                1
+              </span>
+              Контактные данные
+            </h3>
+
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label
+                  htmlFor="contact-name"
+                  className="text-xs text-stone-500 ml-3 uppercase tracking-wider font-bold"
+                >
+                  Имя
+                </label>
+                <input
+                  id="contact-name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder="Иван Иванов"
+                  className="input-premium w-full bg-[#2a2520] border-transparent focus:bg-[#1a1614]"
+                />
+              </div>
+              <div className="space-y-1">
+                <label
+                  htmlFor="contact-phone"
+                  className="text-xs text-stone-500 ml-3 uppercase tracking-wider font-bold"
+                >
+                  Телефон
+                </label>
+                <input
+                  id="contact-phone"
+                  type="tel"
+                  value={formData.phone}
+                  onFocus={() => {
+                    if (!formData.phone)
+                      setFormData({ ...formData, phone: '+7' });
+                  }}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (!val.startsWith('+7'))
+                      val = `+7${val.replace(/^\+7/, '')}`;
+                    if (/^[\d\s()+-]*$/.test(val)) {
+                      setFormData({ ...formData, phone: val });
+                    }
+                  }}
+                  placeholder="+7 (999) 000-00-00"
+                  className="input-premium w-full bg-[#2a2520] border-transparent focus:bg-[#1a1614]"
+                />
+              </div>
+            </div>
+
+            <div className="w-full h-px bg-white/5" />
+
+            <h3 className="text-xl font-serif text-white flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-wood-amber/20 text-wood-amber text-xs flex items-center justify-center font-bold border border-wood-amber/20">
+                2
+              </span>
+              Доставка
+            </h3>
+
+            <div id="delivery-section" className="space-y-4">
+              {/* Address Input for Auto-Map Center if needed, though delivery map usually handles it */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="client-address"
+                  className="text-xs text-stone-500 ml-3 uppercase tracking-wider font-bold"
+                >
+                  Адрес клиента
+                </label>
+                <input
+                  id="client-address"
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
+                  placeholder="г. Москва, ул. Примерная 1..."
+                  className="input-premium w-full bg-[#2a2520] border-transparent focus:bg-[#1a1614] mb-2"
+                />
+              </div>
+
+              {/* Delivery Selector Button (Accordion Trigger) */}
+              <button
+                type="button"
+                onClick={() => setIsDeliveryOpen(true)}
+                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
+                  selectedDelivery
+                    ? 'bg-[#2a2520] border-wood-amber/50 shadow-wood-glow'
+                    : 'bg-[#2a2520] border-white/5 hover:border-wood-amber/30'
+                }`}
+              >
+                <div className="flex items-center gap-4 z-10 relative">
+                  {selectedDelivery ? (
+                    <>
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center text-lg shadow-inner"
+                        style={{
+                          background: `${selectedDelivery.service.color}15`,
+                          color: selectedDelivery.service.color,
+                        }}
+                      >
+                        {selectedDelivery.service.logo}
+                      </div>
+                      <div className="text-left">
+                        <div className="font-bold text-white text-sm">
+                          {selectedDelivery.service.name}
+                        </div>
+                        <div className="text-xs text-stone-400 max-w-[180px] truncate">
+                          {selectedDelivery.address}
+                        </div>
+                        <div
+                          className={`text-xs font-bold mt-0.5 ${selectedDelivery.price === 0 ? 'text-emerald-400' : 'text-wood-amber'}`}
+                        >
+                          {selectedDelivery.price === 0
+                            ? 'Бесплатно'
+                            : `${selectedDelivery.price} ₽`}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-stone-400">
+                        <MapPin size={20} />
+                      </div>
+                      <div className="text-left">
+                        <div className="text-sm font-bold text-stone-300">
+                          Выбрать способ доставки
+                        </div>
+                        <div className="text-xs text-stone-500">
+                          СДЭК, Почта, Boxberry...
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <ChevronRight
+                  className="text-stone-500 z-10 relative"
+                  size={20}
+                />
+              </button>
+
+              {/* Delivery Modal/Sheet */}
+              <Suspense
+                fallback={
+                  <div className="h-10 animate-pulse bg-white/5 rounded-xl" />
+                }
+              >
+                <DeliverySelector
+                  isOpen={isDeliveryOpen}
+                  onClose={() => setIsDeliveryOpen(false)}
+                  onSelect={handleDeliverySelect}
+                  isFreeShipping={!!user}
+                  initialAddress={formData.address}
+                />
+              </Suspense>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* FIXED BOTTOM BAR (TOTAL + PAY BTN) */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#1a1614] via-[#1a1614] to-transparent z-50">
+        <div className="max-w-lg mx-auto bg-[#2a2520]/90 backdrop-blur-xl border border-wood-amber/20 rounded-2xl p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.5)]">
+          {error && (
+            <div className="text-red-400 text-xs text-center mb-3 bg-red-500/10 py-2 rounded-lg border border-red-500/20">
+              {error}
+            </div>
+          )}
+
+          <div className="flex justify-between items-center mb-4 px-2">
+            <div className="text-sm text-stone-400">
+              Итого к оплате:
+              {deliveryPrice > 0 && (
+                <span className="block text-[10px] text-stone-500">
+                  + доставка {deliveryPrice} ₽
+                </span>
+              )}
+            </div>
+            <div className="text-2xl font-serif font-bold text-gradient-amber">
+              {finalTotal.toLocaleString()} ₽
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={step === 'form' ? handlePayment : null}
+            disabled={step === 'processing'}
+            className="btn-primary w-full py-4 text-base font-bold flex items-center justify-center gap-2"
+          >
+            {step === 'processing' ? (
+              <>
+                <Loader2 className="animate-spin" /> Обработка...
+              </>
+            ) : (
+              <>
+                <CreditCard size={20} /> Оплатить заказ
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
