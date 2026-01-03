@@ -12,7 +12,7 @@ import { Suspense, lazy, useEffect, useState } from 'react';
 import DiscountBanner from '../components/features/DiscountBanner';
 import CartItem from '../components/features/cart/CartItem';
 import { PaymentTrustBlock } from '../components/ui/PaymentTrustBlock';
-import { useAuth } from '../context/AuthContext';
+import { useSimpleAuth } from '../context/SimpleAuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
@@ -27,7 +27,7 @@ const DeliverySelector = lazy(
 
 const Cart = ({ cart, onRemove }) => {
   const { cartTotal, subtotal, discount } = useCart();
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const { showToast } = useToast();
 
   const [step, setStep] = useState('form'); // form | processing | success
