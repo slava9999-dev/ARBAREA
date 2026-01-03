@@ -1,5 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Manrope:wght@200;300;400;500;600;700;800&display=swap");
-@import "./styles/designTokens.css";
+/* ═══════════════════════════════════════════════════════════════════════════
+   ARBAREA — Premium Woodworking
+   Main Stylesheet
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
+@import './styles/designTokens.css';
 
 /* biome-ignore lint/suspicious/noUnknownAtRules: tailwind directives */
 @tailwind base;
@@ -8,154 +13,359 @@
 /* biome-ignore lint/suspicious/noUnknownAtRules: tailwind directives */
 @tailwind utilities;
 
-/* Global styles using design tokens */
-/* Global styles using design tokens */
-@layer components {
-  /* Базовый фон приложения */
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE STYLES — Основа приложения
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-[#1c1917] text-[#e7e5e4] font-sans antialiased selection:bg-amber-500/30;
+    @apply bg-base text-stone-200 font-sans antialiased;
+    @apply selection:bg-wood-amber/30 selection:text-white;
+    background-image: 
+      /* Subtle radial glow in center */
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201, 164, 92, 0.04) 0%, transparent 50%),
+      /* Very subtle wood grain */
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 100px,
+          rgba(201, 164, 92, 0.008) 100px,
+          rgba(201, 164, 92, 0.008) 101px
+        );
   }
 
-  /* Заголовки */
-  h1, h2, h3 {
-    @apply font-serif font-semibold text-white;
+  /* Premium Typography */
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-serif font-semibold text-white tracking-tight;
   }
 
-  /* Премиальное Стекло (Карточки) */
-  .glass-panel {
-    @apply bg-[#1c1917]/80 backdrop-blur-sm border border-white/5 shadow-glass rounded-2xl;
+  h1 {
+    @apply text-3xl sm:text-4xl;
+  }
+  h2 {
+    @apply text-2xl sm:text-3xl;
+  }
+  h3 {
+    @apply text-xl sm:text-2xl;
   }
 
-  /* Кнопка действия (Золотая) */
-  .btn-primary {
-    @apply bg-amber-600 text-white font-sans font-semibold py-3 px-6 rounded-xl 
-           shadow-[0_0_20px_rgba(217,119,6,0.3)] transition-all duration-300 
-           active:scale-95 hover:bg-amber-500 border border-amber-500/50;
-  }
-
-  /* Поля ввода - улучшенная читаемость */
-  input, textarea {
-    @apply bg-transparent border-b border-stone-700 text-white placeholder-stone-600 focus:border-amber-500 focus:outline-none transition-colors rounded-none px-0 py-3;
+  /* Links */
+  a {
+    @apply text-wood-amber hover:text-wood-amber-light transition-colors duration-200;
   }
 }
 
-/* Dark Linen Texture (CSS Pattern) */
-  .bg-linen-dark {
-    background-color: #1c1917;
-    background-image: 
-      /* Виньетка (затемнение по краям) */
-      radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 100%),
-      /* Вертикальные нити (светлые) */
-      repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.03) 4px, transparent 4px),
-      /* Горизонтальные нити (темные) */
-      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.2) 4px, transparent 4px);
-    background-attachment: fixed; /* Чтобы фон стоял на месте при скролле */
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENT STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* ─────────────────────────────────────────────────────────────────────────
+     GLASS PANELS — Премиальные карточки
+     ───────────────────────────────────────────────────────────────────────── */
+  .glass-panel {
+    @apply relative overflow-hidden;
+    background: linear-gradient(180deg, rgba(42, 37, 32, 0.85) 0%, rgba(26, 22, 20, 0.9) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(201, 164, 92, 0.1);
+    border-radius: 1.25rem;
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
-  /* Шум для естественности (Noise Overlay) */
-  .noise-texture {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  /* ─────────────────────────────────────────────────────────────────────────
+     BUTTONS — Кнопки в стиле премиум-дерева
+     ───────────────────────────────────────────────────────────────────────── */
+
+  /* Primary (Golden Wood) */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3;
+    @apply font-sans font-semibold text-[0.9375rem] rounded-xl;
+    @apply transition-all duration-300 ease-out;
+    background: linear-gradient(135deg, #a8834a 0%, #c9a45c 50%, #dbb978 100%);
+    color: #1a1614;
+    border: none;
+    box-shadow:
+      0 0 20px rgba(201, 164, 92, 0.35),
+      0 4px 12px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow:
+      0 0 30px rgba(201, 164, 92, 0.5),
+      0 8px 20px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed;
+    transform: none !important;
+    filter: grayscale(30%);
+  }
+
+  /* Secondary (Outline) */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3;
+    @apply font-sans font-semibold text-[0.9375rem] rounded-xl;
+    @apply transition-all duration-300 ease-out;
+    @apply bg-transparent;
+    color: #c9a45c;
+    border: 1.5px solid #c9a45c;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(201, 164, 92, 0.1);
+    border-color: #dbb978;
+    box-shadow: 0 0 20px rgba(201, 164, 92, 0.25);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary:active {
+    transform: scale(0.98);
+  }
+
+  /* Ghost Button */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2;
+    @apply font-sans font-medium text-sm rounded-lg;
+    @apply text-stone-400 bg-transparent border border-white/10;
+    @apply transition-all duration-200;
+  }
+
+  .btn-ghost:hover {
+    @apply text-wood-amber bg-wood-amber/10 border-wood-amber/30;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     INPUTS — Поля ввода
+     ───────────────────────────────────────────────────────────────────────── */
+  input:not([type='checkbox']):not([type='radio']),
+  textarea {
+    @apply w-full p-4 font-sans text-white bg-surface rounded-xl;
+    @apply border border-white/10 outline-none;
+    @apply transition-all duration-200;
+    @apply placeholder:text-stone-500;
+  }
+
+  input:not([type='checkbox']):not([type='radio']):hover,
+  textarea:hover {
+    @apply border-wood-amber/30;
+  }
+
+  input:not([type='checkbox']):not([type='radio']):focus,
+  textarea:focus {
+    @apply border-wood-amber;
+    box-shadow: 0 0 0 3px rgba(201, 164, 92, 0.15);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     BADGES & TAGS
+     ───────────────────────────────────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-3 py-1;
+    @apply text-xs font-semibold rounded-full;
+    @apply bg-wood-amber/15 text-wood-amber border border-wood-amber/25;
+  }
+
+  .badge-success {
+    @apply bg-emerald-500/15 text-emerald-400 border-emerald-500/25;
+  }
+
+  .badge-info {
+    @apply bg-blue-500/15 text-blue-400 border-blue-500/25;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     DIVIDERS
+     ───────────────────────────────────────────────────────────────────────── */
+  .divider {
+    @apply w-full h-px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(201, 164, 92, 0.2) 20%,
+      rgba(201, 164, 92, 0.2) 80%,
+      transparent 100%
+    );
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     PRODUCT CARDS
+     ───────────────────────────────────────────────────────────────────────── */
+  .product-card {
+    @apply relative overflow-hidden rounded-2xl;
+    @apply bg-gradient-to-b from-card to-surface;
+    @apply border border-white/5;
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .product-card:hover {
+    @apply border-wood-amber/20;
+    transform: translateY(-4px);
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(201, 164, 92, 0.1);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     PRICE DISPLAY
+     ───────────────────────────────────────────────────────────────────────── */
+  .price {
+    @apply font-mono font-bold;
+    background: linear-gradient(135deg, #dbb978 0%, #c9a45c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .price-old {
+    @apply text-stone-500 line-through text-sm;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1614;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3d3027;
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4a3d32;
+}
+
+/* Custom scrollbar class for modals */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(201, 164, 92, 0.3);
+  border-radius: 99px;
+}
+
+/* Root container */
 #root {
   min-height: 100%;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* Safe area padding */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-::-webkit-scrollbar-track {
-  background: #1c1917;
-}
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-::-webkit-scrollbar-thumb {
-  background: #44403c;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #57534e;
-}
-
-/* Animations */
 @keyframes fade-in {
   from {
     opacity: 0;
   }
-
   to {
     opacity: 1;
   }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out;
-}
-
 @keyframes slide-up {
   from {
-    transform: translateY(20px);
+    transform: translateY(16px);
     opacity: 0;
   }
-
   to {
     transform: translateY(0);
     opacity: 1;
   }
 }
 
-.animate-slide-up {
-  animation: slide-up 0.4s ease-out;
-}
-
 @keyframes scale-up {
   from {
-    transform: scale(0.8);
+    transform: scale(0.95);
     opacity: 0;
   }
-
   to {
     transform: scale(1);
     opacity: 1;
   }
 }
 
-.animate-scale-up {
-  animation: scale-up 0.3s ease-out;
-}
-
-@keyframes bounce-short {
+@keyframes glow-pulse {
   0%,
   100% {
-    transform: translateY(0);
+    box-shadow: 0 0 20px rgba(201, 164, 92, 0.3);
   }
-
   50% {
-    transform: translateY(-25%);
+    box-shadow: 0 0 35px rgba(201, 164, 92, 0.5);
   }
 }
 
-.animate-bounce-short {
-  animation: bounce-short 0.5s ease-in-out;
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
 }
 
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Hide Google reCAPTCHA badge (allowed per Google's FAQ if you include privacy policy links) */
+.animate-scale-up {
+  animation: scale-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THIRD-PARTY OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hide Google reCAPTCHA badge */
 .grecaptcha-badge {
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+/* Leaflet Map Styling */
+.leaflet-container {
+  background: #1a1614 !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #2a2520 !important;
+  border: 1px solid rgba(201, 164, 92, 0.2) !important;
+  border-radius: 12px !important;
+  color: #f5efe6 !important;
+}
+
+.leaflet-popup-tip {
+  background: #2a2520 !important;
 }
