@@ -65,17 +65,19 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
     <>
       <motion.div
         className={`
-          relative group rounded-xl overflow-hidden
-          bg-stone-800
-          border border-white/10
-          shadow-lg
+          relative group rounded-2xl overflow-hidden
+          bg-gradient-to-br from-wood-bg-card to-wood-bg-elevated
+          border border-wood-amber/10
+          shadow-wood-md
           transition-all duration-300 ease-out
           h-full flex flex-col
           touch-manipulation
+          hover:border-wood-amber/30
         `}
         whileHover={{
           y: -4,
-          boxShadow: '0 20px 30px rgba(217, 119, 6, 0.15)', // amber-glow
+          boxShadow:
+            '0 20px 40px rgba(201, 164, 92, 0.2), 0 0 60px rgba(201, 164, 92, 0.1)',
         }}
         onClick={handleDetailsClick}
       >
@@ -149,24 +151,24 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
           </div>
 
           {product.isSold && (
-            <div className="absolute bottom-3 left-3 bg-stone-900 px-3 py-1.5 rounded-lg text-xs font-bold text-white border border-stone-700 z-20 pointer-events-none">
+            <div className="absolute bottom-3 left-3 bg-wood-bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-xl text-xs font-bold text-stone-400 border border-white/10 z-20 pointer-events-none shadow-lg">
               ПРОДАНО
             </div>
           )}
-          <div className="absolute top-3 right-3 bg-stone-900/90 px-2 py-1 rounded text-xs font-bold text-amber-500 border border-amber-500/20 z-20 pointer-events-none">
+          <div className="absolute top-3 right-3 bg-wood-bg-card/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-sm font-bold text-gradient-amber border border-wood-amber/20 z-20 pointer-events-none shadow-wood-glow">
             {currentPrice.toLocaleString()} ₽
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-4 flex flex-col flex-grow bg-stone-800">
-          <div className="text-[10px] text-stone-400 mb-1 uppercase tracking-widest font-bold">
+        <div className="p-4 flex flex-col flex-grow bg-gradient-to-b from-wood-bg-card to-wood-bg-elevated">
+          <div className="text-[10px] text-wood-text-muted mb-1 uppercase tracking-widest font-bold">
             {product.category}
           </div>
-          <h3 className="font-serif text-xl text-amber-600 leading-tight mb-2">
+          <h3 className="font-serif text-xl text-wood-amber leading-tight mb-2">
             {product.name}
           </h3>
-          <p className="font-sans text-sm text-stone-300 line-clamp-2 mb-4 flex-grow">
+          <p className="font-sans text-sm text-wood-text-secondary line-clamp-2 mb-4 flex-grow">
             {product.description}
           </p>
 
@@ -185,8 +187,8 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                       }}
                       className={`w-5 h-5 rounded-full border transition-all ${
                         selectedColor?.id === color.id
-                          ? 'border-amber-500 scale-110 ring-1 ring-amber-500 ring-offset-1 ring-offset-stone-900'
-                          : 'border-stone-600'
+                          ? 'border-wood-amber scale-110 ring-2 ring-wood-amber/50 ring-offset-2 ring-offset-wood-bg-card shadow-wood-glow'
+                          : 'border-white/20'
                       }`}
                       style={{ backgroundColor: color.hex }}
                       aria-label={`Select color ${color.name}`}
@@ -207,8 +209,8 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                       }}
                       className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all border ${
                         selectedSize?.value === size.value
-                          ? 'bg-stone-700 text-white border-stone-500'
-                          : 'bg-transparent text-stone-500 border-stone-700 hover:border-stone-500'
+                          ? 'bg-wood-amber text-wood-bg border-wood-amber shadow-wood-glow-sm'
+                          : 'bg-transparent text-wood-text-muted border-white/10 hover:border-wood-amber/50 hover:text-wood-amber'
                       }`}
                     >
                       {size.label}
@@ -223,7 +225,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
             <button
               type="button"
               disabled
-              className="w-full bg-stone-700 text-stone-400 py-3 rounded-lg font-medium tracking-wide cursor-not-allowed"
+              className="w-full bg-wood-bg-elevated text-wood-text-muted py-3 rounded-xl font-medium tracking-wide cursor-not-allowed border border-white/5"
             >
               Продано
             </button>
@@ -232,7 +234,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
               <button
                 type="button"
                 onClick={handleBuy}
-                className="flex-1 bg-amber-600 text-white hover:bg-amber-500 active:scale-95 transition-all duration-300 rounded-lg py-3 font-medium tracking-wide flex items-center justify-center gap-2 text-sm border-2 border-amber-500 animate-neon-pulse"
+                className="flex-1 btn-primary py-3 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 text-sm shadow-wood-glow hover:shadow-wood-glow-lg"
               >
                 <ShoppingBag size={16} />В корзину
               </button>
@@ -242,7 +244,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                   e.stopPropagation();
                   if (onOpenModal) onOpenModal(product);
                 }}
-                className="flex-1 bg-stone-700 text-stone-200 hover:bg-stone-600 active:scale-95 transition-all duration-300 rounded-lg py-3 font-medium tracking-wide flex items-center justify-center text-sm border-2 border-stone-600 hover:border-stone-500"
+                className="flex-1 bg-wood-bg-elevated text-wood-text-primary hover:bg-wood-bg-card active:scale-95 transition-all duration-300 rounded-xl py-3 font-medium tracking-wide flex items-center justify-center text-sm border border-wood-amber/20 hover:border-wood-amber/50"
               >
                 Подробнее
               </button>

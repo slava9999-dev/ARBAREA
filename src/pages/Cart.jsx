@@ -410,8 +410,8 @@ ${cart.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
       )}
 
       {/* FIXED BOTTOM BAR (TOTAL + PAY BTN) */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#1a1614] via-[#1a1614] to-transparent z-50">
-        <div className="max-w-lg mx-auto bg-[#2a2520]/90 backdrop-blur-xl border border-wood-amber/20 rounded-2xl p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.5)]">
+      <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-0 right-0 p-4 bg-gradient-to-t from-[#1a1614] via-[#1a1614] to-transparent z-50 pointer-events-none">
+        <div className="max-w-lg mx-auto bg-[#2a2520]/95 backdrop-blur-xl border border-wood-amber/20 rounded-2xl p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.5)] pointer-events-auto">
           {error && (
             <div className="text-red-400 text-xs text-center mb-3 bg-red-500/10 py-2 rounded-lg border border-red-500/20">
               {error}
@@ -444,7 +444,7 @@ ${cart.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
               </>
             ) : (
               <>
-                <CreditCard size={20} /> Оплатить заказ
+                <CreditCard size={20} /> Оплатить онлайн
               </>
             )}
           </button>
