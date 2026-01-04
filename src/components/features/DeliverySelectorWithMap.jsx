@@ -381,7 +381,7 @@ const DeliverySelectorWithMap = ({
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 overflow-y-auto custom-scrollbar pb-10">
             {/* Step 1: Service Selection with Categories */}
             {step === 'service' && (
               <div className="p-4 space-y-6">
@@ -771,7 +771,7 @@ const DeliverySelectorWithMap = ({
 
           {/* Footer with Confirm Button */}
           {step === 'confirm' && (
-            <div className="p-4 border-t border-white/5 shrink-0">
+            <div className="p-4 pb-10 sm:pb-4 border-t border-white/5 shrink-0">
               <button
                 type="button"
                 onClick={handleConfirm}
