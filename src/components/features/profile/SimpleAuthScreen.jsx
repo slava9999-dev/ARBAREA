@@ -3,58 +3,46 @@ import { LogIn, Loader2, X } from 'lucide-react';
 import { useSimpleAuth } from '../../../context/SimpleAuthContext';
 
 const SimpleAuthScreen = ({ onClose }) => {
-  const { sendOTP, verifyOTP } = useSimpleAuth();
-  const [step, setStep] = useState('phone'); // phone, code
+  const { quickRegister } = useSimpleAuth();
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
+  const [contact, setContact] = useState(''); // Phone or Email
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleSendCode = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      // Basic validation
-      const cleanPhone = phone.replace(/\D/g, '');
-      if (cleanPhone.length < 11) {
-        throw new Error('Введите корректный номер телефона (11 цифр)');
-      }
-
       if (!name.trim()) {
         throw new Error('Пожалуйста, введите ваше имя');
       }
 
-      await sendOTP(phone);
-      setStep('code');
-      setSuccess('Код отправлен на ваш номер');
-    } catch (err) {
-      setError(err.message || 'Произошла ошибка при отправке кода');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyCode = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      if (otp.length < 6) {
-        throw new Error('Введите 6-значный код');
+      if (!contact.trim()) {
+        throw new Error('Введите телефон или email');
       }
-      await verifyOTP(phone, otp, name);
-      setSuccess('✅ Вход выполнен!');
+
+      // Basic validation
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
+      const isPhone = contact.replace(/\D/g, '').length >= 10;
+
+      if (!isEmail && !isPhone) {
+        throw new Error(
+          'Введите корректный email или номер телефона (минимум 10 цифр)',
+        );
+      }
+
+      await quickRegister(name, contact);
+      setSuccess('✅ Регистрация успешна! Вход выполнен.');
+
       // Short delay before closing
       setTimeout(() => {
         if (onClose) onClose();
       }, 1500);
     } catch (err) {
-      setError(err.message || 'Неверный код или срок его действия истек');
+      setError(err.message || 'Ошибка при регистрации');
     } finally {
       setLoading(false);
     }
@@ -75,7 +63,7 @@ const SimpleAuthScreen = ({ onClose }) => {
             <div>
               <h2 className="text-xl font-serif font-bold text-white">Вход</h2>
               <p className="text-xs text-stone-500">
-                Доступ к заказам и скидкам
+                Быстрая регистрация без пароля
               </p>
             </div>
           </div>
@@ -101,105 +89,58 @@ const SimpleAuthScreen = ({ onClose }) => {
             </div>
           )}
 
-          {step === 'phone' ? (
-            <form onSubmit={handleSendCode} className="space-y-6">
-              <div className="space-y-2">
-                <label
-                  htmlFor="name-input"
-                  className="text-xs font-bold text-stone-500 uppercase tracking-widest ml-1"
-                >
-                  Ваше имя
-                </label>
-                <input
-                  id="name-input"
-                  type="text"
-                  placeholder="Иван"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full p-4 bg-stone-800/50 border border-stone-700/50 text-white placeholder-stone-700 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 outline-none transition-all rounded-2xl text-lg"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="phone-input"
-                  className="text-xs font-bold text-stone-500 uppercase tracking-widest ml-1"
-                >
-                  Номер телефона
-                </label>
-                <input
-                  id="phone-input"
-                  type="tel"
-                  placeholder="+7 (999) 000-00-00"
-                  value={phone}
-                  onChange={(e) => {
-                    let val = e.target.value;
-                    if (!val.startsWith('+7') && val.length > 0)
-                      val = `+7${val}`;
-                    setPhone(val);
-                  }}
-                  className="w-full p-4 bg-stone-800/50 border border-stone-700/50 text-white placeholder-stone-700 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 outline-none transition-all rounded-2xl text-lg"
-                  required
-                />
-                <p className="text-[10px] text-stone-600 ml-1">
-                  Мы отправим SMS с кодом подтверждения
-                </p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading || phone.length < 11 || !name.trim()}
-                className="w-full bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:hover:bg-amber-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-amber-900/20 flex items-center justify-center gap-2"
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label
+                htmlFor="name-input"
+                className="text-xs font-bold text-stone-500 uppercase tracking-widest ml-1"
               >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={20} />
-                ) : (
-                  'Получить код'
-                )}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerifyCode} className="space-y-6">
-              <div className="space-y-2 text-center">
-                <label
-                  htmlFor="otp-input"
-                  className="text-xs font-bold text-stone-500 uppercase tracking-widest"
-                >
-                  Введите код из SMS
-                </label>
-                <input
-                  id="otp-input"
-                  type="text"
-                  maxLength={6}
-                  placeholder="000000"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                  className="w-full p-4 bg-stone-800/50 border border-stone-700/50 text-white placeholder-stone-700 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 outline-none transition-all rounded-2xl text-3xl tracking-[0.5em] text-center font-mono"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setStep('phone')}
-                  className="text-xs text-amber-500 hover:underline mt-2"
-                >
-                  Изменить номер
-                </button>
-              </div>
+                Ваше имя
+              </label>
+              <input
+                id="name-input"
+                type="text"
+                placeholder="Иван"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full p-4 bg-stone-800/50 border border-stone-700/50 text-white placeholder-stone-700 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 outline-none transition-all rounded-2xl text-lg"
+                required
+              />
+            </div>
 
-              <button
-                type="submit"
-                disabled={loading || otp.length < 6}
-                className="w-full bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:hover:bg-amber-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-amber-900/20 flex items-center justify-center gap-2"
+            <div className="space-y-2">
+              <label
+                htmlFor="contact-input"
+                className="text-xs font-bold text-stone-500 uppercase tracking-widest ml-1"
               >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={20} />
-                ) : (
-                  'Подтвердить'
-                )}
-              </button>
-            </form>
-          )}
+                Телефон или Email
+              </label>
+              <input
+                id="contact-input"
+                type="text"
+                placeholder="+7 (999) 000-00-00 или email@example.com"
+                value={contact}
+                onChange={(e) => setContact(e.target.value)}
+                className="w-full p-4 bg-stone-800/50 border border-stone-700/50 text-white placeholder-stone-700 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 outline-none transition-all rounded-2xl text-lg"
+                required
+              />
+              <p className="text-[10px] text-stone-600 ml-1">
+                Для автоматической регистрации в системе
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !name.trim() || !contact.trim()}
+              className="w-full bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:hover:bg-amber-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-amber-900/20 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                'Продолжить'
+              )}
+            </button>
+          </form>
 
           <p className="mt-8 text-center text-[10px] text-stone-600 uppercase tracking-tighter">
             Нажимая кнопку, вы соглашаетесь с условиями оферты

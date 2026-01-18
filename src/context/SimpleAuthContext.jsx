@@ -21,12 +21,12 @@ export const SimpleAuthProvider = ({ children }) => {
         } = await supabase.auth.getSession();
 
         if (session?.user) {
-          // Fetch additional data from public.users
+          // Fetch additional data from public.users by ID (safer than phone)
           const { data: profile } = await supabase
             .from('users')
             .select('*')
-            .eq('phone', session.user.phone)
-            .single();
+            .eq('id', session.user.id)
+            .maybeSingle(); // Use maybeSingle to avoid error if profile missing
 
           setUser({ ...session.user, ...profile });
         } else {
@@ -50,8 +50,8 @@ export const SimpleAuthProvider = ({ children }) => {
         const { data: profile } = await supabase
           .from('users')
           .select('*')
-          .eq('phone', session.user.phone)
-          .single();
+          .eq('id', session.user.id)
+          .maybeSingle();
 
         setUser({ ...session.user, ...profile });
       } else {
@@ -201,6 +201,65 @@ export const SimpleAuthProvider = ({ children }) => {
     }
   };
 
+  // 3. Quick Register (No OTP)
+  const quickRegister = async (name, contact) => {
+    try {
+      const payload = { name };
+
+      // Determine if contact is email or phone
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailRegex.test(contact)) {
+        payload.email = contact;
+      } else {
+        payload.phone = contact;
+      }
+
+      console.log('Quick registering:', payload);
+
+      const response = await fetch('/api/quick-register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      console.log('Quick register success:', data.user?.id);
+
+      // Set session in Supabase client
+      if (data.session) {
+        const { error: sessionError } = await supabase.auth.setSession(
+          data.session,
+        );
+        if (sessionError) throw sessionError;
+
+        // Update local user state immediately
+        // We might need to fetch profile if the API didn't return full profile in 'user' object
+        // The API returns session.user, which has user_metadata.
+        // We merged profile into user state in other methods.
+        // Let's rely on onAuthStateChange to eventually sync, but set optimistically now.
+
+        // Wait for onAuthStateChange might be cleaner, but let's set it to be fast.
+        setUser({
+          ...data.user,
+          name: name, // Ensure name is present
+          phone: payload.phone || data.user.phone, // Ensure phone is present
+        });
+      }
+
+      return data.user;
+    } catch (error) {
+      console.error('Quick register error:', error);
+      throw error;
+    }
+  };
+
   // Logout
   const logout = async () => {
     try {
@@ -219,6 +278,7 @@ export const SimpleAuthProvider = ({ children }) => {
         loading,
         sendOTP,
         verifyOTP,
+        quickRegister,
         updateProfile,
         logout,
       }}

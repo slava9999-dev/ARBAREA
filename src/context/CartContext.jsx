@@ -6,6 +6,7 @@ import {
   useMemo,
 } from 'react';
 import { useProducts } from './ProductContext';
+import { ecommerceAdd, ecommerceRemove } from '../lib/yandex-metrica';
 
 const CartContext = createContext();
 
@@ -131,9 +132,14 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product) => {
     if (!product || !product.id) return;
     dispatch({ type: 'ADD_ITEM', payload: product });
+    ecommerceAdd(product);
   };
 
   const removeFromCart = (productId) => {
+    const itemToRemove = state.items.find((item) => item.id === productId);
+    if (itemToRemove) {
+      ecommerceRemove(itemToRemove);
+    }
     dispatch({ type: 'REMOVE_ITEM', payload: productId });
   };
 

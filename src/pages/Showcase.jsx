@@ -1,14 +1,16 @@
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import FlipProductCard from '../components/features/FlipProductCard';
 import HeroBanner from '../components/features/HeroBanner';
 import SocialFooter from '../components/layout/SocialFooter';
 import { SearchOverlay } from '../components/SearchOverlay';
+import SEO from '../components/seo/SEO';
 import { useProducts } from '../context/ProductContext';
+import { ecommerceImpressions } from '../lib/yandex-metrica';
 
 const Showcase = ({ onBuy, onOpenModal }) => {
-  const { products, loading: productsLoading } = useProducts();
+  const { products } = useProducts();
   const [activeCategory, setActiveCategory] = useState('all');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -25,8 +27,25 @@ const Showcase = ({ onBuy, onOpenModal }) => {
           return true;
         });
 
+  // 🔥 YANDEX METRICA: Track impressions when list changes
+  useEffect(() => {
+    if (filtered.length > 0) {
+      ecommerceImpressions(
+        filtered,
+        activeCategory === 'all' ? 'Каталог' : `Каталог: ${activeCategory}`,
+      );
+    }
+  }, [filtered, activeCategory]);
+
   return (
     <div className="min-h-screen bg-background pb-24">
+      <SEO
+        title="Arbarea"
+        description="Авторская столярная мастерская. Эксклюзивная мебель и декор из массива дуба и ясеня ручной работы."
+        keywords="мебель из массива, столярная мастерская, декор из дерева, Arbarea, лофт мебель"
+        url="/"
+        type="website"
+      />
       <SearchOverlay
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}

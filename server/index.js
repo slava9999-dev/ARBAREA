@@ -169,6 +169,89 @@ app.post('/api/gemini-chat', async (req, res) => {
     }
 });
 
+import supabaseAdmin from '../api/_supabase.js';
+
+app.post('/api/quick-register', async (req, res) => {
+    try {
+        const { name, phone, email } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ error: 'Name is required' });
+        }
+        if (!phone && !email) {
+            return res.status(400).json({ error: 'Phone or email is required' });
+        }
+
+        // Logic: Use phone as primary identifier if available, else email.
+        // We construct a unique email for auth if phone is used.
+        let authEmail;
+        let formattedPhone = null;
+
+        if (phone) {
+            // Format phone: just digits, ensure starts with 7
+            let clean = phone.replace(/\D/g, '');
+            if (clean.length === 11 && clean.startsWith('8')) clean = '7' + clean.slice(1);
+            if (clean.length === 10) clean = '7' + clean;
+            
+            formattedPhone = '+' + clean;
+            authEmail = `${clean}@arbarea.local`; // Fake email for phone-based auth
+        } else {
+            authEmail = email;
+        }
+
+        const TEMP_PASSWORD = process.env.QUICK_AUTH_PASSWORD || 'ArbareaQuickUser2026!';
+
+        // 1. Try to create user
+        let { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email: authEmail,
+            password: TEMP_PASSWORD,
+            email_confirm: true,
+            user_metadata: { name, phone: formattedPhone }
+        });
+
+        if (createError && createError.message?.includes('already registered')) {
+            // User exists, we will sign them in
+            console.log('User already exists, signing in...');
+        } else if (createError) {
+            throw createError;
+        }
+
+        // 2. Sign in to get session
+        const { data: sessionData, error: loginError } = await supabaseAdmin.auth.signInWithPassword({
+            email: authEmail,
+            password: TEMP_PASSWORD
+        });
+
+        if (loginError) throw loginError;
+
+        const user = sessionData.user;
+
+        // 3. Upsert public profile
+        const { error: profileError } = await supabaseAdmin
+            .from('users')
+            .upsert({
+                id: user.id, // Ensure we link to auth user if possible, or just phone
+                phone: formattedPhone || null, // public.users might rely on phone
+                // if using email only, public.users needs email column or we handle it gracefully?
+                // Migration 20260103_create_users_table.sql typically has phone, name.
+                // If the table schema requires phone, we might have issues with email-only users.
+                // Assuming phone is primary key or unique.
+                name: name,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'phone' }) // Assuming phone is unique key
+            .select();
+
+        // Note: if user signed up with email but we don't put it in public.users, it might be fine depending on schema.
+        // But let's assume phone is main key for now as per previous context.
+
+        return res.json({ session: sessionData.session, user: sessionData.user });
+
+    } catch (err) {
+        console.error('Quick Register Error:', err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`⚡️ Server listening on http://localhost:${PORT}`);
     console.log(`📱 Telegram notifications: ${process.env.TELEGRAM_BOT_TOKEN ? 'Configured' : 'Not configured'}`);

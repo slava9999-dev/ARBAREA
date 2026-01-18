@@ -13,7 +13,9 @@ import TactileButton from '../components/ui/TactileButton';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useWishlist } from '../context/WishlistContext';
+import SEO from '../components/seo/SEO';
 import { PRODUCTS } from '../data/products';
+import { ecommerceDetail } from '../lib/yandex-metrica';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -31,6 +33,9 @@ const ProductDetails = () => {
     const found = PRODUCTS.find((p) => String(p.id) === id);
     if (found) {
       setProduct(found);
+      // 🔥 YANDEX METRICA: Track detail view
+      ecommerceDetail(found);
+
       // Set default variants
       if (found.variants?.colors?.length > 0) {
         setSelectedColor(found.variants.colors[0]);
@@ -85,8 +90,30 @@ const ProductDetails = () => {
       ? product.gallery
       : [product.image];
 
+  // Calculate keywords dynamically
+  const keywords = `${product.name}, ${product.category}, купить ${product.name}, мебель из дерева, Arbarea`;
+
   return (
     <div className="min-h-screen bg-[#1c1917] text-stone-200 pb-40 animate-fade-in">
+      <SEO
+        title={product.name}
+        description={
+          product.description?.slice(0, 160) +
+          (product.description?.length > 160 ? '...' : '')
+        }
+        image={images[0]}
+        url={`/product/${product.id}`}
+        type="product"
+        keywords={keywords}
+        productData={{
+          name: product.name,
+          description: product.description,
+          image: images[0],
+          price: currentPrice,
+          isSold: product.isSold,
+          rating: product.rating,
+        }}
+      />
       {/* Header / Navigation */}
       <div className="fixed top-0 left-0 right-0 z-40 p-4 flex justify-between items-center pointer-events-none">
         <button
