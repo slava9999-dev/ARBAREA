@@ -67,14 +67,22 @@ export const SimpleAuthProvider = ({ children }) => {
   const sendOTP = async (phone) => {
     try {
       // Basic formatting to E.164
+      // Robust cleaning: remove non-numeric chars
       let formattedPhone = phone.replace(/\D/g, '');
-      if (!formattedPhone.startsWith('+')) {
-        if (formattedPhone.length === 11) {
-          formattedPhone = `+7${formattedPhone.slice(1)}`;
-        } else {
-          formattedPhone = `+${formattedPhone}`;
+
+      // Ensure it starts with +7 if it's 11 digits (7..., 8...)
+      // Or just add + if it's missing but has right length
+      if (formattedPhone.length === 11) {
+        if (formattedPhone.startsWith('8')) {
+          formattedPhone = `7${formattedPhone.slice(1)}`;
         }
       }
+
+      if (!formattedPhone.startsWith('+')) {
+        formattedPhone = `+${formattedPhone}`;
+      }
+
+      console.log('Sending OTP to:', formattedPhone); // Debug log
 
       const { error } = await supabase.auth.signInWithOtp({
         phone: formattedPhone,
@@ -91,12 +99,17 @@ export const SimpleAuthProvider = ({ children }) => {
   const verifyOTP = async (phone, token, name = '') => {
     try {
       let formattedPhone = phone.replace(/\D/g, '');
-      if (!formattedPhone.startsWith('+')) {
-        formattedPhone =
-          formattedPhone.length === 11
-            ? `+7${formattedPhone.slice(1)}`
-            : `+${formattedPhone}`;
+      if (formattedPhone.length === 11) {
+        if (formattedPhone.startsWith('8')) {
+          formattedPhone = `7${formattedPhone.slice(1)}`;
+        }
       }
+
+      if (!formattedPhone.startsWith('+')) {
+        formattedPhone = `+${formattedPhone}`;
+      }
+
+      console.log('Verifying OTP for:', formattedPhone, 'Token:', token); // Debug log
 
       const { data, error } = await supabase.auth.verifyOtp({
         phone: formattedPhone,
@@ -106,15 +119,22 @@ export const SimpleAuthProvider = ({ children }) => {
 
       if (error) throw error;
 
+      console.log('Auth successful, user:', data.user?.id); // Debug log
+
       // Sync with public.users table
       if (data.user) {
-        const { data: existingUser } = await supabase
+        const { data: existingUser, error: checkError } = await supabase
           .from('users')
           .select('*')
           .eq('phone', formattedPhone)
           .single();
 
+        // Handle potential "PGRST116" error (no rows) gracefully
+        // or just rely on existingUser being null if we suppress error?
+        // Supabase JS often returns data: null, error: { ... } if no rows found.
+
         if (!existingUser) {
+          console.log('Creating new user profile...');
           // Create profile if doesn't exist
           const { data: newProfile, error: insertError } = await supabase
             .from('users')
@@ -122,13 +142,18 @@ export const SimpleAuthProvider = ({ children }) => {
               {
                 phone: formattedPhone,
                 name: name || 'Гость',
-                email: data.user.email || null,
+                // email: data.user.email || null, // Email might not be present for phone auth
               },
             ])
             .select()
             .single();
 
-          if (!insertError) {
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+            // If insert fails (maybe concurrent insert?), try to fetch again?
+            // For now just set session user.
+            setUser(data.user);
+          } else {
             setUser({ ...data.user, ...newProfile });
           }
         } else if (name && existingUser.name === 'Гость') {
