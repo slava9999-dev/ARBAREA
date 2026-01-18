@@ -1,5 +1,5 @@
 import { Play, ShoppingBag, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { COLORS, SIZES } from '../../lib/constants';
 import { ecommerceAdd } from '../../lib/yandex-metrica';
@@ -7,6 +7,7 @@ import OptimizedImage from '../ui/OptimizedImage';
 import TactileButton from '../ui/TactileButton';
 
 const BuyModal = ({ product, onClose, onAddToCart }) => {
+  const dialogRef = useRef(null);
   const [selectedSize, setSelectedSize] = useState(
     product.hasOptions ? SIZES[0] : null,
   );
@@ -15,19 +16,27 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
   );
   const [activeMedia, setActiveMedia] = useState(0); // 0 - main image, 1+ - gallery, -1 - video
 
-  const currentPrice =
-    selectedSize === '80 см'
-      ? product.price + 500
-      : selectedSize === '100 см'
-        ? product.price + 1000
-        : product.price;
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) {
+      dialog.showModal();
+    }
+
+    // Handle Esc key via the native cancel event
+    const handleCancel = (e) => {
+      e.preventDefault();
+      onClose();
+    };
+
+    dialog?.addEventListener('cancel', handleCancel);
+    return () => dialog?.removeEventListener('cancel', handleCancel);
+  }, [onClose]);
 
   const handleAddToCart = () => {
+    // ... same logic ...
     const itemToAdd = {
       ...product,
-      // Store original product ID for DB lookups
       productId: product.id,
-      // Create a unique ID for this specific variant
       id: `${product.id}::${selectedColor || 'def'}::${selectedSize || 'def'}`,
       price: currentPrice,
       selectedSize,
@@ -35,7 +44,6 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
       selectedColorName: selectedColor ? COLORS[selectedColor].name : null,
     };
 
-    // 🎯 YANDEX METRICA: Track add to cart
     ecommerceAdd({
       id: product.id,
       name: `${product.name}${selectedSize ? ` (${selectedSize})` : ''}`,
@@ -50,14 +58,23 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
 
   if (!product) return null;
 
-  // Собираем все медиа в один массив для удобства
+  const currentPrice =
+    selectedSize === '80 см'
+      ? product.price + 500
+      : selectedSize === '100 см'
+        ? product.price + 1000
+        : product.price;
+
   const mediaList = [product.image, ...(product.gallery || [])];
 
   return (
     <dialog
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4 border-none w-full h-full"
-      open
-      aria-modal="true"
+      ref={dialogRef}
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4 border-none w-full h-full backdrop:bg-black/40"
+      onClick={(e) => {
+        // Close on backdrop click
+        if (e.target === dialogRef.current) onClose();
+      }}
       aria-labelledby="modal-title"
     >
       <div className="bg-white dark:bg-stone-900 w-full sm:w-[450px] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">

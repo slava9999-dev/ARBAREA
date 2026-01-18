@@ -82,7 +82,15 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
           boxShadow:
             '0 20px 40px rgba(201, 164, 92, 0.2), 0 0 60px rgba(201, 164, 92, 0.1)',
         }}
+        role="link"
+        tabIndex={0}
+        aria-label={`Просмотреть детали товара: ${product.name}`}
         onClick={handleDetailsClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleDetailsClick(e);
+          }
+        }}
       >
         {/* Image Container with Swipe */}
         <div className="relative h-64 overflow-hidden bg-stone-900 group/image">
@@ -233,14 +241,14 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
               Продано
             </button>
           ) : (
-            <div className="flex gap-2 mt-auto">
+            <div className="flex gap-2 mt-auto pt-2">
               <button
                 type="button"
                 onClick={handleBuy}
-                className="flex-1 h-9 btn-primary rounded-full flex items-center justify-center gap-1 shadow-wood-glow hover:shadow-wood-glow-lg active:scale-95 transition-all duration-200 text-[11px] font-semibold px-2"
+                className="flex-[1.4] h-8 btn-primary rounded-lg flex items-center justify-center gap-1 shadow-wood-glow hover:shadow-wood-glow-lg active:scale-95 transition-all duration-200 text-[10px] font-bold uppercase tracking-tight px-1"
               >
-                <ShoppingBag size={14} />
-                <span>Купить</span>
+                <ShoppingBag size={12} />
+                <span className="whitespace-nowrap">В корзину</span>
               </button>
               <button
                 type="button"
@@ -248,10 +256,9 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                   e.stopPropagation();
                   if (onOpenModal) onOpenModal(product);
                 }}
-                className="flex-1 h-9 bg-wood-bg-elevated text-wood-text-primary hover:bg-wood-bg-card active:scale-95 transition-all duration-200 rounded-full flex items-center justify-center gap-1 border border-wood-amber/30 hover:border-wood-amber/60 text-[11px] font-medium px-2"
+                className="flex-1 h-8 bg-white/5 text-stone-300 hover:bg-stone-200/10 active:scale-95 transition-all duration-200 rounded-lg flex items-center justify-center gap-1 border border-white/10 hover:border-wood-amber/40 text-[10px] font-bold uppercase tracking-tight px-1"
               >
-                <Maximize2 size={14} />
-                <span>Детали</span>
+                <span className="whitespace-nowrap">Подробнее</span>
               </button>
             </div>
           )}

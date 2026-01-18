@@ -457,42 +457,59 @@ const Cart = ({ cart, onRemove }) => {
             </div>
           </div>
 
-          {/* PAYMENT SECTION - Now inline after delivery */}
-          <div className="mt-8 space-y-4">
-            <div className="bg-[#2a2520]/90 backdrop-blur-xl border border-wood-amber/20 rounded-2xl p-4 shadow-wood-md">
+          {/* PAYMENT SECTION - Sticky for mobile */}
+          <div className="sticky bottom-4 z-40 mt-10">
+            <div className="bg-[#1c1917]/95 backdrop-blur-xl border border-wood-amber/30 rounded-2xl p-5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
               {error && (
-                <div className="text-red-400 text-xs text-center mb-3 bg-red-500/10 py-2 rounded-lg border border-red-500/20">
+                <div className="text-red-400 text-xs text-center mb-4 bg-red-500/10 py-2.5 rounded-xl border border-red-500/20 animate-in fade-in slide-in-from-top-2">
                   {error}
                 </div>
               )}
 
-              <div className="flex justify-between items-center mb-4 px-2">
-                <div className="text-sm text-stone-400">
-                  Итого к оплате:
-                  {deliveryPrice > 0 && (
-                    <span className="block text-[10px] text-stone-500">
-                      + доставка {deliveryPrice} ₽
+              <div className="flex justify-between items-center mb-5 px-1">
+                <div className="flex flex-col">
+                  <span className="text-[11px] text-stone-500 uppercase tracking-widest font-bold">
+                    Итого
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-serif font-bold text-gradient-amber">
+                      {finalTotal.toLocaleString()}
                     </span>
-                  )}
+                    <span className="text-sm text-wood-amber">₽</span>
+                  </div>
                 </div>
-                <div className="text-2xl font-serif font-bold text-gradient-amber">
-                  {finalTotal.toLocaleString()} ₽
-                </div>
+                {deliveryPrice > 0 ? (
+                  <div className="text-right">
+                    <span className="block text-[10px] text-stone-500 uppercase font-bold tracking-tighter">
+                      Доставка
+                    </span>
+                    <span className="text-xs text-stone-300 font-mono">
+                      +{deliveryPrice} ₽
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-right">
+                    <span className="text-[10px] text-emerald-500/80 font-bold uppercase tracking-widest">
+                      Доставка в подарок
+                    </span>
+                  </div>
+                )}
               </div>
 
               <button
                 type="button"
                 onClick={step === 'form' ? handlePayment : null}
                 disabled={step === 'processing'}
-                className="btn-primary w-full py-4 text-base font-bold flex items-center justify-center gap-2"
+                className="btn-primary w-full py-4 text-base font-bold flex items-center justify-center gap-3 shadow-wood-glow-lg active:scale-[0.98] transition-all"
               >
                 {step === 'processing' ? (
                   <>
-                    <Loader2 className="animate-spin" /> Обработка...
+                    <Loader2 className="animate-spin" size={20} /> Обработка...
                   </>
                 ) : (
                   <>
-                    <CreditCard size={20} /> Оплатить онлайн
+                    <CreditCard size={22} className="opacity-80" />
+                    <span>Оплатить заказ</span>
                   </>
                 )}
               </button>

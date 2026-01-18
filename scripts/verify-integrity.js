@@ -1,14 +1,13 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const CRITICAL_FILES = [
     '.env',
     'vercel.json',
-    'src/lib/firebase.js',
+    'src/lib/supabase.js',
     'api/create-payment.js'
 ];
 
@@ -35,8 +34,13 @@ console.log('\n🧠 Performing Sanity Checks...');
 try {
     const viteConfig = fs.readFileSync(path.join(process.cwd(), 'vite.config.js'), 'utf8');
     if (!viteConfig.includes("alias:") || !viteConfig.includes("'@':")) {
-        console.error('❌ vite.config.js: Missing alias configuration for "@".');
-        hasError = true;
+        // Checking for different quote styles commonly used in vite configs
+        if (!viteConfig.includes("'@':") && !viteConfig.includes('"@":') && !viteConfig.includes("@:")) {
+           console.error('❌ vite.config.js: Missing alias configuration for "@".');
+           hasError = true;
+        } else {
+           console.log('✅ vite.config.js: Alias configuration found.');
+        }
     } else {
         console.log('✅ vite.config.js: Alias configuration found.');
     }
@@ -45,17 +49,17 @@ try {
     hasError = true;
 }
 
-// Check src/lib/firebase.js exports
+// Check src/lib/supabase.js exports
 try {
-    const firebaseContent = fs.readFileSync(path.join(process.cwd(), 'src/lib/firebase.js'), 'utf8');
-    if (!firebaseContent.includes('export const db') || !firebaseContent.includes('export const auth')) {
-        console.error('❌ src/lib/firebase.js: Must export "db" and "auth".');
+    const supabaseContent = fs.readFileSync(path.join(process.cwd(), 'src/lib/supabase.js'), 'utf8');
+    if (!supabaseContent.includes('export const supabase')) {
+        console.error('❌ src/lib/supabase.js: Must export "supabase".');
         hasError = true;
     } else {
-        console.log('✅ src/lib/firebase.js: Exports verified.');
+        console.log('✅ src/lib/supabase.js: Exports verified.');
     }
 } catch (e) {
-    console.error('❌ src/lib/firebase.js: Read error.');
+    console.error('❌ src/lib/supabase.js: Read error.');
     hasError = true;
 }
 

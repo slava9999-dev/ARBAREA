@@ -13,19 +13,8 @@ import {
   Package,
 } from 'lucide-react';
 
-// Lazy load map components for performance
-const MapContainer = lazy(() =>
-  import('react-leaflet').then((m) => ({ default: m.MapContainer })),
-);
-const TileLayer = lazy(() =>
-  import('react-leaflet').then((m) => ({ default: m.TileLayer })),
-);
-const Marker = lazy(() =>
-  import('react-leaflet').then((m) => ({ default: m.Marker })),
-);
-const Popup = lazy(() =>
-  import('react-leaflet').then((m) => ({ default: m.Popup })),
-);
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 // Fix Leaflet default marker icon (required for Vite/Webpack bundling)
 import L from 'leaflet';

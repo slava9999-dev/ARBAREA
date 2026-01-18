@@ -1,19 +1,34 @@
 import { motion } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 const FullScreenImageViewer = ({ images, initialIndex = 0, onClose }) => {
+  const dialogRef = useRef(null);
   const [index, setIndex] = useState(initialIndex);
   const [scale, setScale] = useState(1);
 
-  // Lock body scroll
+  // Lock body scroll and handle dialog
   useEffect(() => {
     document.body.style.overflow = 'hidden';
+
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) {
+      dialog.showModal();
+    }
+
+    const handleCancel = (e) => {
+      e.preventDefault();
+      onClose();
+    };
+
+    dialog?.addEventListener('cancel', handleCancel);
+
     return () => {
       document.body.style.overflow = 'auto';
+      dialog?.removeEventListener('cancel', handleCancel);
     };
-  }, []);
+  }, [onClose]);
 
   const handleNext = (e) => {
     e?.stopPropagation();
@@ -31,9 +46,8 @@ const FullScreenImageViewer = ({ images, initialIndex = 0, onClose }) => {
 
   return createPortal(
     <dialog
-      className="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-center touch-none w-full h-full border-none p-0"
-      open
-      aria-modal="true"
+      ref={dialogRef}
+      className="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-center touch-none w-full h-full border-none p-0 backdrop:bg-black/95"
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === 'Escape') onClose();

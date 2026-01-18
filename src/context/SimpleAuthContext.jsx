@@ -19,7 +19,19 @@ export const SimpleAuthProvider = ({ children }) => {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          // Fetch additional data from public.users
+          const { data: profile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('phone', session.user.phone)
+            .single();
+
+          setUser({ ...session.user, ...profile });
+        } else {
+          setUser(null);
+        }
       } catch (error) {
         console.error('Session check error:', error);
       } finally {
@@ -32,14 +44,18 @@ export const SimpleAuthProvider = ({ children }) => {
     // 2. Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        // Optimistically set user
+        const { data: profile } = await supabase
+          .from('users')
+          .select('*')
+          .eq('phone', session.user.phone)
+          .single();
 
-      // Mirror to localStorage for extra stability if needed, though supabase-js does this
-      if (currentUser) {
-        localStorage.setItem('arbarea_user', JSON.stringify(currentUser));
+        setUser({ ...session.user, ...profile });
       } else {
+        setUser(null);
         localStorage.removeItem('arbarea_user');
       }
     });
@@ -50,18 +66,12 @@ export const SimpleAuthProvider = ({ children }) => {
   // 1. Send OTP to phone
   const sendOTP = async (phone) => {
     try {
-      // Basic formatting to E.164 if not already
+      // Basic formatting to E.164
       let formattedPhone = phone.replace(/\D/g, '');
       if (!formattedPhone.startsWith('+')) {
-        // Assume +7 if it has 11 digits starting with 8 or 7
         if (formattedPhone.length === 11) {
-          if (formattedPhone.startsWith('8')) {
-            formattedPhone = `+7${formattedPhone.slice(1)}`;
-          } else if (formattedPhone.startsWith('7')) {
-            formattedPhone = `+${formattedPhone}`;
-          }
+          formattedPhone = `+7${formattedPhone.slice(1)}`;
         } else {
-          // If less than 11 digits, just prefix with +
           formattedPhone = `+${formattedPhone}`;
         }
       }
@@ -77,20 +87,15 @@ export const SimpleAuthProvider = ({ children }) => {
     }
   };
 
-  // 2. Verify OTP code
-  const verifyOTP = async (phone, token) => {
+  // 2. Verify OTP code and Sync Profile
+  const verifyOTP = async (phone, token, name = '') => {
     try {
       let formattedPhone = phone.replace(/\D/g, '');
       if (!formattedPhone.startsWith('+')) {
-        if (formattedPhone.length === 11) {
-          if (formattedPhone.startsWith('8')) {
-            formattedPhone = `+7${formattedPhone.slice(1)}`;
-          } else if (formattedPhone.startsWith('7')) {
-            formattedPhone = `+${formattedPhone}`;
-          }
-        } else {
-          formattedPhone = `+${formattedPhone}`;
-        }
+        formattedPhone =
+          formattedPhone.length === 11
+            ? `+7${formattedPhone.slice(1)}`
+            : `+${formattedPhone}`;
       }
 
       const { data, error } = await supabase.auth.verifyOtp({
@@ -101,10 +106,72 @@ export const SimpleAuthProvider = ({ children }) => {
 
       if (error) throw error;
 
-      // User state is updated via onAuthStateChange listener
+      // Sync with public.users table
+      if (data.user) {
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('*')
+          .eq('phone', formattedPhone)
+          .single();
+
+        if (!existingUser) {
+          // Create profile if doesn't exist
+          const { data: newProfile, error: insertError } = await supabase
+            .from('users')
+            .insert([
+              {
+                phone: formattedPhone,
+                name: name || 'Гость',
+                email: data.user.email || null,
+              },
+            ])
+            .select()
+            .single();
+
+          if (!insertError) {
+            setUser({ ...data.user, ...newProfile });
+          }
+        } else if (name && existingUser.name === 'Гость') {
+          // Update name if it was 'Гость'
+          const { data: updatedProfile } = await supabase
+            .from('users')
+            .update({ name })
+            .eq('phone', formattedPhone)
+            .select()
+            .single();
+
+          setUser({ ...data.user, ...updatedProfile });
+        } else {
+          setUser({ ...data.user, ...existingUser });
+        }
+      }
+
       return data.user;
     } catch (error) {
       console.error('Verify OTP error:', error);
+      throw error;
+    }
+  };
+
+  // Update Profile
+  const updateProfile = async (updates) => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .upsert({
+          phone: user.phone,
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      setUser((prev) => ({ ...prev, ...data }));
+      return data;
+    } catch (error) {
+      console.error('Update profile error:', error);
       throw error;
     }
   };
@@ -127,6 +194,7 @@ export const SimpleAuthProvider = ({ children }) => {
         loading,
         sendOTP,
         verifyOTP,
+        updateProfile,
         logout,
       }}
     >

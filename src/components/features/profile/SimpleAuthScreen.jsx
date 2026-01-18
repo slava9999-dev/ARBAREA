@@ -5,6 +5,7 @@ import { useSimpleAuth } from '../../../context/SimpleAuthContext';
 const SimpleAuthScreen = ({ onClose }) => {
   const { sendOTP, verifyOTP } = useSimpleAuth();
   const [step, setStep] = useState('phone'); // phone, code
+  const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,10 @@ const SimpleAuthScreen = ({ onClose }) => {
       const cleanPhone = phone.replace(/\D/g, '');
       if (cleanPhone.length < 11) {
         throw new Error('Введите корректный номер телефона (11 цифр)');
+      }
+
+      if (!name.trim()) {
+        throw new Error('Пожалуйста, введите ваше имя');
       }
 
       await sendOTP(phone);
@@ -42,7 +47,7 @@ const SimpleAuthScreen = ({ onClose }) => {
       if (otp.length < 6) {
         throw new Error('Введите 6-значный код');
       }
-      await verifyOTP(phone, otp);
+      await verifyOTP(phone, otp, name);
       setSuccess('✅ Вход выполнен!');
       // Short delay before closing
       setTimeout(() => {
@@ -100,6 +105,24 @@ const SimpleAuthScreen = ({ onClose }) => {
             <form onSubmit={handleSendCode} className="space-y-6">
               <div className="space-y-2">
                 <label
+                  htmlFor="name-input"
+                  className="text-xs font-bold text-stone-500 uppercase tracking-widest ml-1"
+                >
+                  Ваше имя
+                </label>
+                <input
+                  id="name-input"
+                  type="text"
+                  placeholder="Иван"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full p-4 bg-stone-800/50 border border-stone-700/50 text-white placeholder-stone-700 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 outline-none transition-all rounded-2xl text-lg"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
                   htmlFor="phone-input"
                   className="text-xs font-bold text-stone-500 uppercase tracking-widest ml-1"
                 >
@@ -126,7 +149,7 @@ const SimpleAuthScreen = ({ onClose }) => {
 
               <button
                 type="submit"
-                disabled={loading || phone.length < 11}
+                disabled={loading || phone.length < 11 || !name.trim()}
                 className="w-full bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:hover:bg-amber-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-amber-900/20 flex items-center justify-center gap-2"
               >
                 {loading ? (
