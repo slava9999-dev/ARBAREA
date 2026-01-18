@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin,
@@ -145,7 +145,6 @@ const DeliverySelectorWithMap = ({
   isOpen,
   onClose,
   onSelect,
-  isFreeShipping = true, // Всегда бесплатно
   initialAddress = '',
   cartTotal = 0,
 }) => {
@@ -321,7 +320,7 @@ const DeliverySelectorWithMap = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+        className="fixed inset-0 z-[110] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
         onClick={resetAndClose}
       >
         <motion.div
