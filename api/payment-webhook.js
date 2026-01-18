@@ -88,9 +88,15 @@ export default async function handler(req, res) {
       .eq('order_id', OrderId)
       .single();
 
-    if (fetchError || !order) {
+    if (fetchError) {
+      console.error('❌ Database error fetching order:', fetchError);
+      // Return 500 for DB errors so Tinkoff retries
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (!order) {
       console.error('❌ Order not found:', OrderId);
-      // Still return OK to Tinkoff
+      // Return 200 OK because retrying won't fix "Order not found"
       return res.status(200).send('OK');
     }
 
@@ -112,18 +118,20 @@ export default async function handler(req, res) {
 
     if (updateError) {
       console.error('❌ Error updating order:', updateError);
-    } else {
-      console.log(`✅ Order ${OrderId} updated to status: ${orderStatus}`);
+      // Return 500 for update errors so Tinkoff retries
+      return res.status(500).json({ error: 'Failed to update order' });
+    }
+    
+    console.log(`✅ Order ${OrderId} updated to status: ${orderStatus}`);
       
-      // Handle business logic on successful payment
-      if (orderStatus === 'paid' && order.status !== 'paid') {
-        // 1. Mark products as sold
-        await handleInventoryUpdate(order.items);
-        
-        // 2. Send Telegram notification
-        if (Status === 'CONFIRMED' && Success) {
-          await sendPaymentSuccessNotification(order, Amount);
-        }
+    // Handle business logic on successful payment
+    if (orderStatus === 'paid' && order.status !== 'paid') {
+      // 1. Mark products as sold
+      await handleInventoryUpdate(order.items);
+      
+      // 2. Send Telegram notification
+      if (Status === 'CONFIRMED' && Success) {
+        await sendPaymentSuccessNotification(order, Amount);
       }
     }
 

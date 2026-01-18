@@ -1,0 +1,474 @@
+
+> arbarea-mobile-app@1.0.0 test
+> jest src/__tests__/IndividualOrderForm.test.jsx
+
+FAIL src/__tests__/IndividualOrderForm.test.jsx
+  IndividualOrderForm
+    тИЪ renders form correctly (25 ms)
+    ├Ч requires login to submit (8 ms)
+    ├Ч fills and submits form correctly without file (15 ms)
+    ├Ч handles file upload and submission (5 ms)
+
+  тЧП IndividualOrderForm тА║ requires login to submit
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "╨Т╨╛╨╣╨┤╨╕╤В╨╡ ╨▓ ╨░╨║╨║╨░╤Г╨╜╤В ╨┤╨╗╤П ╨╛╤В╨┐╤А╨░╨▓╨║╨╕ ╨╖╨░╤П╨▓╨║╨╕"
+
+    Number of calls: 0
+
+      83 |     fireEvent.click(submitBtn);
+      84 |     
+    > 85 |     expect(window.alert).toHaveBeenCalledWith('╨Т╨╛╨╣╨┤╨╕╤В╨╡ ╨▓ ╨░╨║╨║╨░╤Г╨╜╤В ╨┤╨╗╤П ╨╛╤В╨┐╤А╨░╨▓╨║╨╕ ╨╖╨░╤П╨▓╨║╨╕');
+         |                          ^
+      86 |     expect(supabase.from).not.toHaveBeenCalled();
+      87 |   });
+      88 |
+
+      at Object.toHaveBeenCalledWith (src/__tests__/IndividualOrderForm.test.jsx:85:26)
+
+  тЧП IndividualOrderForm тА║ fills and submits form correctly without file
+
+    TestingLibraryElementError: Unable to find an element with the placeholder text of: /╨Ф╨╗╨╕╨╜╨░/i
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <div
+          class="bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-700 mb-8"
+        >
+          <div
+            class="flex items-center gap-2 mb-4"
+          >
+            <div
+              class="w-8 h-8 bg-stone-100 dark:bg-stone-700 rounded-full flex items-center justify-center text-stone-600 dark:text-stone-300"
+            >
+              <div
+                data-testid="FileText"
+              />
+            </div>
+            <h3
+              class="font-serif font-bold text-stone-800 dark:text-stone-100"
+            >
+              ╨Ш╨╜╨┤╨╕╨▓╨╕╨┤╤Г╨░╨╗╤М╨╜╤Л╨╣ ╨╖╨░╨║╨░╨╖
+            </h3>
+          </div>
+          <form
+            class="space-y-4"
+          >
+            <div
+              class="grid grid-cols-1 gap-4"
+            >
+              <div
+                class="space-y-1"
+              >
+                <label
+                  class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                  for="userName"
+                >
+                  ╨Т╨░╤И╨╡ ╨╕╨╝╤П
+                </label>
+                <input
+                  class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+                  id="userName"
+                  name="userName"
+                  placeholder="╨Ъ╨░╨║ ╨║ ╨▓╨░╨╝ ╨╛╨▒╤А╨░╤Й╨░╤В╤М╤Б╤П?"
+                  required=""
+                  value="Test User"
+                />
+              </div>
+              <div
+                class="space-y-1"
+              >
+                <label
+                  class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                  for="userPhone"
+                >
+                  ╨в╨╡╨╗╨╡╤Д╨╛╨╜ ╨┤╨╗╤П ╤Б╨▓╤П╨╖╨╕
+                </label>
+                <input
+                  class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+                  id="userPhone"
+                  name="userPhone"
+                  placeholder="+7 (999) 000-00-00"
+                  required=""
+                  type="tel"
+                  value="+79991234567"
+                />
+              </div>
+            </div>
+            <div
+              class="space-y-1"
+            >
+              <label
+                class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                for="description"
+              >
+                ╨з╤В╨╛ ╨▒╤Г╨┤╨╡╨╝ ╤Б╨╛╨╖╨┤╨░╨▓╨░╤В╤М?
+              </label>
+              <input
+                class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+                id="description"
+                placeholder="╨Э╨░╨┐╤А╨╕╨╝╨╡╤А: ╨Ю╨▒╨╡╨┤╨╡╨╜╨╜╤Л╨╣ ╤Б╤В╨╛╨╗ ╨╕╨╖ ╨┤╤Г╨▒╨░"
+                required=""
+                value="Custom Table"
+              />
+            </div>
+            <div
+              class="flex gap-3"
+            >
+              <div
+                class="w-1/2 space-y-1"
+              >
+                <label
+                  class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                  for="length"
+                >
+                  ╨Ф╨╗╨╕╨╜╨░ (╤Б╨╝)
+                </label>
+                <input
+                  class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+                  id="length"
+                  placeholder="0"
+                  type="number"
+                  value=""
+                />
+              </div>
+              <div
+                class="w-1/2 space-y-1"
+              >
+                <label
+                  class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                  for="width"
+                >
+                  ╨и╨╕╤А╨╕╨╜╨░ (╤Б╨╝)
+                </label>
+                <input
+                  class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+                  id="width"
+                  placeholder="0"
+                  type="number"
+                  value=""
+                />
+              </div>
+            </div>
+            <div
+              class="space-y-1"
+            >
+              <label
+                class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                for="details"
+              >
+                ╨Ф╨╡╤В╨░╨╗╨╕ ╨╕ ╨┐╨╛╨╢╨╡╨╗╨░╨╜╨╕╤П
+              </label>
+              <textarea
+                class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all resize-none"
+                id="details"
+                placeholder="╨Ю╨┐╨╕╤И╨╕╤В╨╡ ╨╢╨╡╨╗╨░╨╡╨╝╤Л╨╣ ╤Ж╨▓╨╡╤В, ╨╝╨░╤В╨╡╤А╨╕╨░╨╗, ╤Б╤В╨╕╨╗╤М ╨╕ ╨┤╤А╤Г╨│╨╕╨╡ ╨▓╨░╨╢╨╜╤Л╨╡ ╨┤╨╡╤В╨░╨╗╨╕..."
+                rows="4"
+              />
+            </div>
+            <input
+              accept="image/*,.pdf,.doc,.docx"
+              class="hidden"
+              type="file"
+            />
+            <button
+              class="w-full border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all group border-stone-200 dark:border-stone-700 hover:border-amber-500 dark:hover:border-amber-500 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer"
+              type="button"
+            >
+              <div
+                class="w-12 h-12 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"
+              >
+                <div
+                  data-testid="Upload"
+                />
+              </div>
+              <span
+                class="text-sm font-medium text-stone-600 dark:text-stone-300"
+              >
+                ╨Я╤А╨╕╨║╤А╨╡╨┐╨╕╤В╤М ╤Н╤Б╨║╨╕╨╖ ╨╕╨╗╨╕ ╤Д╨╛╤В╨╛
+              </span>
+              <span
+                class="text-xs text-stone-400 dark:text-stone-500 mt-1"
+              >
+                JPG, PNG, PDF (╨╝╨░╨║╤Б 10MB)
+              </span>
+            </button>
+            <button
+              class="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-amber-500 border-2 border-amber-500 animate-neon-pulse"
+              type="submit"
+            >
+              ╨Ю╤В╨┐╤А╨░╨▓╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г
+              <div
+                data-testid="ArrowRight"
+              />
+            </button>
+          </form>
+        </div>
+      </div>
+    </body>
+
+      93 |       target: { value: 'Custom Table' },
+      94 |     });
+    > 95 |     fireEvent.change(screen.getByPlaceholderText(/╨Ф╨╗╨╕╨╜╨░/i), {
+         |                             ^
+      96 |       target: { value: '200' },
+      97 |     });
+      98 |     fireEvent.change(screen.getByPlaceholderText(/╨и╨╕╤А╨╕╨╜╨░/i), {
+
+      at Object.getElementError (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:37:19)
+      at node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+      at node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+      at node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+      at Object.getByPlaceholderText (src/__tests__/IndividualOrderForm.test.jsx:95:29)
+
+  тЧП IndividualOrderForm тА║ handles file upload and submission
+
+    TestingLibraryElementError: Found multiple elements with the display value: .
+
+    Here are the matching elements:
+
+    Ignored nodes: comments, script, style
+    <input
+      class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+      id="description"
+      placeholder="╨Э╨░╨┐╤А╨╕╨╝╨╡╤А: ╨Ю╨▒╨╡╨┤╨╡╨╜╨╜╤Л╨╣ ╤Б╤В╨╛╨╗ ╨╕╨╖ ╨┤╤Г╨▒╨░"
+      required=""
+      value=""
+    />
+
+    Ignored nodes: comments, script, style
+    <input
+      class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+      id="length"
+      placeholder="0"
+      type="number"
+      value=""
+    />
+
+    Ignored nodes: comments, script, style
+    <input
+      class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+      id="width"
+      placeholder="0"
+      type="number"
+      value=""
+    />
+
+    Ignored nodes: comments, script, style
+    <textarea
+      class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all resize-none"
+      id="details"
+      placeholder="╨Ю╨┐╨╕╤И╨╕╤В╨╡ ╨╢╨╡╨╗╨░╨╡╨╝╤Л╨╣ ╤Ж╨▓╨╡╤В, ╨╝╨░╤В╨╡╤А╨╕╨░╨╗, ╤Б╤В╨╕╨╗╤М ╨╕ ╨┤╤А╤Г╨│╨╕╨╡ ╨▓╨░╨╢╨╜╤Л╨╡ ╨┤╨╡╤В╨░╨╗╨╕..."
+      rows="4"
+    />
+
+    Ignored nodes: comments, script, style
+    <input
+      accept="image/*,.pdf,.doc,.docx"
+      class="hidden"
+      type="file"
+    />
+
+    (If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <div
+          class="bg-stone-800 p-5 rounded-3xl shadow-sm border border-stone-700 mb-8"
+        >
+          <div
+            class="flex items-center gap-2 mb-4"
+          >
+            <div
+              class="w-8 h-8 bg-stone-100 dark:bg-stone-700 rounded-full flex items-center justify-center text-stone-600 dark:text-stone-300"
+            >
+              <div
+                data-testid="FileText"
+              />
+            </div>
+            <h3
+              class="font-serif font-bold text-stone-800 dark:text-stone-100"
+            >
+              ╨Ш╨╜╨┤╨╕╨▓╨╕╨┤╤Г╨░╨╗╤М╨╜╤Л╨╣ ╨╖╨░╨║╨░╨╖
+            </h3>
+          </div>
+          <form
+            class="space-y-4"
+          >
+            <div
+              class="grid grid-cols-1 gap-4"
+            >
+              <div
+                class="space-y-1"
+              >
+                <label
+                  class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                  for="userName"
+                >
+                  ╨Т╨░╤И╨╡ ╨╕╨╝╤П
+                </label>
+                <input
+                  class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+                  id="userName"
+                  name="userName"
+                  placeholder="╨Ъ╨░╨║ ╨║ ╨▓╨░╨╝ ╨╛╨▒╤А╨░╤Й╨░╤В╤М╤Б╤П?"
+                  required=""
+                  value="Test User"
+                />
+              </div>
+              <div
+                class="space-y-1"
+              >
+                <label
+                  class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                  for="userPhone"
+                >
+                  ╨в╨╡╨╗╨╡╤Д╨╛╨╜ ╨┤╨╗╤П ╤Б╨▓╤П╨╖╨╕
+                </label>
+                <input
+                  class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+                  id="userPhone"
+                  name="userPhone"
+                  placeholder="+7 (999) 000-00-00"
+                  required=""
+                  type="tel"
+                  value="+79991234567"
+                />
+              </div>
+            </div>
+            <div
+              class="space-y-1"
+            >
+              <label
+                class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                for="description"
+              >
+                ╨з╤В╨╛ ╨▒╤Г╨┤╨╡╨╝ ╤Б╨╛╨╖╨┤╨░╨▓╨░╤В╤М?
+              </label>
+              <input
+                class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+                id="description"
+                placeholder="╨Э╨░╨┐╤А╨╕╨╝╨╡╤А: ╨Ю╨▒╨╡╨┤╨╡╨╜╨╜╤Л╨╣ ╤Б╤В╨╛╨╗ ╨╕╨╖ ╨┤╤Г╨▒╨░"
+                required=""
+                value=""
+              />
+            </div>
+            <div
+              class="flex gap-3"
+            >
+              <div
+                class="w-1/2 space-y-1"
+              >
+                <label
+                  class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                  for="length"
+                >
+                  ╨Ф╨╗╨╕╨╜╨░ (╤Б╨╝)
+                </label>
+                <input
+                  class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+                  id="length"
+                  placeholder="0"
+                  type="number"
+                  value=""
+                />
+              </div>
+              <div
+                class="w-1/2 space-y-1"
+              >
+                <label
+                  class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                  for="width"
+                >
+                  ╨и╨╕╤А╨╕╨╜╨░ (╤Б╨╝)
+                </label>
+                <input
+                  class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all"
+                  id="width"
+                  placeholder="0"
+                  type="number"
+                  value=""
+                />
+              </div>
+            </div>
+            <div
+              class="space-y-1"
+            >
+              <label
+                class="text-xs text-stone-500 dark:text-stone-400 ml-1 font-medium"
+                for="details"
+              >
+                ╨Ф╨╡╤В╨░╨╗╨╕ ╨╕ ╨┐╨╛╨╢╨╡╨╗╨░╨╜╨╕╤П
+              </label>
+              <textarea
+                class="w-full p-4 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 rounded-xl text-sm outline-none border border-transparent focus:border-amber-500 transition-all resize-none"
+                id="details"
+                placeholder="╨Ю╨┐╨╕╤И╨╕╤В╨╡ ╨╢╨╡╨╗╨░╨╡╨╝╤Л╨╣ ╤Ж╨▓╨╡╤В, ╨╝╨░╤В╨╡╤А╨╕╨░╨╗, ╤Б╤В╨╕╨╗╤М ╨╕ ╨┤╤А╤Г╨│╨╕╨╡ ╨▓╨░╨╢╨╜╤Л╨╡ ╨┤╨╡╤В╨░╨╗╨╕..."
+                rows="4"
+              />
+            </div>
+            <input
+              accept="image/*,.pdf,.doc,.docx"
+              class="hidden"
+              type="file"
+            />
+            <button
+              class="w-full border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all group border-stone-200 dark:border-stone-700 hover:border-amber-500 dark:hover:border-amber-500 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer"
+              type="button"
+            >
+              <div
+                class="w-12 h-12 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"
+              >
+                <div
+                  data-testid="Upload"
+                />
+              </div>
+              <span
+                class="text-sm font-medium text-stone-600 dark:text-stone-300"
+              >
+                ╨Я╤А╨╕╨║╤А╨╡╨┐╨╕╤В╤М ╤Н╤Б╨║╨╕╨╖ ╨╕╨╗╨╕ ╤Д╨╛╤В╨╛
+              </span>
+              <span
+                class="text-xs text-stone-400 dark:text-stone-500 mt-1"
+              >
+                JPG, PNG, PDF (╨╝╨░╨║╤Б 10MB)
+              </span>
+            </button>
+            <button
+              class="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-amber-500 border-2 border-amber-500 animate-neon-pulse"
+              type="submit"
+            >
+              ╨Ю╤В╨┐╤А╨░╨▓╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г
+              <div
+                data-testid="ArrowRight"
+              />
+            </button>
+          </form>
+        </div>
+      </div>
+    </body>
+
+      129 |     // Mock file input
+      130 |     const file = new File(['dummy content'], 'test.png', { type: 'image/png' });
+    > 131 |     const input = screen.getByDisplayValue(''); // The hidden file input is hard to select by role, finding via class or other means might be needed. 
+          |                          ^
+      132 |     // Actually, checking the component code: <input type="file" ... className="hidden" />
+      133 |     // We can select it by implicit accessibility if it wasn't hidden or by simple querySelector logic if we could.
+      134 |     // Testing library best practice: container.querySelector
+
+      at Object.getElementError (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:37:19)
+      at getElementError (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:20:35)
+      at getMultipleElementsFoundError (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:23:10)
+      at node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+      at node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+      at Object.getByDisplayValue (src/__tests__/IndividualOrderForm.test.jsx:131:26)
+
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 1 passed, 4 total
+Snapshots:   0 total
+Time:        1.157 s, estimated 4 s
+Ran all test suites matching /src\\__tests__\\IndividualOrderForm.test.jsx/i.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

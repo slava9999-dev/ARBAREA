@@ -40,18 +40,24 @@ Migration from Firebase to Supabase is complete. Critical security audit passed.
 - ✅ `individual_orders` table implemented for custom requests
 - ✅ Storage buckets configured
 
-## 🔄 RECENT CHANGES (2026-01-02)
+## 🔄 RECENT CHANGES (2026-01-18)
 
-1. **Security Audit**: Removed dead/insecure code (`auth-telegram`).
-2. **Payment Resilience**: Webhook now handles duplicate requests and server errors correctly.
-3. **Data Integrity**: `IndividualOrderForm` strictly follows DB schema.
-4. **Cleanup**: Removed obsolete Firebase documentation.
+1. **Security Hardening**:
+   - Updated `jest` to v29 to fix high-severity vulnerabilities.
+   - Applied dependency overrides for `braces` and `micromatch`.
+   - Verified project integrity with updated scripts.
+2. **Accessibility (A11y)**:
+   - `BuyModal` and `FullScreenImageViewer` now use native `<dialog>` for better focus management and keyboard support.
+   - Improvements to Product Cards for screen readers and keyboard navigation.
+3. **Product Context**:
+   - Added comprehensive unit tests for `ProductContext`.
+   - Total test coverage increased to 93 passing tests.
 
 ## 📝 NEXT STEPS
 
 1. **Telegram Login v2**: Implement native Supabase Auth for Telegram.
-2. **Testing**: Manual verification of payment flow in production.
-3. **Monitoring**: Check Supabase logs for webhook performance.
+2. **Monitoring**: Check Supabase logs for webhook performance.
+3. **PWA**: Verify PWA installability and cache strategies in production.
 
 ---
 
