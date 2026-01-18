@@ -68,9 +68,9 @@ export default async function handler(req, res) {
     }
 
     // Helper function to extract original product ID from cart item
-    // Cart items may have composite IDs like "101-bronze-600" for variants
+    // Cart items may have composite IDs like "uuid::color::size" for variants
     const extractProductId = (item) => {
-      // If productId is explicitly set (new cart items), use it
+      // 1. If productId is explicitly set (preferred), use it
       if (item.productId) return item.productId;
       
       const idStr = String(item.id);
@@ -78,26 +78,34 @@ export default async function handler(req, res) {
       // Skip donation items
       if (idStr.startsWith('donate-')) return null;
       
-      // Check if it's a composite ID (contains dashes after numeric/uuid part)
-      // Handle: "101-bronze-600" -> "101"
-      // Handle: "uuid-here-bronze-600" -> keep as uuid if valid
+      // 2. Try the new safer separator '::'
+      if (idStr.includes('::')) {
+        return idStr.split('::')[0];
+      }
+      
+      // 3. Backward compatibility: handle old composite IDs with '-'
+      // But only if it's not a valid UUID itself
       const parts = idStr.split('-');
       
-      // If first part is numeric, it's the product ID
-      if (/^\d+$/.test(parts[0])) {
+      // If first part is numeric, it's likely an old numeric product ID
+      if (parts.length > 1 && /^\d+$/.test(parts[0])) {
         return Number(parts[0]);
       }
       
-      // If it looks like a UUID (8-4-4-4-12 format), return the full UUID
-      // UUIDs have 5 parts with specific lengths
-      if (parts.length >= 5) {
+      // If it looks like a full UUID, return it
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idStr)) {
+        return idStr;
+      }
+
+      // If it starts with a UUID but has extra parts with '-'
+      if (parts.length > 5) {
         const uuidCandidate = parts.slice(0, 5).join('-');
         if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuidCandidate)) {
           return uuidCandidate;
         }
       }
       
-      // Fallback: return the original ID (might fail but allows error to bubble)
+      // Fallback: return the original ID
       return item.id;
     };
 
@@ -174,9 +182,11 @@ export default async function handler(req, res) {
       });
     }
 
-    const orderId = clientOrderId || `ORDER-${Date.now()}`;
+    // 5. SERVER-SIDE ORDER ID GENERATION
+    // Priority: Client ID (if exists) -> New Secure ID
+    const orderId = clientOrderId || `ARB-${crypto.randomBytes(4).toString('hex').toUpperCase()}-${Date.now().toString().slice(-4)}`;
 
-    // 5. CREATE ORDER RECORD (SERVER-SIDE)
+    // 6. CREATE ORDER RECORD (SERVER-SIDE)
     const { error: orderError } = await supabaseAdmin
       .from('orders')
       .insert([{

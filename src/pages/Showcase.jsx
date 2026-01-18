@@ -5,17 +5,18 @@ import FlipProductCard from '../components/features/FlipProductCard';
 import HeroBanner from '../components/features/HeroBanner';
 import SocialFooter from '../components/layout/SocialFooter';
 import { SearchOverlay } from '../components/SearchOverlay';
-import { PRODUCTS } from '../data/products';
+import { useProducts } from '../context/ProductContext';
 
 const Showcase = ({ onBuy, onOpenModal }) => {
+  const { products, loading: productsLoading } = useProducts();
   const [activeCategory, setActiveCategory] = useState('all');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Filter logic
   const filtered =
     activeCategory === 'all'
-      ? PRODUCTS
-      : PRODUCTS.filter((p) => {
+      ? products
+      : products.filter((p) => {
           if (activeCategory === 'wall-panels') return p.category === 'Панно';
           if (activeCategory === 'bathroom') return p.category === 'Для ванной';
           if (activeCategory === 'kitchen')

@@ -67,7 +67,10 @@ const ProductDetails = () => {
   const handleAddToCart = () => {
     addToCart({
       ...product,
-      id: `${product.id}-${selectedColor?.id || 'def'}-${selectedSize?.value || 'def'}`,
+      // Store original product ID for DB lookups
+      productId: product.id,
+      // Create a unique ID for this specific variant
+      id: `${product.id}::${selectedColor?.id || 'def'}::${selectedSize?.value || 'def'}`,
       name: `${product.name} ${selectedSize ? `(${selectedSize.label})` : ''} ${selectedColor ? `(${selectedColor.name})` : ''}`,
       price: currentPrice,
       selectedColor,
@@ -156,7 +159,11 @@ const ProductDetails = () => {
                   'success',
                 );
               }}
-              aria-label={isInWishlist(product.id) ? "Удалить из избранного" : "Добавить в избранное"}
+              aria-label={
+                isInWishlist(product.id)
+                  ? 'Удалить из избранного'
+                  : 'Добавить в избранное'
+              }
               className={`p-3 rounded-full transition-all ${
                 isInWishlist(product.id)
                   ? 'bg-red-500/10 text-red-500'

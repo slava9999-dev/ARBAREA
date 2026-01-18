@@ -115,9 +115,15 @@ export default async function handler(req, res) {
     } else {
       console.log(`✅ Order ${OrderId} updated to status: ${orderStatus}`);
       
-      // Send Telegram notification ONLY if this is a fresh payment confirmation
-      if (Status === 'CONFIRMED' && Success && order.status !== 'paid') {
-        await sendPaymentSuccessNotification(order, Amount);
+      // Handle business logic on successful payment
+      if (orderStatus === 'paid' && order.status !== 'paid') {
+        // 1. Mark products as sold
+        await handleInventoryUpdate(order.items);
+        
+        // 2. Send Telegram notification
+        if (Status === 'CONFIRMED' && Success) {
+          await sendPaymentSuccessNotification(order, Amount);
+        }
       }
     }
 
@@ -166,7 +172,7 @@ ${itemsList}
 `;
 
   try {
-    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -175,8 +181,50 @@ ${itemsList}
         parse_mode: 'HTML',
       }),
     });
-    console.log('✅ Telegram notification sent');
+    
+    if (!response.ok) {
+      console.error('❌ Telegram API error:', await response.text());
+    } else {
+      console.log('✅ Telegram notification sent');
+    }
   } catch (error) {
     console.error('❌ Telegram notification error:', error);
+  }
+}
+
+/**
+ * Marks products in the order as sold (in_stock = false)
+ */
+async function handleInventoryUpdate(items) {
+  if (!items || !Array.isArray(items)) return;
+
+  console.log(`📦 Updating inventory for ${items.length} items`);
+
+  for (const item of items) {
+    const productId = item.productId || item.id;
+    
+    if (!productId) continue;
+
+    // Use productId if it was split from composite (handled in create-payment and extractProductId)
+    // But since we are server side, we should be careful with composite IDs too if productId is missing
+    let actualId = productId;
+    if (typeof productId === 'string' && productId.includes('::')) {
+      actualId = productId.split('::')[0];
+    }
+
+    try {
+      const { error } = await supabaseAdmin
+        .from('products')
+        .update({ in_stock: false })
+        .eq('id', actualId);
+
+      if (error) {
+        console.error(`❌ Failed to mark product ${actualId} as sold:`, error);
+      } else {
+        console.log(`✅ Product ${actualId} marked as sold`);
+      }
+    } catch (err) {
+      console.error(`❌ Inventory error for product ${actualId}:`, err);
+    }
   }
 }

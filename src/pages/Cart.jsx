@@ -3,20 +3,16 @@ import {
   ChevronRight,
   CreditCard,
   Loader2,
-  Lock,
   MapPin,
   Navigation,
   ShoppingBag,
-  Sparkles,
 } from 'lucide-react';
 import { Suspense, lazy, useEffect, useState } from 'react';
 import DiscountBanner from '../components/features/DiscountBanner';
 import CartItem from '../components/features/cart/CartItem';
-import { PaymentTrustBlock } from '../components/ui/PaymentTrustBlock';
 import { useSimpleAuth } from '../context/SimpleAuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import { sendTelegramNotification } from '../lib/telegram';
 import { initPayment } from '../lib/tinkoff';
 import { ecommercePurchase, reachGoal } from '../lib/yandex-metrica';
 
@@ -26,7 +22,7 @@ const DeliverySelector = lazy(
 );
 
 const Cart = ({ cart, onRemove }) => {
-  const { cartTotal, subtotal, discount } = useCart();
+  const { subtotal, discount } = useCart();
   const { user } = useSimpleAuth();
   const { showToast } = useToast();
 
@@ -155,8 +151,9 @@ const Cart = ({ cart, onRemove }) => {
     setError('');
 
     try {
-      const orderId = `ORDER-${Date.now()}`;
-      const description = `Заказ ${orderId} в Arbarea`;
+      // SimpleAuth uses phone-based auth, no Bearer token needed for now
+      // Logic for linking SimpleAuth users to orders can be handled via phone number matching on backend if needed
+      const token = null;
 
       const items = cart.map((item) => ({
         id: item.id,
@@ -165,14 +162,10 @@ const Cart = ({ cart, onRemove }) => {
         quantity: item.quantity || 1,
       }));
 
-      // SimpleAuth uses phone-based auth, no Bearer token needed for now
-      // Logic for linking SimpleAuth users to orders can be handled via phone number matching on backend if needed
-      const token = null;
-
-      const paymentUrl = await initPayment(
-        orderId,
+      const { paymentUrl, orderId } = await initPayment(
+        null, // orderId generated on server
         items,
-        description,
+        null, // description generated on server
         {
           email: formData.email,
           phone: formData.phone,
@@ -184,31 +177,6 @@ const Cart = ({ cart, onRemove }) => {
       );
 
       if (paymentUrl) {
-        // Prepare Telegram Message
-        const escapeHtml = (text) => {
-          if (!text) return '';
-          return String(text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-        };
-
-        const message = `
-<b>Новый заказ!</b> 📦
-<b>ID:</b> ${orderId}
-<b>Имя:</b> ${escapeHtml(formData.name)}
-<b>Телефон:</b> ${escapeHtml(formData.phone)}
-<b>Доставка:</b> ${escapeHtml(selectedDelivery?.service?.name || 'Не указано')}
-<b>Адрес:</b> ${escapeHtml(selectedDelivery?.address || formData.address)}
-<b>Сумма:</b> ${finalTotal} ₽
-
-<b>Товары:</b>
-${cart.map((item) => `- ${escapeHtml(item.name)} x${item.quantity}`).join('\n')}
-`;
-        await sendTelegramNotification(message, token);
-
         // Track Purchase
         ecommercePurchase({
           orderId,

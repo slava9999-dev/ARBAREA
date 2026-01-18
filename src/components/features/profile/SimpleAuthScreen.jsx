@@ -1,170 +1,189 @@
-/**
- * SimpleAuthScreen - Упрощенная регистрация (имя + телефон)
- */
-
 import { useState } from 'react';
-import { Loader2, User, Phone as PhoneIcon, LogIn } from 'lucide-react';
+import { LogIn, Loader2, X } from 'lucide-react';
 import { useSimpleAuth } from '../../../context/SimpleAuthContext';
 
-const SimpleAuthScreen = () => {
-  const { register, login } = useSimpleAuth();
-  const [mode, setMode] = useState('register'); // register | login
+const SimpleAuthScreen = ({ onClose }) => {
+  const { sendOTP, verifyOTP } = useSimpleAuth();
+  const [step, setStep] = useState('phone'); // phone, code
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('+7');
-
-  const handleSubmit = async (e) => {
+  const handleSendCode = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
     setLoading(true);
 
     try {
-      if (mode === 'register') {
-        if (!name.trim()) {
-          throw new Error('Введите ваше имя');
-        }
-        if (phone.length < 11) {
-          throw new Error('Введите корректный номер телефона');
-        }
-        await register(name, phone);
-        setSuccess('✅ Регистрация успешна! Добро пожаловать!');
-      } else {
-        if (phone.length < 11) {
-          throw new Error('Введите корректный номер телефона');
-        }
-        await login(phone);
-        setSuccess('✅ Вход выполнен!');
+      // Basic validation
+      const cleanPhone = phone.replace(/\D/g, '');
+      if (cleanPhone.length < 11) {
+        throw new Error('Введите корректный номер телефона (11 цифр)');
       }
+
+      await sendOTP(phone);
+      setStep('code');
+      setSuccess('Код отправлен на ваш номер');
     } catch (err) {
-      setError(err.message || 'Произошла ошибка');
+      setError(err.message || 'Произошла ошибка при отправке кода');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      if (otp.length < 6) {
+        throw new Error('Введите 6-значный код');
+      }
+      await verifyOTP(phone, otp);
+      setSuccess('✅ Вход выполнен!');
+      // Short delay before closing
+      setTimeout(() => {
+        if (onClose) onClose();
+      }, 1500);
+    } catch (err) {
+      setError(err.message || 'Неверный код или срок его действия истек');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-6 pb-32 text-center animate-fade-in bg-gradient-to-b from-wood-bg to-wood-bg-elevated">
-      <div className="w-24 h-24 bg-gradient-to-br from-wood-amber/20 to-wood-amber/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-wood-amber/20 shadow-wood-glow">
-        <User size={40} className="text-wood-amber" />
-      </div>
-
-      <h2 className="text-3xl font-serif font-bold mb-3 text-gradient-amber drop-shadow-wood-glow">
-        {mode === 'register' ? 'Регистрация' : 'Вход'}
-        <br />в Arbarea
-      </h2>
-      <p className="text-wood-text-secondary mb-10 text-sm leading-relaxed max-w-xs mx-auto">
-        {mode === 'register'
-          ? 'Создайте аккаунт и получите скидку 10%'
-          : 'Войдите, чтобы отслеживать заказы'}
-      </p>
-
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl text-sm mb-4 backdrop-blur-sm max-w-sm mx-auto">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl text-sm mb-4 backdrop-blur-sm max-w-sm mx-auto">
-          {success}
-        </div>
-      )}
-
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4 text-left max-w-sm mx-auto w-full"
-      >
-        {mode === 'register' && (
-          <div className="space-y-1">
-            <label
-              htmlFor="name"
-              className="text-xs text-wood-text-muted ml-3 uppercase tracking-wider font-bold"
-            >
-              Ваше имя
-            </label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Иван Иванов"
-              className="w-full p-4 bg-wood-bg-elevated border border-wood-amber/20 text-wood-text-primary rounded-2xl outline-none focus:border-wood-amber focus:shadow-wood-glow-sm placeholder-wood-text-muted"
-              required
-            />
+    <dialog
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 w-full h-full border-none"
+      open
+    >
+      <div className="bg-[#1c1917] w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-white/5 animate-in fade-in zoom-in duration-300">
+        {/* Header */}
+        <div className="p-6 flex justify-between items-center border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
+              <LogIn className="text-amber-500" size={20} />
+            </div>
+            <div>
+              <h2 className="text-xl font-serif font-bold text-white">Вход</h2>
+              <p className="text-xs text-stone-500">
+                Доступ к заказам и скидкам
+              </p>
+            </div>
           </div>
-        )}
-
-        <div className="space-y-1">
-          <label
-            htmlFor="phone"
-            className="text-xs text-wood-text-muted ml-3 uppercase tracking-wider font-bold"
-          >
-            Номер телефона
-          </label>
-          <input
-            id="phone"
-            type="tel"
-            value={phone}
-            onFocus={() => {
-              if (!phone || phone === '') setPhone('+7');
-            }}
-            onChange={(e) => {
-              let val = e.target.value;
-              if (!val.startsWith('+7')) val = `+7${val.replace(/^\+7/, '')}`;
-              if (/^[\d\s()+-]*$/.test(val)) {
-                setPhone(val);
-              }
-            }}
-            placeholder="+7 (999) 000-00-00"
-            className="w-full p-4 bg-wood-bg-elevated border border-wood-amber/20 text-wood-text-primary rounded-2xl outline-none focus:border-wood-amber focus:shadow-wood-glow-sm placeholder-wood-text-muted"
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full btn-primary py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <Loader2 className="animate-spin" />
-          ) : mode === 'register' ? (
-            <>
-              <PhoneIcon size={20} /> Зарегистрироваться
-            </>
-          ) : (
-            <>
-              <LogIn size={20} /> Войти
-            </>
-          )}
-        </button>
-
-        <div className="text-center pt-4">
           <button
             type="button"
-            onClick={() => {
-              setMode(mode === 'register' ? 'login' : 'register');
-              setError('');
-              setSuccess('');
-            }}
-            className="text-wood-text-muted text-sm hover:text-wood-amber transition-colors"
+            onClick={onClose}
+            className="p-2 hover:bg-white/5 rounded-full transition-colors text-stone-400 hover:text-white"
           >
-            {mode === 'register'
-              ? 'Уже есть аккаунт? Войти'
-              : 'Нет аккаунта? Зарегистрироваться'}
+            <X size={20} />
           </button>
         </div>
-      </form>
 
-      <p className="text-wood-text-muted text-xs mt-8 max-w-xs mx-auto">
-        Регистрируясь, вы соглашаетесь с условиями использования и политикой
-        конфиденциальности
-      </p>
-    </div>
+        <div className="p-8">
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-sm rounded-2xl animate-in slide-in-from-top-2">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 text-green-500 text-sm rounded-2xl animate-in slide-in-from-top-2">
+              {success}
+            </div>
+          )}
+
+          {step === 'phone' ? (
+            <form onSubmit={handleSendCode} className="space-y-6">
+              <div className="space-y-2">
+                <label
+                  htmlFor="phone-input"
+                  className="text-xs font-bold text-stone-500 uppercase tracking-widest ml-1"
+                >
+                  Номер телефона
+                </label>
+                <input
+                  id="phone-input"
+                  type="tel"
+                  placeholder="+7 (999) 000-00-00"
+                  value={phone}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (!val.startsWith('+7') && val.length > 0)
+                      val = `+7${val}`;
+                    setPhone(val);
+                  }}
+                  className="w-full p-4 bg-stone-800/50 border border-stone-700/50 text-white placeholder-stone-700 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 outline-none transition-all rounded-2xl text-lg"
+                  required
+                />
+                <p className="text-[10px] text-stone-600 ml-1">
+                  Мы отправим SMS с кодом подтверждения
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || phone.length < 11}
+                className="w-full bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:hover:bg-amber-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-amber-900/20 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin" size={20} />
+                ) : (
+                  'Получить код'
+                )}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyCode} className="space-y-6">
+              <div className="space-y-2 text-center">
+                <label
+                  htmlFor="otp-input"
+                  className="text-xs font-bold text-stone-500 uppercase tracking-widest"
+                >
+                  Введите код из SMS
+                </label>
+                <input
+                  id="otp-input"
+                  type="text"
+                  maxLength={6}
+                  placeholder="000000"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  className="w-full p-4 bg-stone-800/50 border border-stone-700/50 text-white placeholder-stone-700 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 outline-none transition-all rounded-2xl text-3xl tracking-[0.5em] text-center font-mono"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setStep('phone')}
+                  className="text-xs text-amber-500 hover:underline mt-2"
+                >
+                  Изменить номер
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || otp.length < 6}
+                className="w-full bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:hover:bg-amber-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-amber-900/20 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin" size={20} />
+                ) : (
+                  'Подтвердить'
+                )}
+              </button>
+            </form>
+          )}
+
+          <p className="mt-8 text-center text-[10px] text-stone-600 uppercase tracking-tighter">
+            Нажимая кнопку, вы соглашаетесь с условиями оферты
+          </p>
+        </div>
+      </div>
+    </dialog>
   );
 };
 

@@ -27,6 +27,8 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
       ...product,
       // Store original product ID for DB lookups
       productId: product.id,
+      // Create a unique ID for this specific variant
+      id: `${product.id}::${selectedColor || 'def'}::${selectedSize || 'def'}`,
       price: currentPrice,
       selectedSize,
       selectedColor,
@@ -52,9 +54,9 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
   const mediaList = [product.image, ...(product.gallery || [])];
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4"
-      role="dialog"
+    <dialog
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4 border-none w-full h-full"
+      open
       aria-modal="true"
       aria-labelledby="modal-title"
     >
@@ -218,7 +220,7 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
           </div>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 };
 

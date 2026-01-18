@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useReducer } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useMemo,
+} from 'react';
+import { useProducts } from './ProductContext';
 
 const CartContext = createContext();
 
@@ -65,6 +72,7 @@ const cartReducer = (state, action) => {
 };
 
 export const CartProvider = ({ children }) => {
+  const { products, loading: productsLoading } = useProducts();
   const [state, dispatch] = useReducer(cartReducer, initialState, () => {
     try {
       const localData = localStorage.getItem('arbarea_cart');
@@ -83,13 +91,39 @@ export const CartProvider = ({ children }) => {
     }
   }, [state.items]);
 
+  // Derive enriched cart items with latest prices
+  const cartItems = useMemo(() => {
+    if (productsLoading || !products.length) return state.items;
+
+    return state.items.map((item) => {
+      const baseProduct = products.find(
+        (p) => p.id === (item.productId || item.id.split('::')[0]),
+      );
+      if (!baseProduct) return item;
+
+      // Recalculate price if base product found
+      const basePrice = baseProduct.price;
+      const sizeMod = item.selectedSize?.priceMod || 0;
+      const currentPrice = basePrice + sizeMod;
+
+      return {
+        ...item,
+        price: currentPrice,
+        name:
+          baseProduct.name +
+          (item.selectedSize ? ` (${item.selectedSize.label})` : ''),
+        image: baseProduct.image,
+      };
+    });
+  }, [state.items, products, productsLoading]);
+
   // Derived state calculations
-  const totalItems = state.items.reduce(
+  const totalItems = cartItems.reduce(
     (total, item) => total + (item.quantity || 1),
     0,
   );
 
-  const subtotal = state.items.reduce(
+  const subtotal = cartItems.reduce(
     (total, item) => total + item.price * (item.quantity || 1),
     0,
   );
@@ -111,12 +145,12 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: 'CLEAR_CART' });
   };
 
-  // Discount (пока нет логики скидок)
+  // Discount (could be added here)
   const discount = 0;
   const cartTotal = subtotal - discount;
 
   const value = {
-    cartItems: state.items,
+    cartItems,
     totalItems,
     subtotal,
     cartTotal,

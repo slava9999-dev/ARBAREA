@@ -9,6 +9,7 @@ import { CartProvider, useCart } from './context/CartContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { ProductProvider } from './context/ProductContext';
 import { initMetrica } from './lib/yandex-metrica';
 import { useYandexMetrica } from './lib/useYandexMetrica';
 
@@ -121,11 +122,13 @@ const App = () => (
     <ThemeProvider>
       <ToastProvider>
         <SimpleAuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <AppContent />
-            </WishlistProvider>
-          </CartProvider>
+          <ProductProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <AppContent />
+              </WishlistProvider>
+            </CartProvider>
+          </ProductProvider>
         </SimpleAuthProvider>
       </ToastProvider>
     </ThemeProvider>

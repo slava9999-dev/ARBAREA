@@ -34,8 +34,11 @@ export async function initPayment(
         data.error || data.Message || 'Payment initialization failed',
       );
     }
-    // API returns { Success: true, PaymentURL: '...' }
-    return data.paymentURL || data.paymentUrl;
+    // API returns { success: true, paymentUrl: '...', orderId: '...' }
+    return {
+      paymentUrl: data.paymentURL || data.paymentUrl,
+      orderId: data.orderId,
+    };
   } catch (error) {
     console.error('Payment initialization error:', error);
     throw error;

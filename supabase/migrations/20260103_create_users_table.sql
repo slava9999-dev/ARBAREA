@@ -15,18 +15,21 @@ CREATE INDEX IF NOT EXISTS idx_users_phone ON public.users(phone);
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can read their own data
+DROP POLICY IF EXISTS "Users can read own data" ON public.users;
 CREATE POLICY "Users can read own data"
   ON public.users
   FOR SELECT
   USING (true);
 
 -- Policy: Anyone can insert (registration)
+DROP POLICY IF EXISTS "Anyone can register" ON public.users;
 CREATE POLICY "Anyone can register"
   ON public.users
   FOR INSERT
   WITH CHECK (true);
 
 -- Policy: Users can update their own data
+DROP POLICY IF EXISTS "Users can update own data" ON public.users;
 CREATE POLICY "Users can update own data"
   ON public.users
   FOR UPDATE
@@ -42,6 +45,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to auto-update updated_at
+DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;
 CREATE TRIGGER update_users_updated_at
   BEFORE UPDATE ON public.users
   FOR EACH ROW

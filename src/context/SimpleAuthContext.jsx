@@ -1,6 +1,5 @@
 /**
- * Simple Auth Context - Phone-based registration
- * No email confirmation required
+ * Simple Auth Context - Supabase Phone Auth
  */
 
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -14,112 +13,111 @@ export const SimpleAuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load user from localStorage on mount
-    const storedUser = localStorage.getItem('arbarea_user');
-    if (storedUser) {
+    // 1. Initial session check
+    const checkSession = async () => {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Failed to parse stored user:', e);
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error('Session check error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkSession();
+
+    // 2. Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      // Mirror to localStorage for extra stability if needed, though supabase-js does this
+      if (currentUser) {
+        localStorage.setItem('arbarea_user', JSON.stringify(currentUser));
+      } else {
         localStorage.removeItem('arbarea_user');
       }
-    }
-    setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // Register with name + phone
-  const register = async (name, phone) => {
+  // 1. Send OTP to phone
+  const sendOTP = async (phone) => {
     try {
-      // Format phone to E.164
-      const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
-
-      // Check if phone already exists
-      const { data: existing } = await supabase
-        .from('users')
-        .select('*')
-        .eq('phone', formattedPhone)
-        .single();
-
-      if (existing) {
-        throw new Error('Этот номер телефона уже зарегистрирован');
+      // Basic formatting to E.164 if not already
+      let formattedPhone = phone.replace(/\D/g, '');
+      if (!formattedPhone.startsWith('+')) {
+        // Assume +7 if it has 11 digits starting with 8 or 7
+        if (formattedPhone.length === 11) {
+          if (formattedPhone.startsWith('8')) {
+            formattedPhone = `+7${formattedPhone.slice(1)}`;
+          } else if (formattedPhone.startsWith('7')) {
+            formattedPhone = `+${formattedPhone}`;
+          }
+        } else {
+          // If less than 11 digits, just prefix with +
+          formattedPhone = `+${formattedPhone}`;
+        }
       }
 
-      // Create new user
-      const { data, error } = await supabase
-        .from('users')
-        .insert({
-          name: name.trim(),
-          phone: formattedPhone,
-        })
-        .select()
-        .single();
-
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: formattedPhone,
+      });
       if (error) throw error;
-
-      // Save to localStorage
-      localStorage.setItem('arbarea_user', JSON.stringify(data));
-      setUser(data);
-
-      return data;
+      return true;
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Send OTP error:', error);
       throw error;
     }
   };
 
-  // Login with phone (if user exists)
-  const login = async (phone) => {
+  // 2. Verify OTP code
+  const verifyOTP = async (phone, token) => {
     try {
-      const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
-
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('phone', formattedPhone)
-        .single();
-
-      if (error || !data) {
-        throw new Error('Пользователь с таким номером не найден');
+      let formattedPhone = phone.replace(/\D/g, '');
+      if (!formattedPhone.startsWith('+')) {
+        if (formattedPhone.length === 11) {
+          if (formattedPhone.startsWith('8')) {
+            formattedPhone = `+7${formattedPhone.slice(1)}`;
+          } else if (formattedPhone.startsWith('7')) {
+            formattedPhone = `+${formattedPhone}`;
+          }
+        } else {
+          formattedPhone = `+${formattedPhone}`;
+        }
       }
 
-      localStorage.setItem('arbarea_user', JSON.stringify(data));
-      setUser(data);
-
-      return data;
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
-  };
-
-  // Update user profile
-  const updateProfile = async (updates) => {
-    try {
-      if (!user) throw new Error('User not logged in');
-
-      const { data, error } = await supabase
-        .from('users')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
-        .single();
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: formattedPhone,
+        token,
+        type: 'sms',
+      });
 
       if (error) throw error;
 
-      localStorage.setItem('arbarea_user', JSON.stringify(data));
-      setUser(data);
-
-      return data;
+      // User state is updated via onAuthStateChange listener
+      return data.user;
     } catch (error) {
-      console.error('Update profile error:', error);
+      console.error('Verify OTP error:', error);
       throw error;
     }
   };
 
   // Logout
-  const logout = () => {
-    localStorage.removeItem('arbarea_user');
-    setUser(null);
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem('arbarea_user');
+      setUser(null);
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   return (
@@ -127,9 +125,8 @@ export const SimpleAuthProvider = ({ children }) => {
       value={{
         user,
         loading,
-        register,
-        login,
-        updateProfile,
+        sendOTP,
+        verifyOTP,
         logout,
       }}
     >
