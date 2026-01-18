@@ -97,7 +97,7 @@ export const CartProvider = ({ children }) => {
 
     return state.items.map((item) => {
       const baseProduct = products.find(
-        (p) => p.id === (item.productId || item.id.split('::')[0]),
+        (p) => p.id === (item.productId || String(item.id).split('::')[0]),
       );
       if (!baseProduct) return item;
 
