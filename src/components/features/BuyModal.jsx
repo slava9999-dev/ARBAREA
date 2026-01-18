@@ -75,6 +75,9 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
         // Close on backdrop click
         if (e.target === dialogRef.current) onClose();
       }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose();
+      }}
       aria-labelledby="modal-title"
     >
       <div className="bg-white dark:bg-stone-900 w-full sm:w-[450px] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
