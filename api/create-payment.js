@@ -67,63 +67,60 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Empty cart' });
     }
 
+    // List of static products for fallback (during migration/empty DB)
+    const STATIC_PRODUCTS = [
+      { id: 101, name: 'Рейлинг Ясень   METAL AND GRAIN', price: 2500 },
+      { id: 102, name: 'Держатель Ясень  WOOD AND STEEL', price: 2000 },
+      { id: 103, name: 'Панно "Эхо Леса"', price: 8500 },
+      { id: 104, name: 'Панно "Зимние Горы"', price: 4900 },
+      { id: 105, name: 'Подставка «Малый Дом» из термоясеня', price: 600 },
+      { id: 106, name: 'Панно "Горные Вершины"', price: 6500 },
+      { id: 107, name: 'Панно «Гортензия»', price: 5000 },
+    ];
+
     // Helper function to extract original product ID from cart item
     // Cart items may have composite IDs like "uuid::color::size" for variants
     const extractProductId = (item) => {
-      // 1. If productId is explicitly set (preferred), use it
       if (item.productId) return item.productId;
-      
       const idStr = String(item.id);
-      
-      // Skip donation items
       if (idStr.startsWith('donate-')) return null;
-      
-      // 2. Try the new safer separator '::'
-      if (idStr.includes('::')) {
-        return idStr.split('::')[0];
-      }
-      
-      // 3. Backward compatibility: handle old composite IDs with '-'
-      // But only if it's not a valid UUID itself
+      if (idStr.includes('::')) return idStr.split('::')[0];
       const parts = idStr.split('-');
+      if (parts.length > 1 && /^\d+$/.test(parts[0])) return parts[0];
       
-      // If first part is numeric, it's likely an old numeric product ID
-      if (parts.length > 1 && /^\d+$/.test(parts[0])) {
-        return Number(parts[0]);
-      }
-      
-      // If it looks like a full UUID, return it
-      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idStr)) {
-        return idStr;
-      }
-
-      // If it starts with a UUID but has extra parts with '-'
+      // UUID regex check
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (uuidRegex.test(idStr)) return idStr;
       if (parts.length > 5) {
         const uuidCandidate = parts.slice(0, 5).join('-');
-        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuidCandidate)) {
-          return uuidCandidate;
-        }
+        if (uuidRegex.test(uuidCandidate)) return uuidCandidate;
       }
-      
-      // Fallback: return the original ID
       return item.id;
     };
 
     // Fetch all products from DB for validation
-    const productIds = items
+    const rawIds = items
       .filter(item => !String(item.id).startsWith('donate-'))
       .map(item => extractProductId(item))
       .filter(id => id !== null);
     
+    // Separating UUIDs from legacy IDs to avoid DB errors
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidProductIds = rawIds.filter(id => uuidRegex.test(String(id)));
+    
     let dbProducts = [];
-    if (productIds.length > 0) {
+    if (uuidProductIds.length > 0) {
       const { data, error } = await supabaseAdmin
         .from('products')
         .select('*')
-        .in('id', productIds);
+        .in('id', uuidProductIds);
       
-      if (error) throw error;
-      dbProducts = data;
+      if (error) {
+        console.error('Supabase fetch error:', error);
+        // We don't throw yet, we'll try static fallback
+      } else if (data) {
+        dbProducts = data;
+      }
     }
 
     for (const item of items) {
@@ -137,12 +134,27 @@ export default async function handler(req, res) {
           return res.status(400).json({ success: false, error: `Invalid donation amount` });
         }
       } else {
-        const dbProduct = dbProducts.find(p => p.id === item.id);
-        if (!dbProduct) {
+        const productId = extractProductId(item);
+        // 1. Try DB products
+        let foundProduct = dbProducts.find(p => p.id === productId);
+        
+        // 2. Try static products if not in DB
+        if (!foundProduct) {
+          foundProduct = STATIC_PRODUCTS.find(p => String(p.id) === String(productId));
+        }
+
+        if (!foundProduct) {
+          console.error(`Product not found: ${productId} (Item ID: ${item.id})`);
           return res.status(400).json({ success: false, error: `Product not found: ${item.id}` });
         }
-        price = Number(dbProduct.price);
-        name = dbProduct.name;
+
+        price = Number(foundProduct.price);
+        name = foundProduct.name;
+        
+        // Handle variants price modifications if present in the item
+        if (item.selectedSize && item.selectedSize.priceMod) {
+          price += Number(item.selectedSize.priceMod);
+        }
       }
 
       const quantity = Math.max(1, Number.parseInt(item.quantity) || 1);
