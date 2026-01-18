@@ -63,7 +63,7 @@ const ProductCard = ({ product, categoryName, onOpenModal }) => {
           <p className="text-xs text-stone-500 capitalize font-medium tracking-wide">
             {categoryName}
           </p>
-          <span className="font-mono font-bold text-sm text-gradient-amber">
+          <span className="font-mono font-bold text-base text-amber-400">
             {product.price.toLocaleString()} ₽
           </span>
         </div>

@@ -166,7 +166,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
               ПРОДАНО
             </div>
           )}
-          <div className="absolute top-3 right-3 bg-wood-bg-card/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-sm font-bold text-gradient-amber border border-wood-amber/20 z-20 pointer-events-none shadow-wood-glow">
+          <div className="absolute top-3 right-3 bg-stone-950/90 backdrop-blur-md px-3.5 py-2 rounded-xl text-base font-bold text-amber-400 border border-amber-500/30 z-20 pointer-events-none shadow-lg shadow-black/50">
             {currentPrice.toLocaleString()} ₽
           </div>
         </div>
