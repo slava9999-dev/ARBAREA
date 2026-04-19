@@ -161,18 +161,93 @@ const DeliverySelectorWithMap = ({
   const [mapKey, setMapKey] = useState(() => Date.now()); // Unique key for map remount
   const [isMapReady, setIsMapReady] = useState(false);
 
+  // 1. Fetch Points from API
+  const fetchPoints = useCallback(
+    async (lat, lng, code) => {
+      if (selectedService?.id !== 'cdek') return;
+
+      setIsLoadingPoints(true);
+      try {
+        let url = `/api/cdek?action=points`;
+        if (code) url += `&city=${code}`;
+        else url += `&lat=${lat}&lng=${lng}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.success) {
+          setPoints(data.points || []);
+        }
+      } catch (e) {
+        console.error('Failed to fetch delivery points:', e);
+      } finally {
+        setIsLoadingPoints(false);
+      }
+    },
+    [selectedService],
+  );
+
   // Reset map when service changes
   useEffect(() => {
     if (step === 'map' && selectedService) {
       setIsMapReady(false);
-      // Small delay to ensure DOM is clean before re-rendering map
       const timer = setTimeout(() => {
         setMapKey(Date.now());
         setIsMapReady(true);
-      }, 100);
+        setShowMap(true);
+        // If we have coordinates, fetch points
+        if (mapCenter) fetchPoints(mapCenter[0], mapCenter[1]);
+      }, 300);
       return () => clearTimeout(timer);
     }
-  }, [selectedService, step]);
+  }, [step, selectedService, mapCenter, fetchPoints]);
+
+  // Debounced search
+  const handleSearch = useCallback(
+    async (query) => {
+      if (query.length < 3) {
+        setSearchResults([]);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        if (selectedService?.id === 'cdek') {
+          const response = await fetch(
+            `/api/cdek?action=cities&query=${encodeURIComponent(query)}`,
+          );
+          const data = await response.json();
+          if (data.success) {
+            setSearchResults(
+              data.cities.map((c) => ({
+                display_name: c.fullName,
+                lat: null,
+                lng: null,
+                cityCode: c.code,
+                source: 'cdek',
+              })),
+            );
+          }
+        } else {
+          const results = await geocodeAddress(query);
+          setSearchResults(results.map((r) => ({ ...r, source: 'osm' })));
+        }
+      } catch (e) {
+        console.error('Search error:', e);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [selectedService],
+  );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) {
+        handleSearch(searchQuery);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery, handleSearch]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -204,32 +279,13 @@ const DeliverySelectorWithMap = ({
 
   const handleServiceSelect = (service) => {
     setSelectedService(service);
-    // Сразу переход к подтверждению для всех сервисов
-    // Адрес берётся из формы корзины (initialAddress)
-    setStep('confirm');
-  };
-
-  // Debounced search
-  const handleSearch = useCallback(async (query) => {
-    if (query.length < 3) {
-      setSearchResults([]);
-      return;
+    if (service.hasPickupPoints) {
+      setStep('map');
+      setShowMap(true);
+    } else {
+      setStep('confirm');
     }
-
-    setIsSearching(true);
-    const results = await geocodeAddress(query);
-    setSearchResults(results);
-    setIsSearching(false);
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchQuery) {
-        handleSearch(searchQuery);
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery, handleSearch]);
+  };
 
   const handleLocationSelect = (location) => {
     setSelectedLocation(location);
