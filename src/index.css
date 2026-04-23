@@ -369,3 +369,57 @@
 .leaflet-popup-tip {
   background: #2a2520 !important;
 }
+/* AURORA BACKGROUND ANIMATIONS */
+@keyframes aurora-1 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.5;
+  }
+  33% {
+    transform: translate3d(5vw, -5vh, 0) scale(1.1);
+    opacity: 0.7;
+  }
+  66% {
+    transform: translate3d(-5vw, 5vh, 0) scale(0.9);
+    opacity: 0.4;
+  }
+}
+@keyframes aurora-2 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.4;
+  }
+  33% {
+    transform: translate3d(-5vw, 5vh, 0) scale(0.9);
+    opacity: 0.6;
+  }
+  66% {
+    transform: translate3d(5vw, -5vh, 0) scale(1.1);
+    opacity: 0.3;
+  }
+}
+@keyframes aurora-3 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate3d(0, 5vh, 0) scale(1.2);
+    opacity: 0.5;
+  }
+}
+.aurora-orb-1 {
+  animation: aurora-1 15s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.aurora-orb-2 {
+  animation: aurora-2 18s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.aurora-orb-3 {
+  animation: aurora-3 20s ease-in-out infinite;
+  will-change: transform, opacity;
+}
