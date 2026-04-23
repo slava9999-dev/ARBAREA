@@ -47,6 +47,12 @@ const AppContent = () => {
   // 🎯 YANDEX METRICA: Track SPA navigation
   useYandexMetrica();
 
+  // 🔼 SCROLL RESTORATION: Always scroll to top on page change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: needed to trigger on route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [location.pathname]);
+
   if (loading) {
     return <LoadingSpinner />;
   }

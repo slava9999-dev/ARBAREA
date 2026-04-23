@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => {
         plugins: [
         react(),
         VitePWA({
+            useCredentials: true,
             registerType: 'autoUpdate',
             injectRegister: 'auto',
             manifestFilename: 'manifest.json', // Для совместимости с Android
