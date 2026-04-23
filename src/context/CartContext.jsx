@@ -6,6 +6,7 @@ import {
   useMemo,
 } from 'react';
 import { useProducts } from './ProductContext';
+import { useSimpleAuth } from './SimpleAuthContext';
 import { ecommerceAdd, ecommerceRemove } from '../lib/yandex-metrica';
 
 const CartContext = createContext();
@@ -74,6 +75,7 @@ const cartReducer = (state, action) => {
 
 export const CartProvider = ({ children }) => {
   const { products, loading: productsLoading } = useProducts();
+  const { user } = useSimpleAuth();
   const [state, dispatch] = useReducer(cartReducer, initialState, () => {
     try {
       const localData = localStorage.getItem('arbarea_cart');
@@ -151,8 +153,9 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: 'CLEAR_CART' });
   };
 
-  // Discount (could be added here)
-  const discount = 0;
+  // Discount: 10% for registered users
+  const discountPercent = user?.discount || 0;
+  const discount = Math.round(subtotal * (discountPercent / 100));
   const cartTotal = subtotal - discount;
 
   const value = {

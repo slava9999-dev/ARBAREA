@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: wss: data: blob: 'unsafe-inline' 'unsafe-eval';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://mc.yandex.ru https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co https://api.groq.com https://securepay.tinkoff.ru https://api.telegram.org https://nominatim.openstreetmap.org wss://*.supabase.co;">
   <meta name="theme-color" content="#1c1917" />
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -34,14 +34,14 @@
   <meta property="og:title" content="Arbarea | Premium Woodworking">
   <meta property="og:description"
     content="Эксклюзивная мебель и декор из массива дерева ручной работы.">
-  <meta property="og:image" content="/og-image.jpg">
+  <meta property="og:image" content="https://arbarea.ru/og-image.jpg">
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
   <meta property="twitter:url" content="https://arbarea.ru/">
   <meta property="twitter:title" content="Arbarea | Premium Woodworking">
   <meta property="twitter:description" content="Эксклюзивная мебель и декор из массива дерева ручной работы.">
-  <meta property="twitter:image" content="/og-image.jpg">
+  <meta property="twitter:image" content="https://arbarea.ru/og-image.jpg">
 
 
 
@@ -57,12 +57,6 @@
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
-
-  <!-- Telegram Widget -->
-  <script defer src="https://telegram.org/js/telegram-widget.js?22"></script>
-
-  <!-- reCAPTCHA Enterprise -->
-  <script defer src="https://www.google.com/recaptcha/enterprise.js?render=6LeE9hUsAAAAAHq_EvnGtMdQAy-h27sTESsMLtWK"></script>
 </body>
 
 </html>

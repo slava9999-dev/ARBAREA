@@ -17,7 +17,7 @@ export const sendMessageToAI = async (history, newMessage, token) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Gemini API Error:', data);
+      console.error('AI Chat API Error:', data);
       return 'Простите, сейчас я не могу ответить. Попробуйте позже.';
     }
 

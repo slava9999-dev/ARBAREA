@@ -21,8 +21,9 @@ const DeliverySelector = lazy(
   () => import('../components/features/DeliverySelectorWithMap'),
 );
 
-const Cart = ({ cart, onRemove }) => {
-  const { subtotal, discount } = useCart();
+const Cart = () => {
+  const { cartItems, subtotal, discount, cartTotal, removeFromCart } =
+    useCart();
   const { user } = useSimpleAuth();
   const { showToast } = useToast();
 
@@ -41,7 +42,7 @@ const Cart = ({ cart, onRemove }) => {
   const [isLocating, setIsLocating] = useState(false);
 
   const deliveryPrice = selectedDelivery?.price || 0;
-  const finalTotal = subtotal + deliveryPrice - discount;
+  const finalTotal = cartTotal + deliveryPrice;
 
   // Geolocation: определить адрес по GPS
   const handleGetLocation = async () => {
@@ -114,13 +115,13 @@ const Cart = ({ cart, onRemove }) => {
 
   // 🎯 YANDEX METRICA: Track checkout start
   useEffect(() => {
-    if (cart.length > 0) {
+    if (cartItems.length > 0) {
       reachGoal('CHECKOUT_START', {
         cart_total: subtotal,
-        items_count: cart.length,
+        items_count: cartItems.length,
       });
     }
-  }, [subtotal, cart.length]);
+  }, [subtotal, cartItems.length]);
 
   const handleDeliverySelect = (deliveryData) => {
     setSelectedDelivery(deliveryData);
@@ -155,7 +156,7 @@ const Cart = ({ cart, onRemove }) => {
       // Logic for linking SimpleAuth users to orders can be handled via phone number matching on backend if needed
       const token = null;
 
-      const items = cart.map((item) => ({
+      const items = cartItems.map((item) => ({
         id: item.id,
         productId: item.productId, // Pass original DB ID if available
         name: item.name,
@@ -182,7 +183,7 @@ const Cart = ({ cart, onRemove }) => {
           orderId,
           total: finalTotal,
           shipping: deliveryPrice,
-          items: cart.map((item) => ({
+          items: cartItems.map((item) => ({
             id: item.id,
             name: item.name,
             price: item.price,
@@ -204,7 +205,7 @@ const Cart = ({ cart, onRemove }) => {
   };
 
   // Empty State
-  if (cart.length === 0) {
+  if (cartItems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen pb-32 px-6">
         <div
@@ -258,7 +259,12 @@ const Cart = ({ cart, onRemove }) => {
           <div className="mb-6">
             <h2 className="text-3xl font-serif text-white mb-1">Корзина</h2>
             <p className="text-stone-500 text-sm font-medium">
-              {cart.length} {cart.length === 1 ? 'изделие' : 'изделия'}
+              {cartItems.length}{' '}
+              {cartItems.length === 1
+                ? 'изделие'
+                : cartItems.length < 5
+                  ? 'изделия'
+                  : 'изделий'}
             </p>
           </div>
 
@@ -266,13 +272,16 @@ const Cart = ({ cart, onRemove }) => {
 
           {/* Items List */}
           <div className="space-y-4 mb-10">
-            {cart.map((item, index) => (
+            {cartItems.map((item, index) => (
               <div
                 key={item.id}
                 className="animate-fade-in"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <CartItem item={item} onRemove={() => onRemove(item)} />
+                <CartItem
+                  item={item}
+                  onRemove={() => removeFromCart(item.id)}
+                />
               </div>
             ))}
           </div>
@@ -477,6 +486,16 @@ const Cart = ({ cart, onRemove }) => {
                     </span>
                     <span className="text-sm text-wood-amber">₽</span>
                   </div>
+                  {discount > 0 && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-stone-500 line-through">
+                        {subtotal.toLocaleString()} ₽
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                        −{discount.toLocaleString()} ₽
+                      </span>
+                    </div>
+                  )}
                 </div>
                 {deliveryPrice > 0 ? (
                   <div className="text-right">

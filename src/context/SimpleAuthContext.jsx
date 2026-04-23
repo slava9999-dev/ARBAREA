@@ -1,284 +1,253 @@
 /**
- * Simple Auth Context - Supabase Phone Auth
+ * Simple Auth Context — Phone-Only Registration
+ *
+ * Flow: User enters name + phone → saved to Supabase `users` table → done.
+ * No OTP, no password, no external verification.
+ * Phone number IS the identity. Session persisted via localStorage.
+ * Registered users get 10% discount automatically.
  */
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react';
 import { supabase } from '../lib/supabase';
 
 const SimpleAuthContext = createContext({});
 export const useSimpleAuth = () => useContext(SimpleAuthContext);
 
+// LocalStorage key for persisting user session
+const STORAGE_KEY = 'arbarea_user';
+
+/**
+ * Normalize phone to E.164 format (+7XXXXXXXXXX)
+ * Handles: 8XXXXXXXXXX, 7XXXXXXXXXX, +7XXXXXXXXXX, raw digits
+ */
+const normalizePhone = (raw) => {
+  // Strip all non-digit characters
+  let digits = raw.replace(/\D/g, '');
+
+  // Handle 8-prefix (Russia local): 89991234567 → 79991234567
+  if (digits.length === 11 && digits.startsWith('8')) {
+    digits = `7${digits.slice(1)}`;
+  }
+
+  // Ensure 11-digit format starting with 7
+  if (digits.length === 10) {
+    digits = `7${digits}`;
+  }
+
+  if (digits.length !== 11 || !digits.startsWith('7')) {
+    return null; // Invalid
+  }
+
+  return `+${digits}`;
+};
+
 export const SimpleAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ─── Initial Session Restore ──────────────────────────────────
   useEffect(() => {
-    // 1. Initial session check
-    const checkSession = async () => {
+    const restoreSession = async () => {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) {
+          setLoading(false);
+          return;
+        }
 
-        if (session?.user) {
-          // Fetch additional data from public.users by ID (safer than phone)
-          const { data: profile } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle(); // Use maybeSingle to avoid error if profile missing
+        const parsed = JSON.parse(stored);
+        if (!parsed?.phone) {
+          localStorage.removeItem(STORAGE_KEY);
+          setLoading(false);
+          return;
+        }
 
-          setUser({ ...session.user, ...profile });
+        // Validate session against DB (user might have been deleted)
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('phone', parsed.phone)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Session restore DB error:', error);
+          // Use cached data as fallback (offline support)
+          setUser(parsed);
+        } else if (data) {
+          // Refresh local cache with latest DB data
+          setUser(data);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         } else {
+          // User was deleted from DB → clear session
+          localStorage.removeItem(STORAGE_KEY);
           setUser(null);
         }
       } catch (error) {
-        console.error('Session check error:', error);
+        console.error('Session restore error:', error);
+        // Graceful degradation: clear corrupted data
+        localStorage.removeItem(STORAGE_KEY);
       } finally {
         setLoading(false);
       }
     };
 
-    checkSession();
-
-    // 2. Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        // Optimistically set user
-        const { data: profile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle();
-
-        setUser({ ...session.user, ...profile });
-      } else {
-        setUser(null);
-        localStorage.removeItem('arbarea_user');
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    restoreSession();
   }, []);
 
-  // 1. Send OTP to phone
-  const sendOTP = async (phone) => {
-    try {
-      // Basic formatting to E.164
-      // Robust cleaning: remove non-numeric chars
-      let formattedPhone = phone.replace(/\D/g, '');
-
-      // Ensure it starts with +7 if it's 11 digits (7..., 8...)
-      // Or just add + if it's missing but has right length
-      if (formattedPhone.length === 11) {
-        if (formattedPhone.startsWith('8')) {
-          formattedPhone = `7${formattedPhone.slice(1)}`;
-        }
-      }
-
-      if (!formattedPhone.startsWith('+')) {
-        formattedPhone = `+${formattedPhone}`;
-      }
-
-      console.log('Sending OTP to:', formattedPhone); // Debug log
-
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: formattedPhone,
-      });
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error('Send OTP error:', error);
-      throw error;
+  // ─── Register / Login ─────────────────────────────────────────
+  const register = useCallback(async (name, rawPhone) => {
+    const phone = normalizePhone(rawPhone);
+    if (!phone) {
+      throw new Error(
+        'Неверный формат номера. Введите номер в формате +7 (XXX) XXX-XX-XX',
+      );
     }
-  };
 
-  // 2. Verify OTP code and Sync Profile
-  const verifyOTP = async (phone, token, name = '') => {
-    try {
-      let formattedPhone = phone.replace(/\D/g, '');
-      if (formattedPhone.length === 11) {
-        if (formattedPhone.startsWith('8')) {
-          formattedPhone = `7${formattedPhone.slice(1)}`;
-        }
-      }
+    if (!name || name.trim().length < 2) {
+      throw new Error('Пожалуйста, введите ваше имя (минимум 2 символа)');
+    }
 
-      if (!formattedPhone.startsWith('+')) {
-        formattedPhone = `+${formattedPhone}`;
-      }
+    const trimmedName = name.trim();
 
-      console.log('Verifying OTP for:', formattedPhone, 'Token:', token); // Debug log
+    // Check if user already exists
+    const { data: existing, error: checkError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('phone', phone)
+      .maybeSingle();
 
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone: formattedPhone,
-        token,
-        type: 'sms',
-      });
+    if (checkError) {
+      console.error('DB check error:', checkError);
+      throw new Error('Ошибка подключения к базе данных. Попробуйте позже.');
+    }
 
-      if (error) throw error;
+    let userData;
 
-      console.log('Auth successful, user:', data.user?.id); // Debug log
-
-      // Sync with public.users table
-      if (data.user) {
-        const { data: existingUser, error: checkError } = await supabase
+    if (existing) {
+      // Returning user — update name if it was 'Гость' and login
+      if (existing.name === 'Гость' && trimmedName !== 'Гость') {
+        const { data: updated, error: updateError } = await supabase
           .from('users')
-          .select('*')
-          .eq('phone', formattedPhone)
+          .update({ name: trimmedName, updated_at: new Date().toISOString() })
+          .eq('phone', phone)
+          .select()
           .single();
 
-        // Handle potential "PGRST116" error (no rows) gracefully
-        // or just rely on existingUser being null if we suppress error?
-        // Supabase JS often returns data: null, error: { ... } if no rows found.
-
-        if (!existingUser) {
-          console.log('Creating new user profile...');
-          // Create profile if doesn't exist
-          const { data: newProfile, error: insertError } = await supabase
-            .from('users')
-            .insert([
-              {
-                phone: formattedPhone,
-                name: name || 'Гость',
-                // email: data.user.email || null, // Email might not be present for phone auth
-              },
-            ])
-            .select()
-            .single();
-
-          if (insertError) {
-            console.error('Error creating profile:', insertError);
-            // If insert fails (maybe concurrent insert?), try to fetch again?
-            // For now just set session user.
-            setUser(data.user);
-          } else {
-            setUser({ ...data.user, ...newProfile });
-          }
-        } else if (name && existingUser.name === 'Гость') {
-          // Update name if it was 'Гость'
-          const { data: updatedProfile } = await supabase
-            .from('users')
-            .update({ name })
-            .eq('phone', formattedPhone)
-            .select()
-            .single();
-
-          setUser({ ...data.user, ...updatedProfile });
+        if (updateError) {
+          console.error('Update error:', updateError);
+          userData = existing; // Fallback to existing data
         } else {
-          setUser({ ...data.user, ...existingUser });
+          userData = updated;
         }
+      } else {
+        userData = existing;
       }
-
-      return data.user;
-    } catch (error) {
-      console.error('Verify OTP error:', error);
-      throw error;
-    }
-  };
-
-  // Update Profile
-  const updateProfile = async (updates) => {
-    if (!user) return;
-    try {
-      const { data, error } = await supabase
+    } else {
+      // New user — create profile
+      const { data: newUser, error: insertError } = await supabase
         .from('users')
-        .upsert({
-          phone: user.phone,
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
+        .insert([
+          {
+            phone,
+            name: trimmedName,
+            discount: 10, // 10% discount for all registered users
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ])
         .select()
         .single();
 
-      if (error) throw error;
-      setUser((prev) => ({ ...prev, ...data }));
-      return data;
-    } catch (error) {
-      console.error('Update profile error:', error);
-      throw error;
-    }
-  };
-
-  // 3. Quick Register (No OTP)
-  const quickRegister = async (name, contact) => {
-    try {
-      const payload = { name };
-
-      // Determine if contact is email or phone
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (emailRegex.test(contact)) {
-        payload.email = contact;
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        // Handle unique constraint violation (race condition)
+        if (insertError.code === '23505') {
+          // Another request created the user — fetch it
+          const { data: raceUser } = await supabase
+            .from('users')
+            .select('*')
+            .eq('phone', phone)
+            .single();
+          userData = raceUser;
+        } else {
+          throw new Error('Ошибка регистрации. Попробуйте позже.');
+        }
       } else {
-        payload.phone = contact;
+        userData = newUser;
       }
-
-      console.log('Quick registering:', payload);
-
-      const response = await fetch('/api/quick-register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
-      }
-
-      console.log('Quick register success:', data.user?.id);
-
-      // Set session in Supabase client
-      if (data.session) {
-        const { error: sessionError } = await supabase.auth.setSession(
-          data.session,
-        );
-        if (sessionError) throw sessionError;
-
-        // Update local user state immediately
-        // We might need to fetch profile if the API didn't return full profile in 'user' object
-        // The API returns session.user, which has user_metadata.
-        // We merged profile into user state in other methods.
-        // Let's rely on onAuthStateChange to eventually sync, but set optimistically now.
-
-        // Wait for onAuthStateChange might be cleaner, but let's set it to be fast.
-        setUser({
-          ...data.user,
-          name: name, // Ensure name is present
-          phone: payload.phone || data.user.phone, // Ensure phone is present
-        });
-      }
-
-      return data.user;
-    } catch (error) {
-      console.error('Quick register error:', error);
-      throw error;
     }
-  };
 
-  // Logout
-  const logout = async () => {
-    try {
-      await supabase.auth.signOut();
-      localStorage.removeItem('arbarea_user');
-      setUser(null);
-    } catch (error) {
-      console.error('Sign out error:', error);
+    if (!userData) {
+      throw new Error('Не удалось создать профиль');
     }
-  };
+
+    // Persist session
+    setUser(userData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+
+    return userData;
+  }, []);
+
+  // ─── Update Profile ───────────────────────────────────────────
+  const updateProfile = useCallback(
+    async (updates) => {
+      if (!user?.phone) {
+        throw new Error('Пользователь не авторизован');
+      }
+
+      // Normalize phone if being updated
+      const safeUpdates = { ...updates, updated_at: new Date().toISOString() };
+      if (safeUpdates.phone) {
+        const normalized = normalizePhone(safeUpdates.phone);
+        if (!normalized) {
+          throw new Error('Неверный формат номера телефона');
+        }
+        safeUpdates.phone = normalized;
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .update(safeUpdates)
+        .eq('phone', user.phone)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Update profile error:', error);
+        throw new Error('Не удалось обновить профиль');
+      }
+
+      setUser(data);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      return data;
+    },
+    [user],
+  );
+
+  // ─── Logout ───────────────────────────────────────────────────
+  const logout = useCallback(() => {
+    setUser(null);
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
+
+  // ─── Computed ─────────────────────────────────────────────────
+  const isRegistered = !!user;
+  const discount = user?.discount || 0;
 
   return (
     <SimpleAuthContext.Provider
       value={{
         user,
         loading,
-        sendOTP,
-        verifyOTP,
-        quickRegister,
+        isRegistered,
+        discount,
+        register,
         updateProfile,
         logout,
       }}

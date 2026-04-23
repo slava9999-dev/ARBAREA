@@ -6,16 +6,11 @@
  */
 
 import { supabaseAdmin } from './_supabase.js';
+import { applyCors } from './_cors.js';
 
 export default async function handler(req, res) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  // Apply secure CORS
+  if (applyCors(req, res)) return;
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -180,7 +175,7 @@ function generateOrderCreatedEmail(orderId, name, order) {
       </p>
       
       <center>
-        <a href="https://arbarea-bice.vercel.app/profile" class="btn">Отслеживать заказ</a>
+        <a href="https://arbarea.ru/profile" class="btn">Отслеживать заказ</a>
       </center>
     </div>
     <div class="footer">
@@ -250,7 +245,7 @@ function generateShippedEmail(orderId, name, order) {
       <p>Следите за статусом доставки в личном кабинете или по трек-номеру на сайте службы доставки.</p>
       
       <center>
-        <a href="https://arbarea-bice.vercel.app/profile" style="display: inline-block; background: #d97706; color: white; padding: 15px 30px; text-decoration: none; border-radius: 12px; font-weight: bold; margin: 20px 0;">
+        <a href="https://arbarea.ru/profile" style="display: inline-block; background: #d97706; color: white; padding: 15px 30px; text-decoration: none; border-radius: 12px; font-weight: bold; margin: 20px 0;">
           Отслеживать заказ
         </a>
       </center>

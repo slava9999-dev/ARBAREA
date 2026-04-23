@@ -1,10 +1,19 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
-export default defineConfig({
-    plugins: [
+export default defineConfig(({ mode }) => {
+    // Load all env vars, ignoring the 'VITE_' prefix requirement just for this step
+    const env = loadEnv(mode, process.cwd(), '')
+    
+    return {
+        // Automatically map Vercel's Supabase variables to Vite's expected variables
+        define: {
+            'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL || env.SUPABASE_URL),
+            'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY)
+        },
+        plugins: [
         react(),
         VitePWA({
             registerType: 'autoUpdate',
@@ -106,4 +115,5 @@ export default defineConfig({
             }
         }
     }
-})
+  };
+});

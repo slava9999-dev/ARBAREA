@@ -1,10 +1,10 @@
 import { Bot, Loader2, Send, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { sendMessageToAI } from '../lib/ai-assistant';
-import { useAuth } from '../context/AuthContext';
+import { useSimpleAuth } from '../context/SimpleAuthContext';
 
 const AIChat = () => {
-  const { user, getAccessToken } = useAuth();
+  const { user } = useSimpleAuth();
   const [messages, setMessages] = useState([
     {
       text: 'Добро пожаловать в Arbarea! Я помогу вам выбрать изделия из натурального дерева. Что вас интересует: панно, рейлинги или освещение?',
@@ -29,8 +29,8 @@ const AIChat = () => {
     setIsLoading(true);
 
     try {
-      const token = user ? await getAccessToken() : null;
-      const responseText = await sendMessageToAI(messages, input, token);
+      // No JWT token needed — auth is optional for AI chat
+      const responseText = await sendMessageToAI(messages, input, null);
 
       setMessages((prev) => [...prev, { text: responseText, sender: 'ai' }]);
     } catch (_error) {

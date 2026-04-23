@@ -15,22 +15,8 @@ export default async function handler(req, res) {
   if (!token || !chatId)
     return res.status(500).json({ error: 'Server config missing' });
 
-  // ✅ SECURITY: Verify Authentication Token
-  // Temporarily optional if called from server-side, but ideally required for client calls
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const idToken = authHeader.replace('Bearer ', '');
-  try {
-    const user = await verifyToken(idToken);
-    if (!user) {
-      throw new Error('Invalid token');
-    }
-  } catch (_error) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
-  }
+  // Removed JWT requirement as auth is now phone-based and contact forms can be used by guests
+  // Rate limiting could be implemented here via Upstash Redis if needed in the future
 
   try {
     const response = await fetch(

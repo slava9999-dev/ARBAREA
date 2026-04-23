@@ -14,7 +14,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useWishlist } from '../context/WishlistContext';
 import SEO from '../components/seo/SEO';
-import { PRODUCTS } from '../data/products';
+import { useProducts } from '../context/ProductContext';
 import { ecommerceDetail } from '../lib/yandex-metrica';
 
 const ProductDetails = () => {
@@ -24,13 +24,15 @@ const ProductDetails = () => {
   const { showToast } = useToast();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
+  const { products } = useProducts();
   const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
 
   useEffect(() => {
     // Find product by ID (handle both string and number IDs)
-    const found = PRODUCTS.find((p) => String(p.id) === id);
+    // Search by both string ID and numeric ID to support legacy and UUID formats
+    const found = products.find((p) => String(p.id) === id);
     if (found) {
       setProduct(found);
       // 🔥 YANDEX METRICA: Track detail view
@@ -43,8 +45,10 @@ const ProductDetails = () => {
       if (found.variants?.sizes?.length > 0) {
         setSelectedSize(found.variants.sizes[0]);
       }
+    } else {
+      setProduct(null);
     }
-  }, [id]);
+  }, [id, products]);
 
   if (!product) {
     return (

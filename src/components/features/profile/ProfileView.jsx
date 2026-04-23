@@ -36,7 +36,7 @@ import OrderHistory from './OrderHistory';
 
 const ProfileView = () => {
   const { logout, user, updateProfile } = useSimpleAuth();
-  const { wishlistItems } = useWishlist();
+  const { wishlist } = useWishlist();
   const navigate = useNavigate();
   const [showDonateModal, setShowDonateModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -194,7 +194,7 @@ const ProfileView = () => {
         >
           <Heart className="mx-auto text-pink-500 mb-1" size={20} />
           <p className="text-lg font-bold text-white">
-            {wishlistItems?.length || 0}
+            {wishlist?.length || 0}
           </p>
           <p className="text-[10px] text-stone-400">В избранном</p>
         </button>

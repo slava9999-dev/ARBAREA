@@ -41,21 +41,28 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Invalid terminal key' });
     }
 
-    // Verify token signature
+    // Verify token signature (MANDATORY)
     const password = process.env.TINKOFF_PASSWORD;
-    if (password && Token) {
-      // Create token data without Token field using destructuring
-      const { Token: _, ...tokenData } = req.body;
-      tokenData.Password = password;
+    if (!password) {
+      console.error('❌ TINKOFF_PASSWORD not configured');
+      return res.status(500).json({ error: 'Server misconfigured' });
+    }
+    if (!Token) {
+      console.error('❌ Missing signature token');
+      return res.status(403).json({ error: 'Missing signature' });
+    }
 
-      const sortedKeys = Object.keys(tokenData).sort();
-      const concatenated = sortedKeys.map(key => tokenData[key]).join('');
-      const expectedToken = crypto.createHash('sha256').update(concatenated).digest('hex');
+    // Create token data without Token field using destructuring
+    const { Token: _, ...tokenData } = req.body;
+    tokenData.Password = password;
 
-      if (Token.toLowerCase() !== expectedToken.toLowerCase()) {
-        console.error('❌ Invalid signature');
-        return res.status(403).json({ error: 'Invalid signature' });
-      }
+    const sortedKeys = Object.keys(tokenData).sort();
+    const concatenated = sortedKeys.map(key => tokenData[key]).join('');
+    const expectedToken = crypto.createHash('sha256').update(concatenated).digest('hex');
+
+    if (Token.toLowerCase() !== expectedToken.toLowerCase()) {
+      console.error('❌ Invalid signature');
+      return res.status(403).json({ error: 'Invalid signature' });
     }
 
     // Map Tinkoff status to our status

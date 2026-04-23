@@ -38,16 +38,28 @@ export default async function handler(req, res) {
       deliveryAddress,
     } = req.body;
 
-    // 1. Authenticate user
+    // 1. Authenticate user via phone & get discount
     let userId = null;
-    let isUserAuthenticated = false;
-    const authHeader = req.headers.authorization;
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.replace('Bearer ', '');
-      const user = await verifyToken(token);
-      if (user) {
-        userId = user.id;
-        // isUserAuthenticated = true; // Unused
+    let discountPercent = 0;
+
+    if (customerPhone) {
+      // Normalize phone to E.164
+      let digits = customerPhone.replace(/\D/g, '');
+      if (digits.length === 11 && digits.startsWith('8')) digits = `7${digits.slice(1)}`;
+      if (digits.length === 10) digits = `7${digits}`;
+      
+      if (digits.length === 11 && digits.startsWith('7')) {
+        const normalizedPhone = `+${digits}`;
+        const { data: user } = await supabaseAdmin
+          .from('users')
+          .select('id, discount')
+          .eq('phone', normalizedPhone)
+          .maybeSingle();
+
+        if (user) {
+          userId = user.id;
+          discountPercent = user.discount || 0;
+        }
       }
     }
 
@@ -157,21 +169,24 @@ export default async function handler(req, res) {
         }
       }
 
+      // Apply user discount proportionally to each item to pass Tinkoff receipt validation
+      const discountedPrice = Math.round(price * (1 - discountPercent / 100));
       const quantity = Math.max(1, Number.parseInt(item.quantity) || 1);
-      const itemTotal = price * quantity;
+      const itemTotal = discountedPrice * quantity;
       calculatedSubtotal += itemTotal;
 
       validatedItems.push({
         ...item,
         name,
-        price,
+        price: discountedPrice,
+        original_price: price,
         quantity,
         total: itemTotal
       });
 
       receiptItems.push({
         Name: name.substring(0, 128),
-        Price: price * 100,
+        Price: discountedPrice * 100,
         Quantity: quantity,
         Amount: itemTotal * 100,
         Tax: 'none',

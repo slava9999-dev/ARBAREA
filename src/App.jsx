@@ -20,12 +20,12 @@ const AIChat = lazy(() => import('./pages/AIChat'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Profile = lazy(() => import('./pages/Profile'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const Wishlist = lazy(() => import('./pages/Wishlist'));
 
 const LegalInfo = lazy(() => import('./pages/LegalInfo'));
 
 // Lazy Load Modals
 const BuyModal = lazy(() => import('./components/features/BuyModal'));
-const CheckoutModal = lazy(() => import('./components/features/CheckoutModal'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const DebugPWA = lazy(() => import('./pages/DebugPWA'));
 
@@ -34,9 +34,8 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 
 const AppContent = () => {
   const { loading } = useSimpleAuth();
-  const { cartItems, addToCart, removeFromCart } = useCart();
+  const { cartItems, addToCart } = useCart();
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const location = useLocation();
 
   // 🎯 YANDEX METRICA: Initialize once on mount
@@ -46,12 +45,6 @@ const AppContent = () => {
 
   // 🎯 YANDEX METRICA: Track SPA navigation
   useYandexMetrica();
-
-  const handleCheckout = () => {
-    if (cartItems.length > 0) {
-      setIsCheckoutOpen(true);
-    }
-  };
 
   if (loading) {
     return <LoadingSpinner />;
@@ -77,20 +70,21 @@ const AppContent = () => {
               />
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/ai" element={<AIChat />} />
-              <Route
-                path="/cart"
-                element={
-                  <Cart
-                    cart={cartItems}
-                    onRemove={(item) => removeFromCart(item.id)}
-                    onCheckout={handleCheckout}
-                  />
-                }
-              />
+              <Route path="/cart" element={<Cart />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/legal" element={<LegalInfo />} />
               <Route path="/product/:id" element={<ProductDetails />} />
-              <Route path="/debug" element={<DebugPWA />} />
+              {import.meta.env.DEV && (
+                <Route
+                  path="/debug"
+                  element={
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <DebugPWA />
+                    </Suspense>
+                  }
+                />
+              )}
               {/* 404 Fallback Route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
@@ -105,9 +99,6 @@ const AppContent = () => {
             onClose={() => setSelectedProduct(null)}
             onAddToCart={addToCart}
           />
-        )}
-        {isCheckoutOpen && (
-          <CheckoutModal onClose={() => setIsCheckoutOpen(false)} />
         )}
       </Suspense>
 
