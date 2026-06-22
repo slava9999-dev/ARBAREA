@@ -75,7 +75,33 @@ const createMockQueryBuilder = () => {
   return builder;
 };
 
+// Mock realtime channel: chainable .on()/.subscribe() returning an
+// unsubscribe-able handle, so components that set up subscriptions
+// (e.g. order history) don't crash in local-only mode.
+const createMockChannel = () => {
+  const channel = {
+    on: () => channel,
+    subscribe: () => channel,
+    unsubscribe: () => {},
+  };
+  return channel;
+};
+
 const createMockClient = () => ({
+  channel: () => createMockChannel(),
+  removeChannel: () => {},
+  removeAllChannels: () => {},
+  rpc: async () => ({ data: null, error: null }),
+  storage: {
+    from: () => ({
+      upload: async () => ({ data: null, error: null }),
+      download: async () => ({ data: null, error: null }),
+      remove: async () => ({ data: null, error: null }),
+      list: async () => ({ data: [], error: null }),
+      getPublicUrl: () => ({ data: { publicUrl: '' } }),
+      createSignedUrl: async () => ({ data: null, error: null }),
+    }),
+  },
   auth: {
     getSession: async () => ({ data: { session: null }, error: null }),
     getUser: async () => ({ data: { user: null }, error: null }),
