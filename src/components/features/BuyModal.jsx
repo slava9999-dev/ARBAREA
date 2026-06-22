@@ -1,20 +1,27 @@
-import { Play, ShoppingBag, X } from 'lucide-react';
+import { Check, CreditCard, Play, ShoppingBag, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { COLORS, SIZES } from '../../lib/constants';
-import { ecommerceAdd } from '../../lib/yandex-metrica';
+import { useToast } from '../../context/ToastContext';
 import OptimizedImage from '../ui/OptimizedImage';
-import TactileButton from '../ui/TactileButton';
 
+/**
+ * Quick-buy modal. Uses the same data-driven variant model
+ * (`product.variants.colors` / `product.variants.sizes` with `priceMod`)
+ * as the product card, product page and the payment server — so a product
+ * is priced identically everywhere.
+ */
 const BuyModal = ({ product, onClose, onAddToCart }) => {
   const dialogRef = useRef(null);
-  const [selectedSize, setSelectedSize] = useState(
-    product.hasOptions ? SIZES[0] : null,
-  );
-  const [selectedColor, setSelectedColor] = useState(
-    product.hasOptions ? 'bronze' : null,
-  );
-  const [activeMedia, setActiveMedia] = useState(0); // 0 - main image, 1+ - gallery, -1 - video
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+
+  const colors = product?.variants?.colors || [];
+  const sizes = product?.variants?.sizes || [];
+
+  const [selectedColor, setSelectedColor] = useState(colors[0] || null);
+  const [selectedSize, setSelectedSize] = useState(sizes[0] || null);
+  const [activeMedia, setActiveMedia] = useState(0); // 0+ media index, -1 video
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -22,7 +29,6 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
       dialog.showModal();
     }
 
-    // Handle Esc key via the native cancel event
     const handleCancel = (e) => {
       e.preventDefault();
       onClose();
@@ -32,98 +38,86 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
     return () => dialog?.removeEventListener('cancel', handleCancel);
   }, [onClose]);
 
+  if (!product) return null;
+
+  const basePrice = product.basePrice || product.price;
+  const currentPrice = basePrice + (selectedSize?.priceMod || 0);
+
+  const mediaList =
+    product.gallery && product.gallery.length > 0
+      ? product.gallery
+      : [product.image];
+
+  const buildCartItem = () => ({
+    ...product,
+    productId: product.id,
+    id: `${product.id}-${selectedColor?.id || 'def'}-${selectedSize?.value || 'def'}`,
+    name: `${product.name}${selectedSize ? ` (${selectedSize.label})` : ''}${
+      selectedColor ? ` (${selectedColor.name})` : ''
+    }`,
+    price: currentPrice,
+    image: mediaList[0],
+    selectedColor,
+    selectedSize,
+    quantity: 1,
+  });
+
   const handleAddToCart = () => {
-    // ... same logic ...
-    const itemToAdd = {
-      ...product,
-      productId: product.id,
-      id: `${product.id}::${selectedColor || 'def'}::${selectedSize || 'def'}`,
-      price: currentPrice,
-      selectedSize,
-      selectedColor,
-      selectedColorName: selectedColor ? COLORS[selectedColor].name : null,
-    };
-
-    ecommerceAdd({
-      id: product.id,
-      name: `${product.name}${selectedSize ? ` (${selectedSize})` : ''}`,
-      price: currentPrice,
-      category: product.category || 'Декор',
-      quantity: 1,
-    });
-
-    onAddToCart(itemToAdd);
+    onAddToCart(buildCartItem());
+    showToast('Товар добавлен в корзину', 'success');
     onClose();
   };
 
-  if (!product) return null;
-
-  const currentPrice =
-    selectedSize === '80 см'
-      ? product.price + 500
-      : selectedSize === '100 см'
-        ? product.price + 1000
-        : product.price;
-
-  const mediaList = [product.image, ...(product.gallery || [])];
+  const handleBuyNow = () => {
+    onAddToCart(buildCartItem());
+    onClose();
+    navigate('/cart');
+  };
 
   return (
     <dialog
       ref={dialogRef}
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4 border-none w-full h-full backdrop:bg-black/40"
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 border-none w-full h-full backdrop:bg-black/60"
       onClick={(e) => {
-        // Close on backdrop click
         if (e.target === dialogRef.current) onClose();
       }}
       onKeyDown={(e) => {
         if (e.key === 'Escape') onClose();
       }}
-      aria-labelledby="modal-title"
+      aria-labelledby="buy-modal-title"
     >
-      <div className="bg-white dark:bg-stone-900 w-full sm:w-[450px] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
-        <div className="p-4 flex justify-between items-center border-b border-stone-100 dark:border-stone-800 shrink-0">
+      <div className="bg-[#1c1917] text-stone-200 w-full sm:w-[450px] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-slide-up flex flex-col max-h-[92vh] border border-wood-amber/15">
+        <div className="p-4 flex justify-between items-center border-b border-white/5 shrink-0">
           <h3
-            id="modal-title"
-            className="font-serif font-bold text-lg text-stone-800 dark:text-stone-100"
+            id="buy-modal-title"
+            className="font-serif font-bold text-lg text-white"
           >
-            Детали заказа
+            Быстрый заказ
           </h3>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Закрыть модальное окно"
-            className="p-1 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors"
+            aria-label="Закрыть"
+            className="p-1.5 hover:bg-white/5 rounded-full transition-colors"
           >
             <X className="text-stone-400" size={20} />
           </button>
         </div>
 
         <div className="overflow-y-auto p-0 custom-scrollbar">
-          {/* Галерея */}
-          <div className="relative w-full h-64 bg-stone-100 dark:bg-stone-800">
+          {/* Gallery */}
+          <div className="relative w-full h-64 bg-stone-900">
             {activeMedia === -1 && product.video ? (
-              product.video.endsWith('.mp4') ||
-              product.video.endsWith('.webm') ? (
-                <video
-                  src={product.video}
-                  className="w-full h-full object-cover"
-                  controls
-                  playsInline
-                  autoPlay
-                  loop
-                >
-                  <track kind="captions" src="" label="No captions" />
-                </video>
-              ) : (
-                <iframe
-                  src={product.video}
-                  className="w-full h-full object-cover"
-                  frameBorder="0"
-                  allow="autoplay; encrypted-media"
-                  allowFullScreen
-                  title="Product Video"
-                />
-              )
+              <video
+                src={product.video}
+                className="w-full h-full object-cover"
+                controls
+                playsInline
+                autoPlay
+                loop
+              >
+                <track kind="captions" src="" label="No captions" />
+              </video>
             ) : (
               <OptimizedImage
                 src={mediaList[activeMedia] || product.image}
@@ -132,14 +126,18 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
               />
             )}
 
-            {/* Миниатюры */}
-            <div className="absolute bottom-4 left-4 right-4 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {/* Thumbnails */}
+            <div className="absolute bottom-3 left-3 right-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {mediaList.map((img, idx) => (
                 <button
                   type="button"
                   key={img}
                   onClick={() => setActiveMedia(idx)}
-                  className={`w-12 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${activeMedia === idx ? 'border-white scale-110 shadow-md' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                  className={`w-11 h-11 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
+                    activeMedia === idx
+                      ? 'border-wood-amber scale-110 shadow-md'
+                      : 'border-transparent opacity-60 hover:opacity-100'
+                  }`}
                 >
                   <img
                     src={img}
@@ -152,7 +150,11 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
                 <button
                   type="button"
                   onClick={() => setActiveMedia(-1)}
-                  className={`w-12 h-12 rounded-lg bg-stone-900/80 flex items-center justify-center border-2 transition-all shrink-0 ${activeMedia === -1 ? 'border-white scale-110 shadow-md' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                  className={`w-11 h-11 rounded-lg bg-black/70 flex items-center justify-center border-2 transition-all shrink-0 ${
+                    activeMedia === -1
+                      ? 'border-wood-amber scale-110 shadow-md'
+                      : 'border-transparent opacity-60 hover:opacity-100'
+                  }`}
                 >
                   <Play size={16} className="text-white fill-white" />
                 </button>
@@ -160,84 +162,105 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
             </div>
           </div>
 
-          <div className="p-6 pb-24">
-            <div className="flex justify-between items-start mb-4">
+          <div className="p-6 pb-28">
+            <div className="flex justify-between items-start gap-3 mb-4">
               <div>
-                <h2 className="font-serif text-2xl font-bold text-stone-800 dark:text-stone-100 mb-1">
-                  {product.name}
-                </h2>
-                <div className="text-stone-500 dark:text-stone-400 text-sm">
+                <div className="text-[10px] uppercase tracking-widest font-bold text-wood-amber mb-1">
                   {product.category}
                 </div>
+                <h2 className="font-serif text-2xl font-bold text-white leading-tight">
+                  {product.name}
+                </h2>
               </div>
-              <div className="text-xl font-bold text-stone-800 dark:text-stone-100 bg-stone-100 dark:bg-stone-800 px-3 py-1 rounded-lg">
+              <div className="text-xl font-bold text-wood-amber bg-wood-amber/10 border border-wood-amber/20 px-3 py-1.5 rounded-xl whitespace-nowrap">
                 {(currentPrice || 0).toLocaleString()} ₽
               </div>
             </div>
 
-            <p className="text-stone-600 dark:text-stone-300 text-sm leading-relaxed mb-6">
+            <p className="text-stone-400 text-sm leading-relaxed mb-6 line-clamp-4">
               {product.description}
             </p>
 
-            {product.hasOptions && (
-              <div className="mb-8 space-y-5 p-5 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-stone-100 dark:border-stone-700">
-                <div>
-                  <div className="text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-3">
-                    Размер
+            {(colors.length > 0 || sizes.length > 0) && (
+              <div className="mb-6 space-y-5 p-5 bg-stone-800/40 rounded-2xl border border-white/5">
+                {sizes.length > 0 && (
+                  <div>
+                    <div className="text-xs font-bold uppercase text-stone-400 mb-3">
+                      Размер
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {sizes.map((size) => (
+                        <button
+                          type="button"
+                          key={size.value}
+                          onClick={() => setSelectedSize(size)}
+                          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+                            selectedSize?.value === size.value
+                              ? 'bg-wood-amber text-stone-900 border-wood-amber shadow-wood-glow'
+                              : 'bg-stone-800 text-stone-300 border-white/10 hover:border-wood-amber/50'
+                          }`}
+                        >
+                          {size.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {SIZES.map((size) => (
-                      <button
-                        type="button"
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${selectedSize === size ? 'bg-stone-800 dark:bg-stone-100 text-white dark:text-stone-900 border-stone-800 dark:border-stone-100 shadow-md' : 'bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-600 hover:border-stone-400'}`}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                )}
+                {colors.length > 0 && (
+                  <div>
+                    <div className="text-xs font-bold uppercase text-stone-400 mb-3">
+                      Цвет:{' '}
+                      <span className="text-stone-200">
+                        {selectedColor?.name}
+                      </span>
+                    </div>
+                    <div className="flex gap-3">
+                      {colors.map((color) => (
+                        <button
+                          type="button"
+                          key={color.id}
+                          onClick={() => setSelectedColor(color)}
+                          aria-label={`Цвет: ${color.name}`}
+                          className={`relative w-11 h-11 rounded-full border-2 transition-all ${
+                            selectedColor?.id === color.id
+                              ? 'border-wood-amber scale-110 shadow-wood-glow'
+                              : 'border-white/15 hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: color.hex }}
+                        >
+                          {selectedColor?.id === color.id && (
+                            <span className="absolute inset-0 flex items-center justify-center text-white drop-shadow">
+                              <Check size={16} strokeWidth={3} />
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-3">
-                    Цвет
-                  </div>
-                  <div className="flex gap-3">
-                    {Object.entries(COLORS).map(([key, val]) => (
-                      <button
-                        type="button"
-                        key={key}
-                        onClick={() => setSelectedColor(key)}
-                        className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${selectedColor === key ? 'border-stone-800 dark:border-stone-100 scale-110' : 'border-transparent hover:scale-105'}`}
-                        title={val.name}
-                      >
-                        <div
-                          className={`w-9 h-9 rounded-full ${val.class} shadow-sm`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                  <div className="mt-2 text-xs text-stone-500 dark:text-stone-400 font-medium">
-                    Выбрано:{' '}
-                    {selectedColor ? COLORS[selectedColor].name : 'Не выбрано'}
-                  </div>
-                </div>
+                )}
               </div>
             )}
-
-            <div className="space-y-3 pt-2">
-              <div className="space-y-3 pt-2">
-                <TactileButton
-                  onClick={handleAddToCart}
-                  variant="primary"
-                  className="w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg"
-                >
-                  <ShoppingBag size={18} />
-                  <span>Добавить в корзину</span>
-                </TactileButton>
-              </div>
-            </div>
           </div>
+        </div>
+
+        {/* Sticky actions */}
+        <div className="p-4 border-t border-white/5 bg-[#1c1917] shrink-0 flex gap-3">
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className="flex-1 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-white/5 text-stone-200 border border-white/10 hover:border-wood-amber/40 active:scale-[0.98] transition-all"
+          >
+            <ShoppingBag size={18} />
+            <span>В корзину</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleBuyNow}
+            className="flex-[1.3] btn-primary py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-wood-glow active:scale-[0.98] transition-all"
+          >
+            <CreditCard size={18} />
+            <span>Оформить заказ</span>
+          </button>
         </div>
       </div>
     </dialog>

@@ -81,8 +81,8 @@ export default async function handler(req, res) {
 
     // List of static products for fallback (during migration/empty DB)
     const STATIC_PRODUCTS = [
-      { id: 101, name: 'Рейлинг Ясень   METAL AND GRAIN', price: 2500 },
-      { id: 102, name: 'Держатель Ясень  WOOD AND STEEL', price: 2000 },
+      { id: 101, name: 'Рейлинг Ясень Metal & Grain', price: 2500 },
+      { id: 102, name: 'Держатель Ясень Wood & Steel', price: 2000 },
       { id: 103, name: 'Панно "Эхо Леса"', price: 8500 },
       { id: 104, name: 'Панно "Зимние Горы"', price: 4900 },
       { id: 105, name: 'Подставка «Малый Дом» из термоясеня', price: 600 },

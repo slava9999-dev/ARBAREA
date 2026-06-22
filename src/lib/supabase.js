@@ -16,49 +16,106 @@ const isValidKey = (key) => typeof key === 'string' && key.trim().length > 0;
 let supabaseClient;
 const isConfigured = isValidUrl(supabaseUrl) && isValidKey(supabaseAnonKey);
 
+// Exported so the app can gracefully degrade to local-only mode (no backend)
+// instead of crashing when Supabase is not configured.
+export const isSupabaseConfigured = isConfigured;
+
 console.log(
   '🔌 Supabase Config Status:',
   isConfigured ? 'Valid' : 'Invalid/Missing',
 );
 
+/**
+ * Builds a fully chainable no-op query builder.
+ *
+ * The previous mock only implemented a subset of methods (`single`, `order`),
+ * so any call to `maybeSingle`, `update`, `in`, etc. threw
+ * "... is not a function" and broke auth/checkout. This builder responds to
+ * every PostgREST-style method, is awaitable, and resolves to an empty result
+ * so callers can fall back to their local logic without crashing.
+ */
+const createMockQueryBuilder = () => {
+  const result = { data: null, error: null };
+  const builder = {
+    // Mimics a PostgREST query builder, which is itself a thenable.
+    // biome-ignore lint/suspicious/noThenProperty: intentional thenable to mirror Supabase's awaitable query builder
+    then: (resolve) => Promise.resolve(result).then(resolve),
+    catch: () => Promise.resolve(result),
+    finally: (cb) => Promise.resolve(result).finally(cb),
+  };
+  const chainable = [
+    'select',
+    'insert',
+    'update',
+    'upsert',
+    'delete',
+    'eq',
+    'neq',
+    'in',
+    'gt',
+    'gte',
+    'lt',
+    'lte',
+    'like',
+    'ilike',
+    'is',
+    'order',
+    'limit',
+    'range',
+    'filter',
+    'match',
+  ];
+  for (const method of chainable) {
+    builder[method] = () => builder;
+  }
+  const terminal = ['single', 'maybeSingle', 'csv'];
+  for (const method of terminal) {
+    builder[method] = async () => result;
+  }
+  return builder;
+};
+
+const createMockClient = () => ({
+  auth: {
+    getSession: async () => ({ data: { session: null }, error: null }),
+    getUser: async () => ({ data: { user: null }, error: null }),
+    onAuthStateChange: () => ({
+      data: { subscription: { unsubscribe: () => {} } },
+    }),
+    signInWithPassword: async () => ({
+      data: { user: null, session: null },
+      error: { message: 'Supabase not configured' },
+    }),
+    signUp: async () => ({
+      data: { user: null, session: null },
+      error: { message: 'Supabase not configured' },
+    }),
+    signInWithOtp: async () => ({
+      data: {},
+      error: { message: 'Supabase not configured' },
+    }),
+    verifyOtp: async () => ({
+      data: {},
+      error: { message: 'Supabase not configured' },
+    }),
+    signInWithOAuth: async () => ({
+      data: {},
+      error: { message: 'Supabase not configured' },
+    }),
+    signOut: async () => ({ error: null }),
+    updateUser: async () => ({
+      data: { user: null },
+      error: { message: 'Supabase not configured' },
+    }),
+  },
+  from: () => createMockQueryBuilder(),
+});
+
 if (!isConfigured) {
   console.warn(
-    '⚠️ Supabase credentials not configured or invalid. App will run in simple mode.',
+    '⚠️ Supabase credentials not configured or invalid. App will run in local-only mode.',
   );
-  // Mock client to prevent crashes
-  supabaseClient = {
-    auth: {
-      getSession: async () => ({ data: { session: null } }),
-      getUser: async () => ({ data: { user: null } }),
-      onAuthStateChange: () => ({
-        data: { subscription: { unsubscribe: () => {} } },
-      }),
-      signInWithPassword: async () => ({
-        error: { message: 'Supabase not configured' },
-      }),
-      signUp: async () => ({ error: { message: 'Supabase not configured' } }),
-      signInWithOtp: async () => ({
-        error: { message: 'Supabase not configured' },
-      }),
-      verifyOtp: async () => ({
-        error: { message: 'Supabase not configured' },
-      }),
-      signInWithOAuth: async () => ({
-        error: { message: 'Supabase not configured' },
-      }),
-      signOut: async () => ({ error: null }),
-      updateUser: async () => ({
-        error: { message: 'Supabase not configured' },
-      }),
-    },
-    from: () => ({
-      select: () => ({
-        eq: () => ({ single: async () => ({ data: null, error: null }) }),
-        order: () => ({ data: [], error: null }),
-      }),
-      insert: async () => ({ error: { message: 'Database not configured' } }),
-    }),
-  };
+  supabaseClient = createMockClient();
 } else {
   try {
     supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
@@ -70,18 +127,8 @@ if (!isConfigured) {
     });
   } catch (e) {
     console.error('❌ Failed to initialize Supabase client:', e);
-    // Fallback to mock in case of weird errors
-    supabaseClient = {
-      auth: {
-        getSession: async () => ({ data: { session: null } }),
-        onAuthStateChange: () => ({
-          data: { subscription: { unsubscribe: () => {} } },
-        }),
-      },
-      from: () => ({
-        select: () => ({ eq: () => ({ single: async () => ({}) }) }),
-      }),
-    };
+    // Fallback to a complete mock so the UI keeps working.
+    supabaseClient = createMockClient();
   }
 }
 

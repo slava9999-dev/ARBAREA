@@ -14,10 +14,24 @@ import {
   useState,
   useCallback,
 } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const SimpleAuthContext = createContext({});
 export const useSimpleAuth = () => useContext(SimpleAuthContext);
+
+// Discount granted to every registered user (percent)
+const DEFAULT_DISCOUNT = 10;
+
+// Build a self-contained user profile for local-only mode (no backend).
+const buildLocalUser = (phone, name) => ({
+  id: `local-${phone}`,
+  phone,
+  name,
+  email: '',
+  discount: DEFAULT_DISCOUNT,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+});
 
 // LocalStorage key for persisting user session
 const STORAGE_KEY = 'arbarea_user';
@@ -68,6 +82,13 @@ export const SimpleAuthProvider = ({ children }) => {
           return;
         }
 
+        // Local-only mode: trust the cached session, no DB round-trip.
+        if (!isSupabaseConfigured) {
+          setUser(parsed);
+          setLoading(false);
+          return;
+        }
+
         // Validate session against DB (user might have been deleted)
         const { data, error } = await supabase
           .from('users')
@@ -114,6 +135,27 @@ export const SimpleAuthProvider = ({ children }) => {
     }
 
     const trimmedName = name.trim();
+
+    // Local-only mode: register without a backend so the flow never breaks.
+    if (!isSupabaseConfigured) {
+      let userData;
+      try {
+        const cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+        userData =
+          cached?.phone === phone
+            ? {
+                ...cached,
+                name: trimmedName,
+                updated_at: new Date().toISOString(),
+              }
+            : buildLocalUser(phone, trimmedName);
+      } catch {
+        userData = buildLocalUser(phone, trimmedName);
+      }
+      setUser(userData);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+      return userData;
+    }
 
     // Check if user already exists
     const { data: existing, error: checkError } = await supabase
@@ -209,6 +251,14 @@ export const SimpleAuthProvider = ({ children }) => {
           throw new Error('Неверный формат номера телефона');
         }
         safeUpdates.phone = normalized;
+      }
+
+      // Local-only mode: persist profile changes to localStorage.
+      if (!isSupabaseConfigured) {
+        const merged = { ...user, ...safeUpdates };
+        setUser(merged);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        return merged;
       }
 
       const { data, error } = await supabase
