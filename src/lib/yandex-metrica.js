@@ -2,25 +2,118 @@
  * Yandex Metrica Analytics Core
  * Production-grade SPA integration with advanced tracking
  *
- * Counter ID: 106096262
- * Features: Webvisor, Clickmap, E-commerce, AccurateTrackBounce
+ * Default Counter ID: 106096262 (override via VITE_YM_COUNTER_ID)
+ * Features: Webvisor, Clickmap, E-commerce, AccurateTrackBounce,
+ *           full-funnel goals, UTM + yclid attribution.
  */
 
-const METRICA_ID = 106096262;
+const DEFAULT_COUNTER_ID = 106096262;
 
-// Goal IDs (as per MASTER PROTOCOL)
+const readEnvCounterId = () => {
+  const raw =
+    typeof import.meta !== 'undefined' && import.meta.env
+      ? import.meta.env.VITE_YM_COUNTER_ID
+      : undefined;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_COUNTER_ID;
+};
+
+const METRICA_ID = readEnvCounterId();
+
+// Persisted marketing attribution (UTM + Yandex/Google click ids)
+const ATTRIBUTION_KEY = 'arbarea_attribution';
+
+// Goal IDs — every goal below is actually fired somewhere in the app.
 export const GOALS = {
-  INTERACTION_3D: 'INTERACTION_3D',
-  CONFIG_MATERIAL_CHANGE: 'CONFIG_MATERIAL_CHANGE',
+  // Engagement
   DEEP_SCROLL_SHOWCASE: 'DEEP_SCROLL_SHOWCASE',
+  PRODUCT_OPEN: 'PRODUCT_OPEN',
+  VARIANT_CHANGE: 'CONFIG_MATERIAL_CHANGE',
+  CONFIG_MATERIAL_CHANGE: 'CONFIG_MATERIAL_CHANGE',
+  INTERACTION_3D: 'INTERACTION_3D',
+  CATEGORY_SELECT: 'CATEGORY_SELECT',
+  SEARCH: 'SEARCH',
+  WISHLIST_ADD: 'WISHLIST_ADD',
+  // Funnel
+  ADD_TO_CART: 'ADD_TO_CART',
+  BUY_NOW: 'BUY_NOW',
   CONTACT_INIT: 'CONTACT_INIT',
   CHECKOUT_START: 'CHECKOUT_START',
   PURCHASE_SUCCESS: 'PURCHASE_SUCCESS',
 };
 
+/** The active Metrica counter id (env-driven). */
+export const getCounterId = () => METRICA_ID;
+
 /**
- * Initialize Yandex Metrica counter
- * Called once on app mount
+ * Parse marketing params from the current URL and merge with what is
+ * already stored (first-touch wins for utm_source, last-touch for click ids).
+ */
+export const captureAttribution = () => {
+  if (typeof window === 'undefined') return {};
+
+  const params = new URLSearchParams(window.location.search);
+  const tracked = [
+    'utm_source',
+    'utm_medium',
+    'utm_campaign',
+    'utm_term',
+    'utm_content',
+    'yclid',
+    'ymclid',
+    'gclid',
+    '_openstat',
+  ];
+
+  let stored = {};
+  try {
+    stored = JSON.parse(localStorage.getItem(ATTRIBUTION_KEY) || '{}') || {};
+  } catch {
+    stored = {};
+  }
+
+  const incoming = {};
+  for (const key of tracked) {
+    const value = params.get(key);
+    if (value) incoming[key] = value;
+  }
+
+  if (Object.keys(incoming).length === 0) {
+    return stored;
+  }
+
+  // First-touch source attribution, but always refresh volatile click ids.
+  const merged = {
+    ...incoming,
+    ...stored,
+    ...(incoming.yclid ? { yclid: incoming.yclid } : {}),
+    ...(incoming.gclid ? { gclid: incoming.gclid } : {}),
+    landing: stored.landing || window.location.pathname,
+    first_seen: stored.first_seen || new Date().toISOString(),
+  };
+
+  try {
+    localStorage.setItem(ATTRIBUTION_KEY, JSON.stringify(merged));
+  } catch {
+    // storage unavailable — ignore
+  }
+
+  return merged;
+};
+
+/** Read the stored attribution object (for order payloads etc). */
+export const getAttribution = () => {
+  if (typeof window === 'undefined') return {};
+  try {
+    return JSON.parse(localStorage.getItem(ATTRIBUTION_KEY) || '{}') || {};
+  } catch {
+    return {};
+  }
+};
+
+/**
+ * Initialize Yandex Metrica counter.
+ * Called once on app mount.
  */
 export const initMetrica = () => {
   if (typeof window === 'undefined') return;
@@ -74,6 +167,14 @@ export const initMetrica = () => {
     defer: true,
   });
 
+  // Capture marketing attribution and attach to the visit / user profile so
+  // Yandex Direct campaigns and offline conversions can be reconciled.
+  const attribution = captureAttribution();
+  if (Object.keys(attribution).length > 0) {
+    window.ym(METRICA_ID, 'params', { attribution });
+    window.ym(METRICA_ID, 'userParams', { attribution });
+  }
+
   console.log('[Metrica] Initialized:', METRICA_ID);
 };
 
@@ -104,6 +205,12 @@ export const reachGoal = (goalId, params = {}) => {
 
   console.log('[Metrica] Goal reached:', goalId, params);
 };
+
+/**
+ * Generic click / interaction event.
+ * Thin wrapper over reachGoal so call-sites read declaratively.
+ */
+export const trackEvent = (goalId, params = {}) => reachGoal(goalId, params);
 
 /**
  * E-commerce: Add to cart
@@ -189,10 +296,11 @@ export const ecommercePurchase = (orderData) => {
     },
   });
 
-  // Also track as goal
+  // Also track as goal, enriched with attribution for Direct reconciliation.
   reachGoal(GOALS.PURCHASE_SUCCESS, {
     order_id: orderData.orderId,
     revenue: orderData.total,
+    ...getAttribution(),
   });
 
   console.log('[Metrica] E-commerce purchase:', orderData.orderId);
@@ -255,8 +363,12 @@ export const ecommerceImpressions = (products, listName = 'Каталог') => {
 
 export default {
   init: initMetrica,
+  getCounterId,
+  captureAttribution,
+  getAttribution,
   trackPageView,
   reachGoal,
+  trackEvent,
   ecommerceAdd,
   ecommerceRemove,
   ecommercePurchase,

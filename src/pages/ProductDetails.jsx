@@ -15,7 +15,7 @@ import { useToast } from '../context/ToastContext';
 import { useWishlist } from '../context/WishlistContext';
 import SEO from '../components/seo/SEO';
 import { useProducts } from '../context/ProductContext';
-import { ecommerceDetail } from '../lib/yandex-metrica';
+import { ecommerceDetail, GOALS, reachGoal } from '../lib/yandex-metrica';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -86,6 +86,12 @@ const ProductDetails = () => {
       selectedSize,
       quantity: 1,
     });
+    reachGoal(GOALS.ADD_TO_CART, {
+      id: product.id,
+      name: product.name,
+      price: currentPrice,
+      source: 'details',
+    });
     showToast('Товар добавлен в корзину', 'success');
   };
 
@@ -98,7 +104,10 @@ const ProductDetails = () => {
   const keywords = `${product.name}, ${product.category}, купить ${product.name}, мебель из дерева, Arbarea`;
 
   return (
-    <div className="min-h-screen bg-[#1c1917] text-stone-200 pb-40 animate-fade-in">
+    <div
+      data-testid="product-details"
+      className="min-h-screen bg-[#1c1917] text-stone-200 pb-40 animate-fade-in"
+    >
       <SEO
         title={product.name}
         description={
@@ -109,6 +118,11 @@ const ProductDetails = () => {
         url={`/product/${product.id}`}
         type="product"
         keywords={keywords}
+        breadcrumbs={[
+          { name: 'Главная', url: '/' },
+          { name: product.category, url: '/' },
+          { name: product.name, url: `/product/${product.id}` },
+        ]}
         productData={{
           name: product.name,
           description: product.description,
@@ -222,7 +236,14 @@ const ProductDetails = () => {
                       <button
                         key={color.id}
                         type="button"
-                        onClick={() => setSelectedColor(color)}
+                        onClick={() => {
+                          setSelectedColor(color);
+                          reachGoal(GOALS.VARIANT_CHANGE, {
+                            id: product.id,
+                            type: 'color',
+                            value: color.id,
+                          });
+                        }}
                         aria-label={`Цвет: ${color.name}`}
                         className={`
                           group relative w-12 h-12 rounded-full border-2 transition-all
@@ -259,7 +280,14 @@ const ProductDetails = () => {
                       <button
                         key={size.value}
                         type="button"
-                        onClick={() => setSelectedSize(size)}
+                        onClick={() => {
+                          setSelectedSize(size);
+                          reachGoal(GOALS.VARIANT_CHANGE, {
+                            id: product.id,
+                            type: 'size',
+                            value: size.value,
+                          });
+                        }}
                         className={`
                           px-4 py-2 rounded-xl text-sm font-bold transition-all border
                           ${

@@ -14,7 +14,12 @@ import { useSimpleAuth } from '../context/SimpleAuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { initPayment } from '../lib/tinkoff';
-import { ecommercePurchase, reachGoal } from '../lib/yandex-metrica';
+import SEO from '../components/seo/SEO';
+import {
+  ecommercePurchase,
+  getAttribution,
+  reachGoal,
+} from '../lib/yandex-metrica';
 
 // Lazy load delivery selector
 const DeliverySelector = lazy(
@@ -171,6 +176,7 @@ const Cart = () => {
           email: formData.email,
           phone: formData.phone,
           name: formData.name,
+          attribution: getAttribution(),
         },
         token,
         selectedDelivery?.service?.id,
@@ -208,6 +214,7 @@ const Cart = () => {
   if (cartItems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen pb-32 px-6">
+        <SEO title="Корзина" url="/cart" noindex />
         <div
           className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
           style={{
@@ -228,6 +235,7 @@ const Cart = () => {
 
   return (
     <div className="pb-24 pt-6 px-4 min-h-screen max-w-lg mx-auto">
+      <SEO title="Корзина" url="/cart" noindex />
       {/* SUCCESS STATE */}
       {step === 'success' && (
         <div className="bg-[#1c1917] rounded-3xl p-8 text-center border border-wood-amber/20 mt-20">

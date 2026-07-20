@@ -8,6 +8,7 @@ import {
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
+import { GOALS, reachGoal } from '../../lib/yandex-metrica';
 import FullScreenImageViewer from '../ui/FullScreenImageViewer';
 
 const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
@@ -46,6 +47,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
   const handleDetailsClick = (e) => {
     // Prevent navigation if we are clicking interactive elements
     e.stopPropagation();
+    reachGoal(GOALS.PRODUCT_OPEN, { id: product.id, name: product.name });
     navigate(`/product/${product.id}`);
   };
 
@@ -60,6 +62,12 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
       name: `${product.name} ${selectedSize ? `(${selectedSize.label})` : ''} ${selectedColor ? `(${selectedColor.name})` : ''}`,
       price: currentPrice,
       image: images[0], // Ensure correct image is passed
+    });
+    reachGoal(GOALS.ADD_TO_CART, {
+      id: product.id,
+      name: product.name,
+      price: currentPrice,
+      source: 'card',
     });
     showToast('Товар добавлен в корзину', 'success');
   };
@@ -195,6 +203,11 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedColor(color);
+                        reachGoal(GOALS.VARIANT_CHANGE, {
+                          id: product.id,
+                          type: 'color',
+                          value: color.id,
+                        });
                       }}
                       className={`w-5 h-5 rounded-full border transition-all ${
                         selectedColor?.id === color.id
@@ -217,6 +230,11 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedSize(size);
+                        reachGoal(GOALS.VARIANT_CHANGE, {
+                          id: product.id,
+                          type: 'size',
+                          value: size.value,
+                        });
                       }}
                       className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all border ${
                         selectedSize?.value === size.value
@@ -254,6 +272,11 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
+                  reachGoal(GOALS.PRODUCT_OPEN, {
+                    id: product.id,
+                    name: product.name,
+                    source: 'quickview',
+                  });
                   if (onOpenModal) onOpenModal(product);
                 }}
                 className="flex-1 h-8 bg-white/5 text-stone-300 hover:bg-stone-200/10 active:scale-95 transition-all duration-200 rounded-lg flex items-center justify-center gap-1 border border-white/10 hover:border-wood-amber/40 text-[10px] font-bold uppercase tracking-tight px-1"

@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
 import SocialFooter from '../components/layout/SocialFooter';
+import SEO from '../components/seo/SEO';
 import { INTERIORS } from '../data/mockData';
 
 const Gallery = () => (
   <section className="pb-24 pt-20 px-4 bg-linen-dark min-h-screen">
+    <SEO
+      title="Галерея интерьеров"
+      description="Реальные интерьеры с изделиями Arbarea из массива дуба и ясеня: панно, полки, рейлинги и декор ручной работы."
+      keywords="интерьеры с деревом, декор из массива в интерьере, деревянные изделия ручной работы, Arbarea галерея"
+      url="/gallery"
+    />
     <h2 className="font-serif text-2xl text-amber-600 mb-6 text-center">
       Интерьеры
     </h2>

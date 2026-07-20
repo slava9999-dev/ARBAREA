@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { GOALS, reachGoal } from '../lib/yandex-metrica';
 
 const WishlistContext = createContext();
 
@@ -24,6 +25,7 @@ export const WishlistProvider = ({ children }) => {
   const addToWishlist = (product) => {
     setWishlist((prev) => {
       if (prev.some((item) => item.id === product.id)) return prev;
+      reachGoal(GOALS.WISHLIST_ADD, { id: product.id, name: product.name });
       return [...prev, product];
     });
   };

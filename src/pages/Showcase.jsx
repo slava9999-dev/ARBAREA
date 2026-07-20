@@ -7,12 +7,29 @@ import SocialFooter from '../components/layout/SocialFooter';
 import { SearchOverlay } from '../components/SearchOverlay';
 import SEO from '../components/seo/SEO';
 import { useProducts } from '../context/ProductContext';
-import { ecommerceImpressions } from '../lib/yandex-metrica';
+import { ecommerceImpressions, GOALS, reachGoal } from '../lib/yandex-metrica';
 
 const Showcase = ({ onBuy, onOpenModal }) => {
   const { products } = useProducts();
   const [activeCategory, setActiveCategory] = useState('all');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // 🔥 YANDEX METRICA: fire deep-scroll goal once per session on the showcase
+  useEffect(() => {
+    let fired = false;
+    const onScroll = () => {
+      if (fired) return;
+      const scrolled = window.scrollY + window.innerHeight;
+      const total = document.documentElement.scrollHeight;
+      if (total > 0 && scrolled / total >= 0.7) {
+        fired = true;
+        reachGoal(GOALS.DEEP_SCROLL_SHOWCASE);
+        window.removeEventListener('scroll', onScroll);
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Filter logic
   const filtered =
@@ -127,7 +144,10 @@ const Showcase = ({ onBuy, onOpenModal }) => {
                   <button
                     key={cat.id}
                     type="button"
-                    onClick={() => setActiveCategory(cat.id)}
+                    onClick={() => {
+                      setActiveCategory(cat.id);
+                      reachGoal(GOALS.CATEGORY_SELECT, { category: cat.id });
+                    }}
                     className={`
                       relative whitespace-nowrap px-6 py-2.5 text-sm font-medium tracking-wide transition-all duration-300 rounded-xl
                       ${
@@ -146,7 +166,10 @@ const Showcase = ({ onBuy, onOpenModal }) => {
             {/* Search Button (Icon only) */}
             <button
               type="button"
-              onClick={() => setIsSearchOpen(true)}
+              onClick={() => {
+                setIsSearchOpen(true);
+                reachGoal(GOALS.SEARCH, { source: 'showcase' });
+              }}
               className="ml-4 p-2.5 text-stone-400 hover:text-white bg-white/5 rounded-full border border-white/10 hover:bg-white/10 transition-colors"
               aria-label="Поиск"
             >
@@ -165,6 +188,7 @@ const Showcase = ({ onBuy, onOpenModal }) => {
           {filtered.map((p) => (
             <div
               key={p.id}
+              data-testid="product-card"
               className="h-full transition-transform duration-300 hover:scale-[1.02]"
             >
               <FlipProductCard

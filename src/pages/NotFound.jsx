@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion';
 import { Home, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SEO from '../components/seo/SEO';
 
 const NotFound = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-[#1c1917] flex flex-col items-center justify-center px-6 text-center">
+      <SEO title="Страница не найдена" url="/404" noindex />
       {/* Animated 404 */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
