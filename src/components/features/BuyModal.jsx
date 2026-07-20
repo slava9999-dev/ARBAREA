@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useToast } from '../../context/ToastContext';
+import { GOALS, reachGoal } from '../../lib/yandex-metrica';
 import OptimizedImage from '../ui/OptimizedImage';
 
 /**
@@ -64,12 +65,23 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
 
   const handleAddToCart = () => {
     onAddToCart(buildCartItem());
+    reachGoal(GOALS.ADD_TO_CART, {
+      id: product.id,
+      name: product.name,
+      price: currentPrice,
+      source: 'quickbuy',
+    });
     showToast('Товар добавлен в корзину', 'success');
     onClose();
   };
 
   const handleBuyNow = () => {
     onAddToCart(buildCartItem());
+    reachGoal(GOALS.BUY_NOW, {
+      id: product.id,
+      name: product.name,
+      price: currentPrice,
+    });
     onClose();
     navigate('/cart');
   };
@@ -86,7 +98,10 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
       }}
       aria-labelledby="buy-modal-title"
     >
-      <div className="bg-[#1c1917] text-stone-200 w-full sm:w-[450px] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-slide-up flex flex-col max-h-[92vh] border border-wood-amber/15">
+      <div
+        data-testid="product-modal"
+        className="bg-[#1c1917] text-stone-200 w-full sm:w-[450px] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-slide-up flex flex-col max-h-[92vh] border border-wood-amber/15"
+      >
         <div className="p-4 flex justify-between items-center border-b border-white/5 shrink-0">
           <h3
             id="buy-modal-title"
@@ -193,7 +208,14 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
                         <button
                           type="button"
                           key={size.value}
-                          onClick={() => setSelectedSize(size)}
+                          onClick={() => {
+                            setSelectedSize(size);
+                            reachGoal(GOALS.VARIANT_CHANGE, {
+                              id: product.id,
+                              type: 'size',
+                              value: size.value,
+                            });
+                          }}
                           className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
                             selectedSize?.value === size.value
                               ? 'bg-wood-amber text-stone-900 border-wood-amber shadow-wood-glow'
@@ -219,7 +241,14 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
                         <button
                           type="button"
                           key={color.id}
-                          onClick={() => setSelectedColor(color)}
+                          onClick={() => {
+                            setSelectedColor(color);
+                            reachGoal(GOALS.VARIANT_CHANGE, {
+                              id: product.id,
+                              type: 'color',
+                              value: color.id,
+                            });
+                          }}
                           aria-label={`Цвет: ${color.name}`}
                           className={`relative w-11 h-11 rounded-full border-2 transition-all ${
                             selectedColor?.id === color.id

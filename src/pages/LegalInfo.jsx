@@ -7,10 +7,17 @@ import {
   Shield,
   Truck,
 } from 'lucide-react';
+import SEO from '../components/seo/SEO';
 
 const LegalInfo = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white pt-20 pb-24 px-4">
+      <SEO
+        title="Оплата и доставка, реквизиты"
+        description="Условия оплаты, доставки по России, гарантия и реквизиты мастерской Arbarea."
+        keywords="Arbarea доставка, оплата, реквизиты, гарантия, столярная мастерская"
+        url="/legal"
+      />
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <motion.div

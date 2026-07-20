@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import SEO from '../components/seo/SEO';
 
 const Wishlist = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
@@ -19,6 +20,7 @@ const Wishlist = () => {
   if (wishlist.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen pb-32 px-6">
+        <SEO title="Избранное" url="/wishlist" noindex />
         <div
           className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
           style={{
@@ -48,6 +50,7 @@ const Wishlist = () => {
 
   return (
     <div className="pt-20 pb-32 px-4 animate-slide-up">
+      <SEO title="Избранное" url="/wishlist" noindex />
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button

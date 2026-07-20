@@ -1,3 +1,13 @@
 User-agent: *
 Allow: /
+Disallow: /cart
+Disallow: /profile
+Disallow: /wishlist
+Disallow: /ai
+Disallow: /debug
+
+# Yandex: collapse tracking params so paid/organic URLs are not indexed as duplicates
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&yclid&ymclid&gclid&_openstat
+
+Host: https://arbarea.ru
 Sitemap: https://arbarea.ru/sitemap.xml

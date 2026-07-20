@@ -2,6 +2,7 @@ import { Bot, Loader2, Send, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { sendMessageToAI } from '../lib/ai-assistant';
 import { useSimpleAuth } from '../context/SimpleAuthContext';
+import SEO from '../components/seo/SEO';
 
 const AIChat = () => {
   const { user } = useSimpleAuth();
@@ -45,6 +46,12 @@ const AIChat = () => {
 
   return (
     <div className="pt-20 pb-24 px-4 h-screen flex flex-col bg-[#1c1917]">
+      <SEO
+        title="AI-консультант"
+        description="Подберите изделие Arbarea из массива дерева с помощью умного консультанта."
+        url="/ai"
+        noindex
+      />
       <div className="flex-1 overflow-y-auto space-y-4 pb-32 custom-scrollbar">
         {messages.map((m, i) => (
           <div

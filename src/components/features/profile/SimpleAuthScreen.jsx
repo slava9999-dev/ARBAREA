@@ -12,6 +12,7 @@
 import { useState } from 'react';
 import { Gift, Loader2, Phone, User, Sparkles } from 'lucide-react';
 import { useSimpleAuth } from '../../../context/SimpleAuthContext';
+import { GOALS, reachGoal } from '../../../lib/yandex-metrica';
 
 const SimpleAuthScreen = () => {
   const { register } = useSimpleAuth();
@@ -54,6 +55,7 @@ const SimpleAuthScreen = () => {
 
     try {
       await register(name, phone);
+      reachGoal(GOALS.CONTACT_INIT, { method: 'phone_register' });
       setSuccess('Добро пожаловать! Ваша скидка 10% активирована ✨');
     } catch (err) {
       setError(err.message || 'Ошибка при регистрации');
