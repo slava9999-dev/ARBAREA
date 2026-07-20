@@ -20,11 +20,28 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* App-like: no rubber-band overscroll, no double-tap zoom delay */
+    overscroll-behavior-y: none;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Remove the grey/blue tap flash on mobile and kill the 300ms tap delay
+     so taps feel instant and native, like a real app. */
+  button,
+  a,
+  [role='button'],
+  input,
+  textarea,
+  select {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   body {
     @apply bg-base text-stone-200 font-sans antialiased;
     @apply selection:bg-wood-amber/30 selection:text-white;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     background-image: 
       /* Subtle radial glow in center */
       radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201, 164, 92, 0.04) 0%, transparent 50%),
@@ -422,4 +439,24 @@
 .aurora-orb-3 {
   animation: aurora-3 20s ease-in-out infinite;
   will-change: transform, opacity;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY — respect the OS "reduce motion" setting.
+   Disables looping/decorative motion and heavy transitions for users who
+   opt out, which also spares battery/CPU on low-end devices.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
 import { GOALS, reachGoal } from '../../lib/yandex-metrica';
+import { haptic } from '../../lib/haptics';
 import FullScreenImageViewer from '../ui/FullScreenImageViewer';
 
 const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
@@ -53,6 +54,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
 
   const handleBuy = (e) => {
     e.stopPropagation();
+    haptic(12);
     onBuy({
       ...product,
       // Store original product ID for DB lookups (numeric or UUID)

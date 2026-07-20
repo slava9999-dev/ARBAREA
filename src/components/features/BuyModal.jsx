@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useToast } from '../../context/ToastContext';
 import { GOALS, reachGoal } from '../../lib/yandex-metrica';
+import { haptic } from '../../lib/haptics';
 import OptimizedImage from '../ui/OptimizedImage';
 
 /**
@@ -64,6 +65,7 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
   });
 
   const handleAddToCart = () => {
+    haptic(12);
     onAddToCart(buildCartItem());
     reachGoal(GOALS.ADD_TO_CART, {
       id: product.id,
@@ -76,6 +78,7 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
   };
 
   const handleBuyNow = () => {
+    haptic(15);
     onAddToCart(buildCartItem());
     reachGoal(GOALS.BUY_NOW, {
       id: product.id,
