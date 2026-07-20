@@ -49,7 +49,7 @@ const Header = () => {
               backgroundClip: 'text',
             }}
           >
-            RBAREA
+            ARBAREA
           </motion.h1>
           <motion.span
             initial={{ opacity: 0 }}
