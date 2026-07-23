@@ -16,6 +16,7 @@ import { useWishlist } from '../context/WishlistContext';
 import SEO from '../components/seo/SEO';
 import { useProducts } from '../context/ProductContext';
 import { ecommerceDetail, GOALS, reachGoal } from '../lib/yandex-metrica';
+import { haptic } from '../lib/haptics';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -74,6 +75,7 @@ const ProductDetails = () => {
   const currentPrice = basePrice + (selectedSize?.priceMod || 0);
 
   const handleAddToCart = () => {
+    haptic(12);
     addToCart({
       ...product,
       // Store original product ID for DB lookups

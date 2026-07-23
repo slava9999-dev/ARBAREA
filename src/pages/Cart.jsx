@@ -14,6 +14,7 @@ import { useSimpleAuth } from '../context/SimpleAuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { initPayment } from '../lib/tinkoff';
+import { haptic } from '../lib/haptics';
 import SEO from '../components/seo/SEO';
 import {
   ecommercePurchase,
@@ -51,6 +52,7 @@ const Cart = () => {
 
   // Geolocation: определить адрес по GPS
   const handleGetLocation = async () => {
+    haptic(10);
     if (!navigator.geolocation) {
       showToast('Геолокация не поддерживается', 'error');
       return;
@@ -88,7 +90,7 @@ const Cart = () => {
               formattedAddress = data.display_name;
             }
 
-            setFormData({ ...formData, address: formattedAddress });
+            setFormData((prev) => ({ ...prev, address: formattedAddress }));
             showToast('Адрес определён', 'success');
           }
         } catch (error) {
@@ -118,6 +120,18 @@ const Cart = () => {
     );
   };
 
+  // Prefill contact fields from the account (only empty ones) so a logged-in
+  // customer can reach payment in a couple of taps.
+  useEffect(() => {
+    if (!user) return;
+    setFormData((prev) => ({
+      ...prev,
+      name: prev.name || user.name || '',
+      phone: prev.phone || user.phone || '',
+      email: prev.email || user.email || '',
+    }));
+  }, [user]);
+
   // 🎯 YANDEX METRICA: Track checkout start
   useEffect(() => {
     if (cartItems.length > 0) {
@@ -139,6 +153,7 @@ const Cart = () => {
   };
 
   const handlePayment = async () => {
+    haptic(15);
     if (!selectedDelivery) {
       setError('Пожалуйста, выберите способ доставки');
       showToast('Выберите способ доставки', 'error');
@@ -384,7 +399,8 @@ const Cart = () => {
                     type="button"
                     onClick={handleGetLocation}
                     disabled={isLocating}
-                    className="w-12 h-12 shrink-0 bg-wood-amber/20 hover:bg-wood-amber/30 border border-wood-amber/30 rounded-xl flex items-center justify-center text-wood-amber transition-all disabled:opacity-50 disabled:cursor-wait"
+                    aria-label="Определить адрес автоматически"
+                    className="w-12 h-12 shrink-0 bg-wood-amber/20 hover:bg-wood-amber/30 border border-wood-amber/30 rounded-xl flex items-center justify-center text-wood-amber transition-all active:scale-95 disabled:opacity-50 disabled:cursor-wait"
                     title="Определить местоположение"
                   >
                     {isLocating ? (
@@ -394,6 +410,17 @@ const Cart = () => {
                     )}
                   </button>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleGetLocation}
+                  disabled={isLocating}
+                  className="mt-2 ml-3 inline-flex items-center gap-1.5 text-xs font-semibold text-wood-amber/90 hover:text-wood-amber transition-colors disabled:opacity-50"
+                >
+                  <Navigation size={13} />
+                  {isLocating
+                    ? 'Определяем адрес…'
+                    : 'Определить адрес автоматически'}
+                </button>
               </div>
 
               {/* Delivery Selector Button (Accordion Trigger) */}
