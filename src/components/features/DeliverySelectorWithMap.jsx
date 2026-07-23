@@ -435,67 +435,77 @@ const DeliverySelectorWithMap = ({
                       {CATEGORIES[category]?.name || category}
                     </p>
                     <div className="space-y-2">
-                      {services.map((service) => (
-                        <button
-                          key={service.id}
-                          type="button"
-                          onClick={() => handleServiceSelect(service)}
-                          className="w-full flex items-center justify-between p-4 bg-wood-bg-elevated/50 hover:bg-wood-bg-elevated rounded-2xl border border-wood-amber/10 hover:border-wood-amber/40 transition-all group shadow-sm hover:shadow-wood-sm"
-                        >
-                          <div className="flex items-center gap-4">
-                            <span
-                              className="text-2xl w-12 h-12 flex items-center justify-center rounded-xl"
-                              style={{ backgroundColor: `${service.color}20` }}
-                            >
-                              {service.logo}
-                            </span>
-                            <div className="text-left">
-                              <div className="flex items-center gap-2">
-                                <p className="font-bold text-white">
-                                  {service.name}
+                      {services.map((service) => {
+                        const isSelected = selectedService?.id === service.id;
+                        return (
+                          <button
+                            key={service.id}
+                            type="button"
+                            onClick={() => handleServiceSelect(service)}
+                            aria-pressed={isSelected}
+                            className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all group active:scale-[0.99] ${
+                              isSelected
+                                ? 'bg-wood-amber/15 border-wood-amber ring-1 ring-wood-amber/60 shadow-wood-glow'
+                                : 'bg-wood-bg-elevated border-wood-amber/25 hover:border-wood-amber/60 hover:bg-wood-amber/10 shadow-sm hover:shadow-wood-sm'
+                            }`}
+                          >
+                            <div className="flex items-center gap-4">
+                              <span
+                                className="text-2xl w-12 h-12 flex items-center justify-center rounded-xl border border-white/5"
+                                style={{
+                                  backgroundColor: `${service.color}20`,
+                                }}
+                              >
+                                {service.logo}
+                              </span>
+                              <div className="text-left">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-bold text-white">
+                                    {service.name}
+                                  </p>
+                                  {service.popular && (
+                                    <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full">
+                                      ⭐ Популярное
+                                    </span>
+                                  )}
+                                  {service.hasAPI && (
+                                    <span className="text-[9px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-full">
+                                      🤖 Авто
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-stone-500">
+                                  {service.description}
                                 </p>
-                                {service.popular && (
-                                  <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full">
-                                    ⭐ Популярное
-                                  </span>
+                                {service.note && (
+                                  <p className="text-[10px] text-stone-600 mt-0.5">
+                                    {service.note}
+                                  </p>
                                 )}
-                                {service.hasAPI && (
-                                  <span className="text-[9px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-full">
-                                    🤖 Авто
+                                <div className="flex items-center gap-3 mt-1">
+                                  <span className="text-[10px] text-stone-400 flex items-center gap-1">
+                                    <Clock size={10} /> {service.days} дн.
                                   </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-stone-500">
-                                {service.description}
-                              </p>
-                              {service.note && (
-                                <p className="text-[10px] text-stone-600 mt-0.5">
-                                  {service.note}
-                                </p>
-                              )}
-                              <div className="flex items-center gap-3 mt-1">
-                                <span className="text-[10px] text-stone-400 flex items-center gap-1">
-                                  <Clock size={10} /> {service.days} дн.
-                                </span>
-                                {service.hasPickupPoints && (
-                                  <span className="text-[10px] text-blue-400 flex items-center gap-1">
-                                    <MapPin size={10} /> Пункты выдачи
-                                  </span>
-                                )}
+                                  {service.hasPickupPoints && (
+                                    <span className="text-[10px] text-blue-400 flex items-center gap-1">
+                                      <MapPin size={10} /> Пункты выдачи
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold text-emerald-400 text-lg">
-                              Бесплатно
-                            </p>
-                            <ChevronRight
-                              className="text-stone-600 group-hover:text-amber-500 ml-auto mt-1 transition-colors"
-                              size={16}
-                            />
-                          </div>
-                        </button>
-                      ))}
+                            <div className="text-right">
+                              <p className="font-bold text-emerald-400 text-lg">
+                                Бесплатно
+                              </p>
+                              <ChevronRight
+                                className="text-stone-600 group-hover:text-amber-500 ml-auto mt-1 transition-colors"
+                                size={16}
+                              />
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
