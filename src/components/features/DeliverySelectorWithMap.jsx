@@ -279,12 +279,20 @@ const DeliverySelectorWithMap = ({
 
   const handleServiceSelect = (service) => {
     setSelectedService(service);
-    if (service.hasPickupPoints) {
-      setStep('map');
-      setShowMap(true);
-    } else {
-      setStep('confirm');
-    }
+    // Address is entered once in the cart form (with auto-detection), so
+    // picking a service applies it immediately instead of asking for the
+    // address a second time here. The cart field (initialAddress) is the
+    // source of truth.
+    const finalAddress = initialAddress || address || 'Адрес будет уточнён';
+    onSelect({
+      service,
+      address: finalAddress,
+      city: city || finalAddress.split(',')[0] || '',
+      fullAddress: finalAddress,
+      price: 0,
+      coordinates: null,
+    });
+    onClose();
   };
 
   const handleLocationSelect = (location) => {

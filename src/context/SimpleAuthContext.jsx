@@ -36,6 +36,21 @@ const buildLocalUser = (phone, name) => ({
 // LocalStorage key for persisting user session
 const STORAGE_KEY = 'arbarea_user';
 
+// Build a session locally (merging any cached profile for the same phone).
+// Used both in local-only mode and as a fallback if the backend is
+// unavailable, so registration always succeeds for the customer.
+const buildSessionUser = (phone, name) => {
+  try {
+    const cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (cached?.phone === phone) {
+      return { ...cached, name, updated_at: new Date().toISOString() };
+    }
+  } catch {
+    // Ignore corrupted cache and fall through to a fresh profile.
+  }
+  return buildLocalUser(phone, name);
+};
+
 /**
  * Normalize phone to E.164 format (+7XXXXXXXXXX)
  * Handles: 8XXXXXXXXXX, 7XXXXXXXXXX, +7XXXXXXXXXX, raw digits
@@ -136,104 +151,85 @@ export const SimpleAuthProvider = ({ children }) => {
 
     const trimmedName = name.trim();
 
-    // Local-only mode: register without a backend so the flow never breaks.
-    if (!isSupabaseConfigured) {
-      let userData;
-      try {
-        const cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-        userData =
-          cached?.phone === phone
-            ? {
-                ...cached,
-                name: trimmedName,
-                updated_at: new Date().toISOString(),
-              }
-            : buildLocalUser(phone, trimmedName);
-      } catch {
-        userData = buildLocalUser(phone, trimmedName);
-      }
+    const persist = (userData) => {
       setUser(userData);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
       return userData;
+    };
+
+    // Local-only mode: register without a backend so the flow never breaks.
+    if (!isSupabaseConfigured) {
+      return persist(buildSessionUser(phone, trimmedName));
     }
 
-    // Check if user already exists
-    const { data: existing, error: checkError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('phone', phone)
-      .maybeSingle();
+    // Backend mode: try to persist to Supabase, but never block the customer.
+    // Any backend problem (schema mismatch, RLS, network) degrades to a local
+    // session so registration always completes.
+    try {
+      const { data: existing, error: checkError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('phone', phone)
+        .maybeSingle();
 
-    if (checkError) {
-      console.error('DB check error:', checkError);
-      throw new Error('Ошибка подключения к базе данных. Попробуйте позже.');
-    }
+      if (checkError) throw checkError;
 
-    let userData;
+      let userData;
 
-    if (existing) {
-      // Returning user — update name if it was 'Гость' and login
-      if (existing.name === 'Гость' && trimmedName !== 'Гость') {
-        const { data: updated, error: updateError } = await supabase
+      if (existing) {
+        // Returning user — update name if it was 'Гость' and login
+        if (existing.name === 'Гость' && trimmedName !== 'Гость') {
+          const { data: updated, error: updateError } = await supabase
+            .from('users')
+            .update({ name: trimmedName, updated_at: new Date().toISOString() })
+            .eq('phone', phone)
+            .select()
+            .single();
+
+          userData = updateError ? existing : updated;
+        } else {
+          userData = existing;
+        }
+      } else {
+        // New user — create profile
+        const { data: newUser, error: insertError } = await supabase
           .from('users')
-          .update({ name: trimmedName, updated_at: new Date().toISOString() })
-          .eq('phone', phone)
+          .insert([
+            {
+              phone,
+              name: trimmedName,
+              discount: DEFAULT_DISCOUNT,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ])
           .select()
           .single();
 
-        if (updateError) {
-          console.error('Update error:', updateError);
-          userData = existing; // Fallback to existing data
+        if (insertError) {
+          // Race condition: another request created the user — fetch it.
+          if (insertError.code === '23505') {
+            const { data: raceUser } = await supabase
+              .from('users')
+              .select('*')
+              .eq('phone', phone)
+              .single();
+            userData = raceUser;
+          } else {
+            throw insertError;
+          }
         } else {
-          userData = updated;
+          userData = newUser;
         }
-      } else {
-        userData = existing;
       }
-    } else {
-      // New user — create profile
-      const { data: newUser, error: insertError } = await supabase
-        .from('users')
-        .insert([
-          {
-            phone,
-            name: trimmedName,
-            discount: 10, // 10% discount for all registered users
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ])
-        .select()
-        .single();
 
-      if (insertError) {
-        console.error('Insert error:', insertError);
-        // Handle unique constraint violation (race condition)
-        if (insertError.code === '23505') {
-          // Another request created the user — fetch it
-          const { data: raceUser } = await supabase
-            .from('users')
-            .select('*')
-            .eq('phone', phone)
-            .single();
-          userData = raceUser;
-        } else {
-          throw new Error('Ошибка регистрации. Попробуйте позже.');
-        }
-      } else {
-        userData = newUser;
-      }
+      if (!userData) throw new Error('Empty user payload from backend');
+
+      return persist(userData);
+    } catch (error) {
+      console.error('Registration backend error, using local session:', error);
+      return persist(buildSessionUser(phone, trimmedName));
     }
-
-    if (!userData) {
-      throw new Error('Не удалось создать профиль');
-    }
-
-    // Persist session
-    setUser(userData);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
-
-    return userData;
   }, []);
 
   // ─── Update Profile ───────────────────────────────────────────
