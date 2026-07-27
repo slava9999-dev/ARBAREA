@@ -16,17 +16,18 @@ const InstallPWA = () => {
 
   useEffect(() => {
     // 1. Платформа
-    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const iOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     setIsIOS(iOS);
 
     // 2. Уже установлено?
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       navigator.standalone === true;
-    
+
     if (isStandalone) {
       console.log('App is already installed');
-      return; 
+      return;
     }
 
     // 3. Слушаем событие браузера
@@ -65,7 +66,7 @@ const InstallPWA = () => {
       try {
         await prompt.prompt();
         const { outcome } = await prompt.userChoice;
-        
+
         if (outcome === 'accepted') {
           setShowBanner(false);
         } else {
@@ -128,18 +129,37 @@ const InstallPWA = () => {
                   <>
                     <p>Нажмите "Поделиться" и выберите "На экран Домой":</p>
                     <ol className="space-y-3">
-                      <li className="flex items-center gap-3"><Share size={16} className="text-blue-400" /> 1. Нажмите "Поделиться"</li>
-                      <li className="flex items-center gap-3"><span className="font-bold text-white">+</span> 2. "На экран Домой"</li>
-                      <li className="flex items-center gap-3"><span className="font-bold text-white">Add</span> 3. Нажмите "Добавить"</li>
+                      <li className="flex items-center gap-3">
+                        <Share size={16} className="text-blue-400" /> 1. Нажмите
+                        "Поделиться"
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <span className="font-bold text-white">+</span> 2. "На
+                        экран Домой"
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <span className="font-bold text-white">Add</span> 3.
+                        Нажмите "Добавить"
+                      </li>
                     </ol>
                   </>
                 ) : (
                   <>
                     <p>Добавьте через меню браузера:</p>
                     <ol className="space-y-3">
-                      <li className="flex items-center gap-3"><span className="font-bold text-white">⋮</span> 1. Нажмите меню (три точки)</li>
-                      <li className="flex items-center gap-3"><Download size={16} className="text-green-400" /> 2. "Установить приложение"</li>
-                      <li className="flex items-center gap-3"><span className="text-stone-400 text-xs">(Или "Добавить на гл. экран")</span></li>
+                      <li className="flex items-center gap-3">
+                        <span className="font-bold text-white">⋮</span> 1.
+                        Нажмите меню (три точки)
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <Download size={16} className="text-green-400" /> 2.
+                        "Установить приложение"
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <span className="text-stone-400 text-xs">
+                          (Или "Добавить на гл. экран")
+                        </span>
+                      </li>
                     </ol>
                   </>
                 )}
@@ -172,12 +192,16 @@ const InstallPWA = () => {
             </button>
             <div className="p-4 flex items-center gap-4">
               <div className="flex-shrink-0 w-12 h-12 bg-amber-600 rounded-xl flex items-center justify-center shadow-lg">
-                 {/* Fallback Icon */}
-                 <span className="text-white font-bold text-xl">A</span> 
+                {/* Fallback Icon */}
+                <span className="text-white font-bold text-xl">A</span>
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-white text-sm mb-0.5">Установить приложение</h4>
-                <p className="text-stone-400 text-[10px] leading-tight mb-2">Работает быстрее и оффлайн</p>
+                <h4 className="font-bold text-white text-sm mb-0.5">
+                  Установить приложение
+                </h4>
+                <p className="text-stone-400 text-[10px] leading-tight mb-2">
+                  Работает быстрее и оффлайн
+                </p>
                 <button
                   type="button"
                   onClick={handleInstall}

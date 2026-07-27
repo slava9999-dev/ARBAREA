@@ -23,13 +23,14 @@ class ErrorBoundary extends React.Component {
             <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="text-amber-500" size={32} />
             </div>
-            
+
             <h2 className="text-xl font-serif font-bold mb-3 text-white">
               Мастерская обновляется
             </h2>
-            
+
             <p className="text-stone-400 text-sm mb-8 leading-relaxed">
-              Произошла небольшая ошибка. Мы уже знаем о ней. Пожалуйста, перезагрузите страницу.
+              Произошла небольшая ошибка. Мы уже знаем о ней. Пожалуйста,
+              перезагрузите страницу.
             </p>
 
             <button

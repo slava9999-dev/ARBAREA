@@ -1,7 +1,14 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
-const OptimizedImage = ({ src, alt, className, width = 400, srcSet, sizes }) => {
+const OptimizedImage = ({
+  src,
+  alt,
+  className,
+  width = 400,
+  srcSet,
+  sizes,
+}) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 

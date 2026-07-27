@@ -39,7 +39,7 @@ jobs:
         run: npm run lint
 
       - name: 🎨 Biome Format Check
-        run: npx biome format --check src
+        run: npx biome format src
 
       - name: 📝 TypeScript Type Check
         run: npm run typecheck
