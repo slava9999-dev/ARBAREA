@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin,
@@ -378,7 +379,10 @@ const DeliverySelectorWithMap = ({
 
   if (!isOpen) return null;
 
-  return (
+  // Render at the document root: the app's <main> uses backdrop-filter +
+  // overflow-hidden, which would otherwise contain and clip this fixed
+  // overlay (and let the z-100 bottom nav paint over it, cutting the list).
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -392,7 +396,7 @@ const DeliverySelectorWithMap = ({
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="bg-wood-bg-card w-full sm:w-[500px] max-h-[90vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col border border-wood-amber/20 shadow-wood-glow-lg"
+          className="bg-wood-bg-card w-full sm:w-[500px] h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-none sm:rounded-3xl overflow-hidden flex flex-col border-0 sm:border sm:border-wood-amber/20 shadow-wood-glow-lg"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -846,7 +850,8 @@ const DeliverySelectorWithMap = ({
           )}
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 };
 
