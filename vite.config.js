@@ -23,11 +23,45 @@ export default defineConfig(({ mode }) => {
             strategies: 'generateSW',
             includeAssets: ['favicon.svg', 'icon.svg', 'icons/*.png'],
             workbox: {
-                globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+                // Precache only the app shell + icons. Product gallery images
+                // (~12 MB of webp) and videos are cached on demand at runtime
+                // instead of being downloaded upfront on install/update.
+                globPatterns: ['**/*.{js,css,html,ico,svg}', 'icons/*.png'],
                 cleanupOutdatedCaches: true,
                 clientsClaim: true,
                 skipWaiting: true,
                 runtimeCaching: [
+                    {
+                        urlPattern: ({ request, sameOrigin }) =>
+                            sameOrigin && request.destination === 'image',
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'product-images-cache',
+                            expiration: {
+                                maxEntries: 200,
+                                maxAgeSeconds: 60 * 60 * 24 * 30
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    },
+                    {
+                        urlPattern: ({ url, sameOrigin }) =>
+                            sameOrigin && url.pathname.endsWith('.mp4'),
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'product-video-cache',
+                            rangeRequests: true,
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 30
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    },
                     {
                         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
                         handler: 'CacheFirst',
