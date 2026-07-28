@@ -24,7 +24,7 @@ test.describe('Checkout Flow', () => {
     
     // Should show cart items
     await expect(page.getByText('Тестовый товар')).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText(/2[\s,]?500/)).toBeVisible();
+    await expect(page.getByText(/2[\s,]?500/).first()).toBeVisible();
   });
 
   test('should show checkout button when cart has items', async ({ page }) => {
@@ -42,8 +42,10 @@ test.describe('Checkout Flow', () => {
     const checkoutButton = page.getByRole('button', { name: /оформить|заказ|купить/i });
     await checkoutButton.click();
     
-    // Checkout modal should appear
-    await expect(page.getByText(/оформление|контактные данные|доставка/i)).toBeVisible({ timeout: 5000 });
+    // Cart uses an inline checkout form (contact details + delivery section).
+    await expect(
+      page.getByText(/оформление|контактные данные|доставка/i).first(),
+    ).toBeVisible({ timeout: 5000 });
   });
 
   test('should validate required fields in checkout', async ({ page }) => {

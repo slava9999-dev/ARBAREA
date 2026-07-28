@@ -115,12 +115,10 @@ describe('ProductContext', () => {
     // Simulate error
     supabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
-        order: jest
-          .fn()
-          .mockResolvedValue({
-            data: null,
-            error: { message: 'Connection failed' },
-          }),
+        order: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Connection failed' },
+        }),
       }),
     });
 

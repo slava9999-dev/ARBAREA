@@ -48,6 +48,11 @@ service-account.json
 # Vercel internal cache
 .vercel
 
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
 # Firebase & System Logs
 firebase-debug.log
 firestore-debug.log

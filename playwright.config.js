@@ -51,24 +51,19 @@ export default defineConfig({
     timezoneId: 'Europe/Moscow',
   },
 
-  // Configure projects for major browsers
+  // Configure projects for major browsers.
+  // CI installs only bundled Chromium (`playwright install chromium`), so every
+  // project uses Chromium rather than the system `chrome` channel or WebKit.
   projects: [
     {
       name: 'Mobile Chrome',
-      use: { 
+      use: {
         ...devices['Pixel 5'],
-        channel: 'chrome',
-      },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { 
-        ...devices['iPhone 14'],
       },
     },
     {
       name: 'Desktop Chrome',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 720 },
       },
