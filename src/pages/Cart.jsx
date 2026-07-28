@@ -14,6 +14,7 @@ import { useSimpleAuth } from '../context/SimpleAuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { initPayment } from '../lib/tinkoff';
+import { notifyNewOrder } from '../lib/notify';
 import { haptic } from '../lib/haptics';
 import SEO from '../components/seo/SEO';
 import {
@@ -199,6 +200,23 @@ const Cart = () => {
       );
 
       if (paymentUrl) {
+        // Notify the shop owner about the placed order (ntfy).
+        notifyNewOrder({
+          orderId,
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          total: finalTotal,
+          deliveryMethod:
+            selectedDelivery?.service?.name || selectedDelivery?.service?.id,
+          address: selectedDelivery?.address || formData.address,
+          items: cartItems.map((item) => ({
+            name: item.name,
+            quantity: item.quantity || 1,
+          })),
+          attribution: getAttribution(),
+        });
+
         // Track Purchase
         ecommercePurchase({
           orderId,

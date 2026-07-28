@@ -15,6 +15,8 @@ import {
   useCallback,
 } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { notifyNewClient } from '../lib/notify';
+import { getAttribution } from '../lib/yandex-metrica';
 
 const SimpleAuthContext = createContext({});
 export const useSimpleAuth = () => useContext(SimpleAuthContext);
@@ -120,9 +122,11 @@ export const SimpleAuthProvider = ({ children }) => {
           setUser(data);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         } else {
-          // User was deleted from DB → clear session
-          localStorage.removeItem(STORAGE_KEY);
-          setUser(null);
+          // No DB row for this phone. This is expected when the profile was
+          // created via the local fallback (e.g. backend insert blocked by
+          // RLS). Keep the cached session instead of logging the customer
+          // out — the phone-only session is valid client-side.
+          setUser(parsed);
         }
       } catch (error) {
         console.error('Session restore error:', error);
@@ -157,9 +161,28 @@ export const SimpleAuthProvider = ({ children }) => {
       return userData;
     };
 
+    const announceNewClient = (userData) => {
+      notifyNewClient({
+        name: userData.name,
+        phone: userData.phone,
+        discount: userData.discount,
+        attribution: getAttribution(),
+      });
+    };
+
     // Local-only mode: register without a backend so the flow never breaks.
     if (!isSupabaseConfigured) {
-      return persist(buildSessionUser(phone, trimmedName));
+      let cached = null;
+      try {
+        cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      } catch {
+        cached = null;
+      }
+      const sessionUser = buildSessionUser(phone, trimmedName);
+      if (cached?.phone !== phone) {
+        announceNewClient(sessionUser);
+      }
+      return persist(sessionUser);
     }
 
     // Backend mode: try to persist to Supabase, but never block the customer.
@@ -225,10 +248,15 @@ export const SimpleAuthProvider = ({ children }) => {
 
       if (!userData) throw new Error('Empty user payload from backend');
 
+      if (!existing) {
+        announceNewClient(userData);
+      }
       return persist(userData);
     } catch (error) {
       console.error('Registration backend error, using local session:', error);
-      return persist(buildSessionUser(phone, trimmedName));
+      const sessionUser = buildSessionUser(phone, trimmedName);
+      announceNewClient(sessionUser);
+      return persist(sessionUser);
     }
   }, []);
 

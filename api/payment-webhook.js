@@ -136,9 +136,10 @@ export default async function handler(req, res) {
       // 1. Mark products as sold
       await handleInventoryUpdate(order.items);
       
-      // 2. Send Telegram notification
+      // 2. Send notifications (Telegram + ntfy)
       if (Status === 'CONFIRMED' && Success) {
         await sendPaymentSuccessNotification(order, Amount);
+        await sendNtfyPaymentNotification(order, Amount);
       }
     }
 
@@ -204,6 +205,44 @@ ${itemsList}
     }
   } catch (error) {
     console.error('❌ Telegram notification error:', error);
+  }
+}
+
+async function sendNtfyPaymentNotification(order, amount) {
+  const base = (process.env.NTFY_URL || 'https://ntfy.sh').replace(/\/+$/, '');
+  const topic = process.env.NTFY_TOPIC || 'ARBAREA';
+
+  const itemsList =
+    order.items?.map((item) => `• ${item.name} ×${item.quantity}`).join('\n') ||
+    'Нет данных';
+
+  const message =
+    '💰 ОПЛАТА ПОЛУЧЕНА ARBAREA\n' +
+    `Заказ: ${order.order_id}\n` +
+    `Сумма: ${(amount / 100).toLocaleString('ru-RU')} ₽\n` +
+    `Клиент: ${order.user_name || '—'}\n` +
+    `Телефон: ${order.user_phone || '—'}\n` +
+    `Доставка: ${order.delivery_method || '—'}\n` +
+    `Адрес: ${order.delivery_address || '—'}\n` +
+    `Товары:\n${itemsList}`;
+
+  try {
+    const response = await fetch(`${base}/${topic}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        Tags: 'moneybag,white_check_mark',
+        Priority: '4',
+      },
+      body: message,
+    });
+    if (!response.ok) {
+      console.error('❌ ntfy API error:', await response.text());
+    } else {
+      console.log('✅ ntfy notification sent');
+    }
+  } catch (error) {
+    console.error('❌ ntfy notification error:', error);
   }
 }
 
