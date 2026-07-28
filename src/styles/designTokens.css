@@ -45,17 +45,30 @@
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 20px var(--wood-amber-glow);
-  --shadow-glow-lg: 0 0 40px var(--wood-amber-glow), 0 0 60px rgba(201, 164, 92, 0.2);
+  --shadow-glow-lg: 0 0 40px var(--wood-amber-glow), 0 0 60px
+    rgba(201, 164, 92, 0.2);
 
   /* Gradients */
-  --gradient-wood: linear-gradient(135deg, var(--wood-bark) 0%, var(--wood-bg) 100%);
-  --gradient-amber: linear-gradient(135deg, var(--wood-amber-dark) 0%, var(--wood-amber) 100%);
-  --gradient-card: linear-gradient(180deg, var(--wood-bg-card) 0%, var(--wood-bg-elevated) 100%);
+  --gradient-wood: linear-gradient(
+    135deg,
+    var(--wood-bark) 0%,
+    var(--wood-bg) 100%
+  );
+  --gradient-amber: linear-gradient(
+    135deg,
+    var(--wood-amber-dark) 0%,
+    var(--wood-amber) 100%
+  );
+  --gradient-card: linear-gradient(
+    180deg,
+    var(--wood-bg-card) 0%,
+    var(--wood-bg-elevated) 100%
+  );
 
   /* Typography Scale */
-  --font-display: 'Cormorant Garamond', 'Georgia', serif;
-  --font-body: 'Manrope', 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --font-display: "Cormorant Garamond", "Georgia", serif;
+  --font-body: "Manrope", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", monospace;
 
   /* Spacing (8px grid) */
   --space-1: 0.25rem; /* 4px */
@@ -92,8 +105,8 @@
   --premium-glow: 0 0 40px rgba(201, 164, 92, 0.15);
 
   /* Elevation — Многослойные тени в стиле iOS */
-  --shadow-apple:
-    0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.4);
+  --shadow-apple: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3), 0
+    12px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -115,14 +128,16 @@
 
 /* Glass Card — Стеклянная карточка с деревянным оттенком */
 .glass-wood {
-  background: linear-gradient(180deg, rgba(42, 37, 32, 0.9) 0%, rgba(26, 22, 20, 0.95) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(42, 37, 32, 0.9) 0%,
+    rgba(26, 22, 20, 0.95) 100%
+  );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--wood-border);
   border-radius: var(--radius-xl);
-  box-shadow:
-    var(--shadow-md),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* Wood Grain Texture — Текстура дерева */
@@ -131,11 +146,10 @@
 }
 
 .wood-grain::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background:
-    repeating-linear-gradient(
+  background: repeating-linear-gradient(
       90deg,
       transparent,
       transparent 2px,
@@ -159,7 +173,7 @@
 }
 
 .glow-border::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: -1px;
   background: linear-gradient(
