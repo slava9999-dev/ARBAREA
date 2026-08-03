@@ -11,25 +11,26 @@
  * - О компании
  */
 
+import { motion } from 'framer-motion';
 import {
-  Coffee,
-  FileText,
-  LogOut,
-  Star,
-  User as UserIcon,
-  Edit3,
   Check,
-  X,
-  MessageCircle,
+  Coffee,
+  Edit3,
+  FileText,
   Heart,
+  LogOut,
+  MessageCircle,
   Package,
   Settings,
+  Star,
+  X,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSimpleAuth } from '../../../context/SimpleAuthContext';
 import { useWishlist } from '../../../context/WishlistContext';
 import SocialFooter from '../../layout/SocialFooter';
+import { UserAvatar } from '../../ui/ChatAvatar';
 import DonateModal from './DonateModal';
 import IndividualOrderForm from './IndividualOrderForm';
 import OrderHistory from './OrderHistory';
@@ -84,20 +85,36 @@ const ProfileView = () => {
     window.open('https://t.me/arbarea', '_blank');
   };
 
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+  };
+  const item = {
+    hidden: { opacity: 0, y: 16 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', damping: 20, stiffness: 260 },
+    },
+  };
+
   return (
     <div className="pb-32 pt-20 px-4 animate-slide-up">
       {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div className="flex gap-4 items-center flex-1">
-          <div className="w-16 h-16 bg-stone-800 rounded-full overflow-hidden border-2 border-stone-700 shadow-lg flex items-center justify-center shrink-0">
+          <div className="relative shrink-0">
+            <div className="absolute -inset-1 rounded-full bg-wood-amber/30 blur-md" />
             {avatarUrl ? (
               <img
                 src={avatarUrl}
                 alt={displayName}
-                className="w-full h-full object-cover"
+                className="relative w-16 h-16 rounded-full object-cover border-2 border-wood-amber/40 shadow-lg"
               />
             ) : (
-              <UserIcon className="text-stone-500" size={32} />
+              <div className="relative">
+                <UserAvatar name={displayName} size="lg" />
+              </div>
             )}
           </div>
           <div className="min-w-0 flex-1">
@@ -132,9 +149,13 @@ const ProfileView = () => {
               </div>
             )}
             {!isEditing && (
-              <span className="inline-block mt-1 px-3 py-1 bg-amber-500/10 text-amber-500 text-[10px] font-bold uppercase tracking-wider rounded-full border border-amber-500/20">
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center mt-1 px-3 py-1 bg-wood-amber/15 text-wood-amber text-[10px] font-bold uppercase tracking-wider rounded-full border border-wood-amber/30 shadow-wood-glow"
+              >
                 ✨ Скидка 10%
-              </span>
+              </motion.span>
             )}
           </div>
         </div>
@@ -181,42 +202,61 @@ const ProfileView = () => {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-stone-800/50 rounded-2xl p-3 text-center border border-white/5">
-          <Package className="mx-auto text-amber-500 mb-1" size={20} />
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-3 gap-3 mb-6"
+      >
+        <motion.div
+          variants={item}
+          className="bg-wood-bg-elevated/60 rounded-2xl p-3 text-center border border-white/5"
+        >
+          <Package className="mx-auto text-wood-amber mb-1" size={20} />
           <p className="text-lg font-bold text-white">0</p>
-          <p className="text-[10px] text-stone-400">Заказов</p>
-        </div>
-        <button
+          <p className="text-[10px] text-wood-text-muted">Заказов</p>
+        </motion.div>
+        <motion.button
+          variants={item}
+          whileTap={{ scale: 0.95 }}
           type="button"
           onClick={() => navigate('/wishlist')}
-          className="bg-stone-800/50 rounded-2xl p-3 text-center border border-white/5 hover:border-pink-500/30 transition-colors"
+          className="bg-wood-bg-elevated/60 rounded-2xl p-3 text-center border border-white/5 hover:border-pink-500/30 transition-colors"
         >
           <Heart className="mx-auto text-pink-500 mb-1" size={20} />
           <p className="text-lg font-bold text-white">
             {wishlist?.length || 0}
           </p>
-          <p className="text-[10px] text-stone-400">В избранном</p>
-        </button>
-        <button
+          <p className="text-[10px] text-wood-text-muted">В избранном</p>
+        </motion.button>
+        <motion.button
+          variants={item}
+          whileTap={{ scale: 0.95 }}
           type="button"
           onClick={openTelegram}
-          className="bg-stone-800/50 rounded-2xl p-3 text-center border border-white/5 hover:border-blue-500/30 transition-colors"
+          className="bg-wood-bg-elevated/60 rounded-2xl p-3 text-center border border-white/5 hover:border-blue-500/30 transition-colors"
         >
           <MessageCircle className="mx-auto text-blue-400 mb-1" size={20} />
           <p className="text-lg font-bold text-white">TG</p>
-          <p className="text-[10px] text-stone-400">Чат</p>
-        </button>
-      </div>
+          <p className="text-[10px] text-wood-text-muted">Чат</p>
+        </motion.button>
+      </motion.div>
 
       {/* Gamification Grid */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 gap-3 mb-8"
+      >
         {/* Карточка Клуба VK */}
-        <a
+        <motion.a
+          variants={item}
+          whileTap={{ scale: 0.96 }}
           href="https://vk.com/arbarea_nn?w=donut_payment-229247954&levelId=2246"
           target="_blank"
           rel="noopener noreferrer"
-          className="relative overflow-hidden bg-gradient-to-br from-[#0077FF] to-[#0055CC] text-white p-4 rounded-2xl shadow-lg border border-white/10 text-left group active:scale-95 transition-transform block"
+          className="relative overflow-hidden bg-gradient-to-br from-[#0077FF] to-[#0055CC] text-white p-4 rounded-2xl shadow-lg border border-white/10 text-left group block"
         >
           <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-4 -mt-4" />
           <Star
@@ -228,13 +268,15 @@ const ProfileView = () => {
             VK Donut
           </div>
           <div className="text-[10px] text-white/70 mt-1">Закрытый клуб</div>
-        </a>
+        </motion.a>
 
         {/* Карточка Доната */}
-        <button
+        <motion.button
+          variants={item}
+          whileTap={{ scale: 0.96 }}
           type="button"
           onClick={() => setShowDonateModal(true)}
-          className="bg-gradient-to-br from-amber-600 to-orange-600 p-4 rounded-2xl shadow-lg border border-white/10 text-left flex flex-col justify-between group hover:from-amber-500 hover:to-orange-500 active:scale-95 transition-all text-white"
+          className="bg-gradient-to-br from-amber-600 to-orange-600 p-4 rounded-2xl shadow-lg border border-white/10 text-left flex flex-col justify-between group hover:from-amber-500 hover:to-orange-500 transition-all text-white"
         >
           <Coffee
             className="group-hover:scale-110 transition-transform"
@@ -248,13 +290,15 @@ const ProfileView = () => {
               Угостить мастера ☕
             </div>
           </div>
-        </button>
+        </motion.button>
 
         {/* Карточка О компании */}
-        <button
+        <motion.button
+          variants={item}
+          whileTap={{ scale: 0.96 }}
           type="button"
           onClick={() => navigate('/legal')}
-          className="bg-white/5 p-4 rounded-2xl shadow-lg border border-white/10 text-left flex flex-col justify-between group hover:border-emerald-500/50 active:scale-95 transition-all"
+          className="bg-wood-bg-elevated/60 p-4 rounded-2xl shadow-lg border border-white/10 text-left flex flex-col justify-between group hover:border-emerald-500/50 transition-all"
         >
           <FileText
             className="text-emerald-500 group-hover:scale-110 transition-transform"
@@ -264,17 +308,19 @@ const ProfileView = () => {
             <div className="font-bold text-white text-sm leading-tight font-serif">
               О компании
             </div>
-            <div className="text-[10px] text-stone-400 mt-1">
+            <div className="text-[10px] text-wood-text-muted mt-1">
               Реквизиты и оферта
             </div>
           </div>
-        </button>
+        </motion.button>
 
         {/* Настройки */}
-        <button
+        <motion.button
+          variants={item}
+          whileTap={{ scale: 0.96 }}
           type="button"
           onClick={startEditing}
-          className="bg-white/5 p-4 rounded-2xl shadow-lg border border-white/10 text-left flex flex-col justify-between group hover:border-stone-500/50 active:scale-95 transition-all"
+          className="bg-wood-bg-elevated/60 p-4 rounded-2xl shadow-lg border border-white/10 text-left flex flex-col justify-between group hover:border-stone-500/50 transition-all"
         >
           <Settings
             className="text-stone-400 group-hover:text-white group-hover:scale-110 transition-all"
@@ -284,12 +330,12 @@ const ProfileView = () => {
             <div className="font-bold text-white text-sm leading-tight font-serif">
               Настройки
             </div>
-            <div className="text-[10px] text-stone-400 mt-1">
+            <div className="text-[10px] text-wood-text-muted mt-1">
               Редактировать профиль
             </div>
           </div>
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       <OrderHistory />
       <IndividualOrderForm />
