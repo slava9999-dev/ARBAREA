@@ -29,9 +29,17 @@ const ProductCarousel = ({ images }) => {
     }),
   };
 
-  const swipeConfidenceThreshold = 5000;
+  const swipeConfidenceThreshold = 4000;
   const swipePower = (offset, velocity) => {
     return Math.abs(offset) * velocity;
+  };
+
+  // Trigger a page change on a fast flick OR a deliberate drag past ~20% width
+  const resolveSwipe = (offset, velocity) => {
+    const power = swipePower(offset.x, velocity.x);
+    if (power < -swipeConfidenceThreshold || offset.x < -80) return 1;
+    if (power > swipeConfidenceThreshold || offset.x > 80) return -1;
+    return 0;
   };
 
   const paginate = (newDirection) => {
@@ -50,7 +58,7 @@ const ProductCarousel = ({ images }) => {
   return (
     <>
       <div className="relative w-full h-full bg-stone-200 dark:bg-stone-800 overflow-hidden group/carousel touch-pan-x">
-        <AnimatePresence initial={false} custom={direction} mode="wait">
+        <AnimatePresence initial={false} custom={direction}>
           <motion.img
             key={currentIndex}
             src={images[currentIndex]}
@@ -60,24 +68,22 @@ const ProductCarousel = ({ images }) => {
             animate="center"
             exit="exit"
             transition={{
-              x: { type: 'spring', stiffness: 200, damping: 25 },
-              opacity: { duration: 0.15 },
+              x: { type: 'spring', stiffness: 260, damping: 30 },
+              opacity: { duration: 0.2 },
             }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.5}
-            dragTransition={{ bounceStiffness: 300, bounceDamping: 20 }}
+            dragElastic={0.2}
+            dragTransition={{ bounceStiffness: 400, bounceDamping: 30 }}
             onDragStart={(e) => e.stopPropagation()}
             onDragEnd={(_e, { offset, velocity }) => {
-              const swipe = swipePower(offset.x, velocity.x);
-
-              if (swipe < -swipeConfidenceThreshold) {
-                paginate(1);
-              } else if (swipe > swipeConfidenceThreshold) {
-                paginate(-1);
-              }
+              const dir = resolveSwipe(offset, velocity);
+              if (dir !== 0) paginate(dir);
             }}
-            className="absolute w-full h-full object-cover select-none"
+            onTap={(_e, info) => {
+              if (Math.abs(info.offset?.x || 0) < 10) openLightbox(_e);
+            }}
+            className="absolute w-full h-full object-cover select-none cursor-zoom-in"
             alt={`Slide ${currentIndex + 1}`}
             style={{ touchAction: 'pan-x' }}
           />
@@ -174,11 +180,10 @@ const ProductCarousel = ({ images }) => {
                   }}
                   drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={1}
+                  dragElastic={0.6}
                   onDragEnd={(_e, { offset, velocity }) => {
-                    const swipe = swipePower(offset.x, velocity.x);
-                    if (swipe < -swipeConfidenceThreshold) paginate(1);
-                    else if (swipe > swipeConfidenceThreshold) paginate(-1);
+                    const dir = resolveSwipe(offset, velocity);
+                    if (dir !== 0) paginate(dir);
                   }}
                   className="absolute max-w-full max-h-full object-contain"
                 />
