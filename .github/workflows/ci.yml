@@ -143,11 +143,14 @@ jobs:
         run: npm audit --audit-level=high
         continue-on-error: true
 
+      # Requires the repo's Dependency graph to be enabled
+      # (Settings → Code security and analysis). Kept non-blocking until then.
       - name: 🛡️ Dependency Review
         if: github.event_name == 'pull_request'
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high
+        continue-on-error: true
 
   # ============================================
   # 5. LIGHTHOUSE PERFORMANCE AUDIT
