@@ -1,106 +1,193 @@
-import { Bot, Loader2, Send, User } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Send, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { sendMessageToAI } from '../lib/ai-assistant';
-import { useSimpleAuth } from '../context/SimpleAuthContext';
 import SEO from '../components/seo/SEO';
+import { AssistantAvatar, UserAvatar } from '../components/ui/ChatAvatar';
+import { useSimpleAuth } from '../context/SimpleAuthContext';
+import { sendMessageToAI } from '../lib/ai-assistant';
+import { haptic } from '../lib/haptics';
+
+const GREETING =
+  'Здравствуйте! Я Арбо — цифровой мастер студии ARBAREA 🌳 Помогу выбрать вещь из натурального дерева: под интерьер, в подарок или на заказ. С чего начнём?';
+
+const QUICK_REPLIES = [
+  'Панно для гостиной',
+  'Идея в подарок',
+  'Что-то для кухни',
+  'Индивидуальный заказ',
+];
+
+const TypingDots = () => (
+  <div className="flex items-center gap-1.5 py-1">
+    {[0, 1, 2].map((i) => (
+      <motion.span
+        key={i}
+        className="w-2 h-2 rounded-full bg-wood-amber"
+        animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
+        transition={{
+          duration: 1,
+          repeat: Number.POSITIVE_INFINITY,
+          delay: i * 0.18,
+        }}
+      />
+    ))}
+  </div>
+);
 
 const AIChat = () => {
   const { user } = useSimpleAuth();
-  const [messages, setMessages] = useState([
-    {
-      text: 'Добро пожаловать в Arbarea! Я помогу вам выбрать изделия из натурального дерева. Что вас интересует: панно, рейлинги или освещение?',
-      sender: 'ai',
-    },
-  ]);
+  const [messages, setMessages] = useState([{ text: GREETING, sender: 'ai' }]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: need to scroll on messages change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isLoading]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const send = async (text) => {
+    const value = (text ?? input).trim();
+    if (!value || isLoading) return;
 
-    const userMessage = { text: input, sender: 'user' };
-    setMessages((prev) => [...prev, userMessage]);
+    haptic(10);
+    const nextMessages = [...messages, { text: value, sender: 'user' }];
+    setMessages(nextMessages);
     setInput('');
     setIsLoading(true);
 
     try {
-      // No JWT token needed — auth is optional for AI chat
-      const responseText = await sendMessageToAI(messages, input, null);
-
+      const responseText = await sendMessageToAI(messages, value, null);
       setMessages((prev) => [...prev, { text: responseText, sender: 'ai' }]);
     } catch (_error) {
       setMessages((prev) => [
         ...prev,
-        { text: 'Произошла ошибка. Попробуйте позже.', sender: 'ai' },
+        {
+          text: 'Ой, связь с мастерской прервалась. Попробуйте, пожалуйста, ещё раз.',
+          sender: 'ai',
+        },
       ]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const showQuickReplies = messages.length === 1 && !isLoading;
+
   return (
-    <div className="pt-20 pb-24 px-4 h-screen flex flex-col bg-[#1c1917]">
+    <div className="pt-16 pb-24 px-4 h-screen flex flex-col bg-wood-bg">
       <SEO
         title="AI-консультант"
         description="Подберите изделие Arbarea из массива дерева с помощью умного консультанта."
         url="/ai"
         noindex
       />
-      <div className="flex-1 overflow-y-auto space-y-4 pb-32 custom-scrollbar">
-        {messages.map((m, i) => (
-          <div
-            // biome-ignore lint/suspicious/noArrayIndexKey: messages list is append-only
-            key={i}
-            className={`flex gap-3 ${m.sender === 'user' ? 'flex-row-reverse' : ''}`}
-          >
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${m.sender === 'user' ? 'bg-amber-600 text-white' : 'bg-stone-800 border border-white/10 text-amber-500'}`}
-            >
-              {m.sender === 'user' ? <User size={16} /> : <Bot size={16} />}
-            </div>
-            <div
-              className={`p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed ${m.sender === 'user' ? 'bg-amber-600 text-white rounded-tr-none shadow-[0_0_15px_rgba(217,119,6,0.2)]' : 'bg-stone-800/80 border border-white/5 text-stone-200 rounded-tl-none backdrop-blur-sm'}`}
-            >
-              {m.text}
-            </div>
+
+      {/* Assistant header */}
+      <div className="shrink-0 mt-2 mb-3 flex items-center gap-3 rounded-2xl bg-wood-bg-card/80 backdrop-blur-xl border border-wood-amber/15 px-4 py-3 shadow-wood-sm">
+        <AssistantAvatar size="md" animated={isLoading} />
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="font-serif text-lg text-wood-amber leading-none">
+              Арбо
+            </h1>
+            <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              на связи
+            </span>
           </div>
-        ))}
+          <p className="text-xs text-wood-text-muted mt-0.5 truncate">
+            Цифровой мастер ARBAREA
+          </p>
+        </div>
+        <Sparkles size={18} className="ml-auto text-wood-amber/60 shrink-0" />
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto space-y-4 pb-40 custom-scrollbar">
+        <AnimatePresence initial={false}>
+          {messages.map((m, i) => (
+            <motion.div
+              // biome-ignore lint/suspicious/noArrayIndexKey: append-only list
+              key={i}
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 260 }}
+              className={`flex gap-2.5 items-end ${m.sender === 'user' ? 'flex-row-reverse' : ''}`}
+            >
+              {m.sender === 'user' ? (
+                <UserAvatar name={user?.name} size="sm" />
+              ) : (
+                <AssistantAvatar size="sm" />
+              )}
+              <div
+                className={`p-4 rounded-2xl max-w-[78%] text-sm leading-relaxed whitespace-pre-wrap shadow-lg ${
+                  m.sender === 'user'
+                    ? 'bg-gradient-to-br from-wood-amber to-[#a8834a] text-[#1a1614] font-medium rounded-br-md'
+                    : 'bg-wood-bg-elevated/90 border border-wood-amber/15 text-wood-text-secondary rounded-bl-md backdrop-blur-sm'
+                }`}
+              >
+                {m.text}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
         {isLoading && (
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-stone-800 border border-white/10 flex items-center justify-center text-amber-500">
-              <Bot size={16} />
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex gap-2.5 items-end"
+          >
+            <AssistantAvatar size="sm" animated />
+            <div className="bg-wood-bg-elevated/90 border border-wood-amber/15 px-4 py-3 rounded-2xl rounded-bl-md backdrop-blur-sm">
+              <TypingDots />
             </div>
-            <div className="bg-stone-800/80 border border-white/5 p-4 rounded-2xl rounded-tl-none flex items-center gap-2 text-stone-400 text-sm backdrop-blur-sm">
-              <Loader2 size={16} className="animate-spin text-amber-500" />{' '}
-              Печатает...
-            </div>
-          </div>
+          </motion.div>
         )}
+
+        {/* Quick-reply chips */}
+        {showQuickReplies && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="flex flex-wrap gap-2 pt-1 pl-11"
+          >
+            {QUICK_REPLIES.map((q) => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => send(q)}
+                className="px-3.5 py-2 rounded-full text-xs font-semibold text-wood-amber bg-wood-amber/10 border border-wood-amber/25 hover:bg-wood-amber/20 active:scale-95 transition-all"
+              >
+                {q}
+              </button>
+            ))}
+          </motion.div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="fixed bottom-28 left-0 right-0 p-4 bg-gradient-to-t from-[#1c1917] via-[#1c1917] to-transparent z-10">
+      {/* Input */}
+      <div className="fixed bottom-24 left-0 right-0 p-4 bg-gradient-to-t from-wood-bg via-wood-bg to-transparent z-10">
         <div className="max-w-md mx-auto">
-          <div className="flex bg-stone-800/90 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-xl">
+          <div className="flex items-center gap-2 bg-wood-bg-card/90 backdrop-blur-xl p-2 rounded-2xl border border-wood-amber/20 shadow-wood-glow">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              className="flex-1 px-4 outline-none text-white placeholder:text-stone-500 bg-transparent"
-              placeholder="Спросите про мебель..."
+              onKeyDown={(e) => e.key === 'Enter' && send()}
+              className="flex-1 px-3 outline-none text-white placeholder:text-wood-text-muted bg-transparent border-0 focus:ring-0"
+              placeholder="Напишите Арбо…"
               disabled={isLoading}
             />
             <button
               type="button"
-              onClick={handleSend}
+              onClick={() => send()}
               disabled={isLoading || !input.trim()}
-              className="p-3 bg-amber-600 text-white rounded-xl hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-[0_0_15px_rgba(217,119,6,0.3)]"
+              aria-label="Отправить сообщение"
+              className="btn-primary !px-0 w-11 h-11 rounded-xl shrink-0 disabled:opacity-40"
             >
               <Send size={18} />
             </button>

@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useToast } from '../../context/ToastContext';
-import { GOALS, reachGoal } from '../../lib/yandex-metrica';
 import { haptic } from '../../lib/haptics';
+import { GOALS, reachGoal } from '../../lib/yandex-metrica';
 import OptimizedImage from '../ui/OptimizedImage';
 
 /**
@@ -280,7 +280,7 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
           <button
             type="button"
             onClick={handleAddToCart}
-            className="flex-1 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-white/5 text-stone-200 border border-white/10 hover:border-wood-amber/40 active:scale-[0.98] transition-all"
+            className="flex-1 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-transparent text-wood-amber border border-wood-amber/40 hover:bg-wood-amber/10 hover:border-wood-amber active:scale-[0.98] transition-all"
           >
             <ShoppingBag size={18} />
             <span>В корзину</span>

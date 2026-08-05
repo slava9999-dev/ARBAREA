@@ -1,15 +1,15 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   ChevronLeft,
   ChevronRight,
-  ShoppingBag,
   Maximize2,
+  ShoppingBag,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
-import { GOALS, reachGoal } from '../../lib/yandex-metrica';
 import { haptic } from '../../lib/haptics';
+import { GOALS, reachGoal } from '../../lib/yandex-metrica';
 import FullScreenImageViewer from '../ui/FullScreenImageViewer';
 
 const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
@@ -281,7 +281,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                   });
                   if (onOpenModal) onOpenModal(product);
                 }}
-                className="flex-1 h-8 bg-white/5 text-stone-300 hover:bg-stone-200/10 active:scale-95 transition-all duration-200 rounded-lg flex items-center justify-center gap-1 border border-white/10 hover:border-wood-amber/40 text-[10px] font-bold uppercase tracking-tight px-1"
+                className="flex-1 h-8 bg-transparent text-wood-amber hover:bg-wood-amber/10 active:scale-95 transition-all duration-200 rounded-lg flex items-center justify-center gap-1 border border-wood-amber/40 hover:border-wood-amber text-[10px] font-bold uppercase tracking-tight px-1"
               >
                 <span className="whitespace-nowrap">Подробнее</span>
               </button>
