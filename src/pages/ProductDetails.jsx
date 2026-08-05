@@ -6,10 +6,10 @@ import {
   ShoppingBag,
   Star,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ProductCarousel from '../components/features/ProductCarousel';
-import TactileButton from '../components/ui/TactileButton';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -329,20 +329,18 @@ const ProductDetails = () => {
                 Продано
               </button>
             ) : (
-              <TactileButton
+              <motion.button
+                type="button"
                 onClick={handleAddToCart}
-                className="w-full py-4 text-base bg-amber-600 text-white shadow-[0_0_20px_rgba(217,119,6,0.4)] hover:bg-amber-500 border-none"
+                whileTap={{ scale: 0.97 }}
+                className="btn-primary w-full py-4 text-base justify-between px-5"
               >
-                <div className="flex items-center justify-between w-full px-4">
-                  <span>Добавить в корзину</span>
-                  <div className="flex items-center gap-2 bg-black/20 px-3 py-1 rounded-lg">
-                    <span className="font-mono">
-                      {currentPrice.toLocaleString()} ₽
-                    </span>
-                    <ShoppingBag size={18} />
-                  </div>
-                </div>
-              </TactileButton>
+                <span>Добавить в корзину</span>
+                <span className="flex items-center gap-2 bg-black/15 px-3 py-1 rounded-lg font-mono">
+                  {currentPrice.toLocaleString()} ₽
+                  <ShoppingBag size={18} />
+                </span>
+              </motion.button>
             )}
           </div>
         </div>
