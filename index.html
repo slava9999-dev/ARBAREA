@@ -21,27 +21,42 @@
   <link rel="preload" as="image" href="/images/products/panno_echo_1.webp" fetchpriority="high">
 
   <!-- Primary Meta Tags -->
-  <title>Arbarea | Premium Woodworking</title>
-  <meta name="title" content="Arbarea | Premium Woodworking">
+  <title>ARBAREA — изделия из натурального дерева ручной работы</title>
+  <meta name="title" content="ARBAREA — изделия из натурального дерева ручной работы">
   <meta name="description"
-    content="Эксклюзивная мебель и декор из массива дерева ручной работы. Создаем уют и стиль в вашем доме. Индивидуальные заказы, доставка по РФ. Вступайте в закрытый клуб ценителей.">
+    content="Панно, подставки и аксессуары из массива дуба и ясеня. Каждое изделие делаем своими руками — второго такого не будет. Скидка 10% на первый заказ, доставка по всей России.">
   <meta name="keywords"
     content="мебель из дерева, деревянное панно, авторская столярная мастерская, изделия из дуба, ручная работа, декор из дерева">
+  <link rel="canonical" href="%SITE_URL%/">
 
-  <!-- Open Graph / Facebook -->
+  <!-- Social share card. These static tags are what VK / Telegram / WhatsApp
+       read: their crawlers do not execute JS, so the runtime tags rendered by
+       src/components/seo/SEO.jsx never reach them. %SITE_URL% is substituted at
+       build time (see vite.config.js) — social crawlers require absolute URLs. -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://arbarea.ru/">
-  <meta property="og:title" content="Arbarea | Premium Woodworking">
+  <meta property="og:site_name" content="ARBAREA">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:url" content="%SITE_URL%/">
+  <meta property="og:title" content="ARBAREA — изделия из натурального дерева ручной работы">
   <meta property="og:description"
-    content="Эксклюзивная мебель и декор из массива дерева ручной работы.">
-  <meta property="og:image" content="https://arbarea.ru/og-image.jpg">
+    content="Панно, подставки и аксессуары из массива дуба и ясеня. Каждое изделие делаем своими руками — второго такого не будет. Скидка 10% на первый заказ, доставка по всей России.">
+  <meta property="og:image" content="%SITE_URL%/og-image.jpg">
+  <meta property="og:image:secure_url" content="%SITE_URL%/og-image.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ARBAREA — панно из массива дерева ручной работы в интерьере">
+
+  <!-- VK reads og:*, but falls back to vk:image when it is present. -->
+  <meta property="vk:image" content="%SITE_URL%/og-image.jpg">
 
   <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://arbarea.ru/">
-  <meta property="twitter:title" content="Arbarea | Premium Woodworking">
-  <meta property="twitter:description" content="Эксклюзивная мебель и декор из массива дерева ручной работы.">
-  <meta property="twitter:image" content="https://arbarea.ru/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="%SITE_URL%/">
+  <meta name="twitter:title" content="ARBAREA — изделия из натурального дерева ручной работы">
+  <meta name="twitter:description"
+    content="Панно, подставки и аксессуары из массива дуба и ясеня. Каждое изделие делаем своими руками — второго такого не будет.">
+  <meta name="twitter:image" content="%SITE_URL%/og-image.jpg">
 
 
 

@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Manrope:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    /* Social share card for ARBAREA — rendered to public/og-image.jpg
+       by scripts/generate-og-image.mjs. Palette mirrors tailwind.config.js
+       (wenge backgrounds + wood-amber accents). */
+    :root {
+      --base: #14100e;
+      --surface: #1a1614;
+      --amber: #c9a45c;
+      --amber-light: #dbb978;
+      --amber-dark: #a8834a;
+      --ivory: #f5efe6;
+      --muted: #bdb3a7;
+      --faint: #8a7f74;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      background: var(--base);
+      font-family: 'Manrope', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .card {
+      position: relative;
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      background:
+        radial-gradient(900px 620px at 12% -12%, rgba(201, 164, 92, 0.16), transparent 62%),
+        linear-gradient(155deg, #1f1a16 0%, #14100e 58%, #100d0b 100%);
+    }
+
+    /* Fine wood-grain striations, barely-there so it reads as texture not pattern. */
+    .grain {
+      position: absolute;
+      inset: 0;
+      opacity: 0.5;
+      background-image:
+        repeating-linear-gradient(96deg,
+          rgba(255, 255, 255, 0.028) 0px,
+          rgba(255, 255, 255, 0.028) 1px,
+          transparent 1px,
+          transparent 7px),
+        repeating-linear-gradient(94deg,
+          rgba(0, 0, 0, 0.16) 0px,
+          rgba(0, 0, 0, 0.16) 2px,
+          transparent 2px,
+          transparent 23px);
+    }
+
+    /* Product photograph, full-bleed on the right, dissolved into the wenge. */
+    .photo {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 620px;
+      height: 630px;
+      overflow: hidden;
+    }
+
+    .photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 58% 44%;
+      transform: scale(1.14);
+      transform-origin: 62% 46%;
+      filter: saturate(1.06) contrast(1.06) brightness(0.95);
+    }
+
+    .photo::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, #14100e 0%, rgba(20, 16, 14, 0.97) 18%, rgba(20, 16, 14, 0.55) 44%, rgba(20, 16, 14, 0.08) 76%, transparent 100%),
+        linear-gradient(0deg, rgba(20, 16, 14, 0.6) 0%, transparent 42%),
+        linear-gradient(180deg, rgba(20, 16, 14, 0.35) 0%, transparent 30%);
+    }
+
+    /* Hairline gold seam where the photo meets the copy. */
+    .seam {
+      position: absolute;
+      top: 0;
+      left: 596px;
+      width: 1px;
+      height: 630px;
+      background: linear-gradient(180deg, transparent, rgba(201, 164, 92, 0.55) 42%, transparent);
+    }
+
+    .frame {
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(201, 164, 92, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--amber-dark), var(--amber-light) 34%, var(--amber-dark) 62%, rgba(168, 131, 74, 0.15));
+    }
+
+    .content {
+      position: absolute;
+      inset: 0;
+      padding: 62px 68px 58px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 690px;
+    }
+
+    /* ---- brand lockup ---- */
+    .brand { display: flex; align-items: center; gap: 20px; }
+
+    .mark {
+      position: relative;
+      width: 68px;
+      height: 68px;
+      flex: none;
+      border-radius: 20px;
+      background: linear-gradient(145deg, #2c251f, #1b1614);
+      border: 1px solid rgba(201, 164, 92, 0.42);
+      box-shadow: 0 0 26px rgba(201, 164, 92, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+      display: grid;
+      place-items: center;
+    }
+
+    .mark svg { width: 40px; height: 40px; display: block; }
+
+    .wordmark {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 600;
+      font-size: 55px;
+      line-height: 1;
+      letter-spacing: 0.2em;
+      background: linear-gradient(100deg, #a8834a 0%, #e3c689 42%, #c9a45c 78%, #a8834a 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .kicker {
+      margin-top: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+
+    /* ---- headline block ---- */
+    .rule {
+      width: 74px;
+      height: 2px;
+      margin-bottom: 26px;
+      background: linear-gradient(90deg, var(--amber), rgba(201, 164, 92, 0));
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 400;
+      font-size: 66px;
+      line-height: 1.04;
+      color: var(--ivory);
+      letter-spacing: 0.004em;
+    }
+
+    h1 em {
+      display: block;
+      font-style: normal;
+      font-weight: 600;
+      background: linear-gradient(100deg, #dbb978, #c9a45c 55%, #a8834a);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .lede {
+      margin-top: 22px;
+      max-width: 520px;
+      font-size: 21px;
+      line-height: 1.5;
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    /* ---- trust pills ---- */
+    .pills { display: flex; align-items: center; gap: 12px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    }
+
+    .pill svg { width: 17px; height: 17px; flex: none; }
+
+    .pill--gold {
+      color: #1a1614;
+      background: linear-gradient(135deg, var(--amber-light), var(--amber-dark));
+      border-color: rgba(219, 185, 120, 0.7);
+      box-shadow: 0 6px 22px rgba(201, 164, 92, 0.34);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="photo">
+      <img src="../public/images/products/panno_gortenziya_1.webp" alt="">
+    </div>
+    <div class="grain"></div>
+    <div class="seam"></div>
+    <div class="frame"></div>
+
+    <div class="content">
+      <div>
+        <div class="brand">
+          <div class="mark">
+            <!-- Growth mark: trunk with wood-grain rings, echoes public/icon.svg -->
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M24 44V16" stroke="#dbb978" stroke-width="3.2" stroke-linecap="round"/>
+              <path d="M24 26 13.5 19.5M24 26l10.5-6.5" stroke="#c9a45c" stroke-width="2.6" stroke-linecap="round"/>
+              <path d="M24 34 15 29M24 34l9-5" stroke="#a8834a" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M12.5 16a11.5 11.5 0 0 1 23 0" stroke="#dbb978" stroke-width="2.2" stroke-linecap="round" opacity="0.85"/>
+              <path d="M6.5 15A17.5 17.5 0 0 1 41.5 15" stroke="#c9a45c" stroke-width="1.8" stroke-linecap="round" opacity="0.45"/>
+            </svg>
+          </div>
+          <div>
+            <div class="wordmark">ARBAREA</div>
+            <div class="kicker">Авторская столярная мастерская</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="rule"></div>
+        <h1>Живое дерево<em>ручной работы</em></h1>
+        <p class="lede">
+          Панно, подставки и аксессуары из массива дуба и ясеня.
+          Каждое изделие — единственное.
+        </p>
+      </div>
+
+      <div class="pills">
+        <span class="pill pill--gold">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <path d="M19 5 5 19"/><circle cx="7.5" cy="7.5" r="2.6"/><circle cx="16.5" cy="16.5" r="2.6"/>
+          </svg>
+          Скидка 10% на первый заказ
+        </span>
+        <span class="pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a45c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 6.5h10.5v10H2z"/><path d="M12.5 10h4l3 3.2v3.3h-7z"/>
+            <circle cx="6" cy="18.5" r="1.9"/><circle cx="16" cy="18.5" r="1.9"/>
+          </svg>
+          Доставка по России
+        </span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
