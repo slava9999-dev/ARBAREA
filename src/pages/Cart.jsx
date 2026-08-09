@@ -238,7 +238,11 @@ const Cart = () => {
       }
     } catch (err) {
       console.error(err);
-      setError('Ошибка инициализации оплаты. Попробуйте позже.');
+      setError(
+        err?.message
+          ? `Не удалось начать оплату: ${err.message}`
+          : 'Ошибка инициализации оплаты. Попробуйте позже.',
+      );
       setStep('form');
     }
   };
