@@ -1,16 +1,25 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import PropTypes from 'prop-types';
+import {
+  SHARE_DESCRIPTION,
+  SHARE_IMAGE_ALT,
+  SHARE_IMAGE_HEIGHT,
+  SHARE_IMAGE_PATH,
+  SHARE_IMAGE_WIDTH,
+  SHARE_TITLE,
+  SITE_NAME,
+  resolveSiteUrl,
+} from '../../config/site.js';
 
-const SITE_URL = 'https://arbarea.ru';
-const SITE_TITLE = 'Arbarea | Premium Woodworking';
-const DEFAULT_DESCRIPTION =
-  'Эксклюзивная мебель и декор из массива дерева ручной работы. Создаем уют и стиль в вашем доме.';
+const SITE_TITLE = SHARE_TITLE;
+const DEFAULT_DESCRIPTION = SHARE_DESCRIPTION;
 
-const YANDEX_VERIFICATION =
-  typeof import.meta !== 'undefined' && import.meta.env
-    ? import.meta.env.VITE_YANDEX_VERIFICATION
-    : undefined;
+const env =
+  typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {};
+
+const SITE_URL = resolveSiteUrl(env.VITE_SITE_URL);
+const YANDEX_VERIFICATION = env.VITE_YANDEX_VERIFICATION;
 
 const absolute = (value, fallback) => {
   if (!value) return fallback;
@@ -33,9 +42,11 @@ const SEO = ({
   breadcrumbs = null,
   noindex = false,
 }) => {
-  const fullTitle = title === 'Arbarea' ? SITE_TITLE : `${title} | Arbarea`;
+  const fullTitle =
+    title === 'Arbarea' ? SITE_TITLE : `${title} | ${SITE_NAME}`;
+  const imageAlt = productData?.name || SHARE_IMAGE_ALT;
   const metaDescription = description || DEFAULT_DESCRIPTION;
-  const metaImage = absolute(image, `${SITE_URL}/og-image.jpg`);
+  const metaImage = absolute(image, `${SITE_URL}${SHARE_IMAGE_PATH}`);
   const metaUrl = absolute(url, `${SITE_URL}/`);
 
   const schemas = [];
@@ -140,15 +151,20 @@ const SEO = ({
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={metaDescription} />
       <meta property="og:image" content={metaImage} />
-      <meta property="og:site_name" content="Arbarea" />
+      <meta property="og:image:secure_url" content={metaImage} />
+      <meta property="og:image:width" content={SHARE_IMAGE_WIDTH} />
+      <meta property="og:image:height" content={SHARE_IMAGE_HEIGHT} />
+      <meta property="og:image:alt" content={imageAlt} />
+      <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:locale" content="ru_RU" />
+      <meta property="vk:image" content={metaImage} />
 
       {/* Twitter */}
-      <meta property="twitter:card" content="summary_large_image" />
-      <meta property="twitter:url" content={metaUrl} />
-      <meta property="twitter:title" content={fullTitle} />
-      <meta property="twitter:description" content={metaDescription} />
-      <meta property="twitter:image" content={metaImage} />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:url" content={metaUrl} />
+      <meta name="twitter:title" content={fullTitle} />
+      <meta name="twitter:description" content={metaDescription} />
+      <meta name="twitter:image" content={metaImage} />
 
       {/* Structured Data (JSON-LD) */}
       {schemas.map((schema) => (

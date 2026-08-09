@@ -1,20 +1,36 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { resolveSiteUrl } from './src/config/site.js'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
     // Load all env vars, ignoring the 'VITE_' prefix requirement just for this step
     const env = loadEnv(mode, process.cwd(), '')
-    
+
+    // Absolute origin used by the social share tags in index.html. Falls back to
+    // the Vercel production domain so link previews keep working before the
+    // custom domain is connected.
+    const siteUrl = resolveSiteUrl(
+        env.VITE_SITE_URL ||
+        (env.VERCEL_PROJECT_PRODUCTION_URL && `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`)
+    )
+
     return {
         // Automatically map Vercel's Supabase variables to Vite's expected variables
         define: {
             'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL || env.SUPABASE_URL),
-            'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY)
+            'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY),
+            'import.meta.env.VITE_SITE_URL': JSON.stringify(siteUrl)
         },
         plugins: [
         react(),
+        {
+            // Social crawlers (VK, Telegram, WhatsApp) do not run JS, so the
+            // canonical/OG URLs have to be baked into the static HTML.
+            name: 'arbarea-inject-site-url',
+            transformIndexHtml: (html) => html.replaceAll('%SITE_URL%', siteUrl)
+        },
         VitePWA({
             useCredentials: true,
             registerType: 'autoUpdate',
