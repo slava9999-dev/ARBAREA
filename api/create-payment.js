@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import fetch from 'node-fetch';
 import { applyCors } from './_cors.js';
 import { verifyToken, supabaseAdmin } from './_supabase.js';
+import { tinkoffAgent } from './_tls.js';
 
 // Delivery methods configuration (Server Side Truth)
 // All deliveries FREE for customer
@@ -23,7 +24,9 @@ export default async function handler(req, res) {
   if (applyCors(req, res)) return;
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'Method Not Allowed' });
+    return res
+      .status(405)
+      .json({ success: false, error: 'Method Not Allowed' });
   }
 
   try {
@@ -45,9 +48,10 @@ export default async function handler(req, res) {
     if (customerPhone) {
       // Normalize phone to E.164
       let digits = customerPhone.replace(/\D/g, '');
-      if (digits.length === 11 && digits.startsWith('8')) digits = `7${digits.slice(1)}`;
+      if (digits.length === 11 && digits.startsWith('8'))
+        digits = `7${digits.slice(1)}`;
       if (digits.length === 10) digits = `7${digits}`;
-      
+
       if (digits.length === 11 && digits.startsWith('7')) {
         const normalizedPhone = `+${digits}`;
         const { data: user } = await supabaseAdmin
@@ -67,7 +71,9 @@ export default async function handler(req, res) {
     const terminalKey = process.env.TINKOFF_TERMINAL_KEY;
     const password = process.env.TINKOFF_PASSWORD;
     if (!terminalKey || !password) {
-      return res.status(500).json({ success: false, error: 'Server configuration missing' });
+      return res
+        .status(500)
+        .json({ success: false, error: 'Server configuration missing' });
     }
 
     // 3. SECURE PRICE CALCULATION
@@ -99,9 +105,10 @@ export default async function handler(req, res) {
       if (idStr.includes('::')) return idStr.split('::')[0];
       const parts = idStr.split('-');
       if (parts.length > 1 && /^\d+$/.test(parts[0])) return parts[0];
-      
+
       // UUID regex check
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (uuidRegex.test(idStr)) return idStr;
       if (parts.length > 5) {
         const uuidCandidate = parts.slice(0, 5).join('-');
@@ -112,21 +119,22 @@ export default async function handler(req, res) {
 
     // Fetch all products from DB for validation
     const rawIds = items
-      .filter(item => !String(item.id).startsWith('donate-'))
-      .map(item => extractProductId(item))
-      .filter(id => id !== null);
-    
+      .filter((item) => !String(item.id).startsWith('donate-'))
+      .map((item) => extractProductId(item))
+      .filter((id) => id !== null);
+
     // Separating UUIDs from legacy IDs to avoid DB errors
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const uuidProductIds = rawIds.filter(id => uuidRegex.test(String(id)));
-    
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidProductIds = rawIds.filter((id) => uuidRegex.test(String(id)));
+
     let dbProducts = [];
     if (uuidProductIds.length > 0) {
       const { data, error } = await supabaseAdmin
         .from('products')
         .select('*')
         .in('id', uuidProductIds);
-      
+
       if (error) {
         console.error('Supabase fetch error:', error);
         // We don't throw yet, we'll try static fallback
@@ -143,26 +151,34 @@ export default async function handler(req, res) {
       if (itemIdStr.startsWith('donate-')) {
         price = Number.parseInt(itemIdStr.split('-')[1], 10);
         if (Number.isNaN(price) || price < 10 || price > 100000) {
-          return res.status(400).json({ success: false, error: `Invalid donation amount` });
+          return res
+            .status(400)
+            .json({ success: false, error: `Invalid donation amount` });
         }
       } else {
         const productId = extractProductId(item);
         // 1. Try DB products
-        let foundProduct = dbProducts.find(p => p.id === productId);
-        
+        let foundProduct = dbProducts.find((p) => p.id === productId);
+
         // 2. Try static products if not in DB
         if (!foundProduct) {
-          foundProduct = STATIC_PRODUCTS.find(p => String(p.id) === String(productId));
+          foundProduct = STATIC_PRODUCTS.find(
+            (p) => String(p.id) === String(productId),
+          );
         }
 
         if (!foundProduct) {
-          console.error(`Product not found: ${productId} (Item ID: ${item.id})`);
-          return res.status(400).json({ success: false, error: `Product not found: ${item.id}` });
+          console.error(
+            `Product not found: ${productId} (Item ID: ${item.id})`,
+          );
+          return res
+            .status(400)
+            .json({ success: false, error: `Product not found: ${item.id}` });
         }
 
         price = Number(foundProduct.price);
         name = foundProduct.name;
-        
+
         // Handle variants price modifications if present in the item
         if (item.selectedSize && item.selectedSize.priceMod) {
           price += Number(item.selectedSize.priceMod);
@@ -181,7 +197,7 @@ export default async function handler(req, res) {
         price: discountedPrice,
         original_price: price,
         quantity,
-        total: itemTotal
+        total: itemTotal,
       });
 
       receiptItems.push({
@@ -194,7 +210,8 @@ export default async function handler(req, res) {
     }
 
     // 4. Delivery Calculation
-    const selectedMethod = DELIVERY_METHODS[deliveryId] || DELIVERY_METHODS.cdek;
+    const selectedMethod =
+      DELIVERY_METHODS[deliveryId] || DELIVERY_METHODS.cdek;
     // Rule: Delivery is free for everyone
     const shippingCost = 0; // selectedMethod.price check removed as all are 0
     const totalAmount = calculatedSubtotal + shippingCost;
@@ -211,12 +228,13 @@ export default async function handler(req, res) {
 
     // 5. SERVER-SIDE ORDER ID GENERATION
     // Priority: Client ID (if exists) -> New Secure ID
-    const orderId = clientOrderId || `ARB-${crypto.randomBytes(4).toString('hex').toUpperCase()}-${Date.now().toString().slice(-4)}`;
+    const orderId =
+      clientOrderId ||
+      `ARB-${crypto.randomBytes(4).toString('hex').toUpperCase()}-${Date.now().toString().slice(-4)}`;
 
     // 6. CREATE ORDER RECORD (SERVER-SIDE)
-    const { error: orderError } = await supabaseAdmin
-      .from('orders')
-      .insert([{
+    const { error: orderError } = await supabaseAdmin.from('orders').insert([
+      {
         order_id: orderId,
         user_id: userId,
         user_email: customerEmail,
@@ -232,11 +250,14 @@ export default async function handler(req, res) {
         status: 'pending_payment',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      }]);
+      },
+    ]);
 
     if (orderError) {
       console.error('Database Error:', orderError);
-      return res.status(500).json({ success: false, error: 'Failed to create order' });
+      return res
+        .status(500)
+        .json({ success: false, error: 'Failed to create order' });
     }
 
     // 6. TINKOFF INITIALIZATION
@@ -251,7 +272,10 @@ export default async function handler(req, res) {
 
     const sortedKeys = Object.keys(params).sort();
     const concatenatedValues = sortedKeys.map((key) => params[key]).join('');
-    const token = crypto.createHash('sha256').update(concatenatedValues).digest('hex');
+    const token = crypto
+      .createHash('sha256')
+      .update(concatenatedValues)
+      .digest('hex');
 
     const requestBody = {
       TerminalKey: terminalKey,
@@ -267,11 +291,15 @@ export default async function handler(req, res) {
       },
     };
 
-    const tinkoffResponse = await fetch('https://securepay.tinkoff.ru/v2/Init', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
-    });
+    const tinkoffResponse = await fetch(
+      'https://securepay.tinkoff.ru/v2/Init',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+        agent: tinkoffAgent,
+      },
+    );
 
     const data = await tinkoffResponse.json();
 
@@ -285,9 +313,9 @@ export default async function handler(req, res) {
     // Update order with payment details
     await supabaseAdmin
       .from('orders')
-      .update({ 
+      .update({
         payment_id: data.PaymentId?.toString(),
-        payment_url: data.PaymentURL 
+        payment_url: data.PaymentURL,
       })
       .eq('order_id', orderId);
 
@@ -295,9 +323,8 @@ export default async function handler(req, res) {
       success: true,
       paymentUrl: data.PaymentURL,
       paymentId: data.PaymentId,
-      orderId: orderId
+      orderId: orderId,
     });
-
   } catch (error) {
     console.error('Critical Payment Error:', error);
     return res.status(500).json({ success: false, error: error.message });
