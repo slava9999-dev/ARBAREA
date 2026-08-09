@@ -8,12 +8,13 @@ import {
   SHARE_IMAGE_PATH,
   SHARE_IMAGE_WIDTH,
   SHARE_TITLE,
+  SEO_DESCRIPTION,
   SITE_NAME,
   resolveSiteUrl,
 } from '../../config/site.js';
 
 const SITE_TITLE = SHARE_TITLE;
-const DEFAULT_DESCRIPTION = SHARE_DESCRIPTION;
+const DEFAULT_DESCRIPTION = SEO_DESCRIPTION;
 
 const env =
   typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {};
@@ -46,6 +47,8 @@ const SEO = ({
     title === 'Arbarea' ? SITE_TITLE : `${title} | ${SITE_NAME}`;
   const imageAlt = productData?.name || SHARE_IMAGE_ALT;
   const metaDescription = description || DEFAULT_DESCRIPTION;
+  // Social previews truncate sooner than search snippets do.
+  const shareDescription = description || SHARE_DESCRIPTION;
   const metaImage = absolute(image, `${SITE_URL}${SHARE_IMAGE_PATH}`);
   const metaUrl = absolute(url, `${SITE_URL}/`);
 
@@ -149,7 +152,7 @@ const SEO = ({
       <meta property="og:type" content={type} />
       <meta property="og:url" content={metaUrl} />
       <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={metaDescription} />
+      <meta property="og:description" content={shareDescription} />
       <meta property="og:image" content={metaImage} />
       <meta property="og:image:secure_url" content={metaImage} />
       <meta property="og:image:width" content={SHARE_IMAGE_WIDTH} />
@@ -163,7 +166,7 @@ const SEO = ({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={metaUrl} />
       <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={metaDescription} />
+      <meta name="twitter:description" content={shareDescription} />
       <meta name="twitter:image" content={metaImage} />
 
       {/* Structured Data (JSON-LD) */}

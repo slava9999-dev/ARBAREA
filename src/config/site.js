@@ -21,8 +21,16 @@ export const SITE_NAME = 'ARBAREA';
 export const SHARE_TITLE =
   'ARBAREA — изделия из натурального дерева ручной работы';
 
+/**
+ * Kept under ~125 characters: VK and most social previews truncate past that,
+ * and a cut-off sentence reads worse than a short complete one.
+ */
 export const SHARE_DESCRIPTION =
-  'Панно, подставки и аксессуары из массива дуба и ясеня. Каждое изделие делаем своими руками — второго такого не будет. Скидка 10% на первый заказ, доставка по всей России.';
+  'Панно, подставки и аксессуары из массива дуба и ясеня. Ручная работа — второго такого не будет. Скидка 10% на первый заказ.';
+
+/** Search snippet; Google truncates around 150-160 characters. */
+export const SEO_DESCRIPTION =
+  'Панно, подставки и аксессуары из массива дуба и ясеня ручной работы. Каждое изделие единственное. Скидка 10% на первый заказ, доставка по России.';
 
 export const SHARE_IMAGE_PATH = '/og-image.jpg';
 export const SHARE_IMAGE_WIDTH = '1200';

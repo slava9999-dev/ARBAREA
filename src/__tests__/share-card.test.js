@@ -7,6 +7,7 @@ import {
   SHARE_IMAGE_PATH,
   SHARE_IMAGE_WIDTH,
   SHARE_TITLE,
+  SEO_DESCRIPTION,
 } from '../config/site.js';
 
 const ROOT = path.join(__dirname, '..', '..');
@@ -63,6 +64,7 @@ describe('social share card', () => {
   it('keeps index.html open graph tags in sync with the share config', () => {
     expect(metaContent('property', 'og:title')).toBe(SHARE_TITLE);
     expect(metaContent('property', 'og:description')).toBe(SHARE_DESCRIPTION);
+    expect(metaContent('name', 'description')).toBe(SEO_DESCRIPTION);
     expect(metaContent('property', 'og:image')).toBe(
       `%SITE_URL%${SHARE_IMAGE_PATH}`,
     );
@@ -71,6 +73,13 @@ describe('social share card', () => {
     expect(metaContent('property', 'og:type')).toBe('website');
     expect(metaContent('property', 'og:locale')).toBe('ru_RU');
     expect(metaContent('name', 'twitter:card')).toBe('summary_large_image');
+  });
+
+  it('keeps the copy inside the platform truncation budgets', () => {
+    // Social previews cut off around 125 characters, search snippets around 160.
+    expect(SHARE_TITLE.length).toBeLessThanOrEqual(60);
+    expect(SHARE_DESCRIPTION.length).toBeLessThanOrEqual(125);
+    expect(SEO_DESCRIPTION.length).toBeLessThanOrEqual(160);
   });
 
   it('resolves absolute urls for crawlers, which reject relative ones', () => {
