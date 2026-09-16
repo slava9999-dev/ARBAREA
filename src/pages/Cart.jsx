@@ -271,7 +271,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="pb-24 pt-6 px-4 min-h-screen max-w-lg mx-auto">
+    <div className="pb-[calc(6rem+env(safe-area-inset-bottom))] pt-6 px-4 min-h-screen max-w-lg mx-auto">
       <SEO title="Корзина" url="/cart" noindex />
       {/* SUCCESS STATE */}
       {step === 'success' && (

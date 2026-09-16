@@ -1,18 +1,56 @@
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import FlipProductCard from '../components/features/FlipProductCard';
 import HeroBanner from '../components/features/HeroBanner';
 import SocialFooter from '../components/layout/SocialFooter';
 import { SearchOverlay } from '../components/SearchOverlay';
 import SEO from '../components/seo/SEO';
 import { useProducts } from '../context/ProductContext';
+import { haptic } from '../lib/haptics';
+import { spring } from '../lib/motion';
 import { ecommerceImpressions, GOALS, reachGoal } from '../lib/yandex-metrica';
+
+const CATEGORIES = [
+  { id: 'all', label: 'Все товары' },
+  { id: 'wall-panels', label: 'Панно' },
+  { id: 'bathroom', label: 'Для ванной' },
+  { id: 'kitchen', label: 'Для кухни' },
+  { id: 'light', label: 'Свет' },
+];
 
 const Showcase = ({ onBuy, onOpenModal }) => {
   const { products } = useProducts();
   const [activeCategory, setActiveCategory] = useState('all');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Sliding segmented-control thumb behind the active category.
+  const scrollerRef = useRef(null);
+  const categoryRefs = useRef({});
+  const [thumb, setThumb] = useState(null);
+
+  useLayoutEffect(() => {
+    const el = categoryRefs.current[activeCategory];
+    if (!el) return;
+    setThumb({ x: el.offsetLeft, width: el.offsetWidth });
+    // Keep the active segment centered in the scrollable row.
+    const scroller = scrollerRef.current;
+    if (scroller) {
+      scroller.scrollTo({
+        left: el.offsetLeft - (scroller.clientWidth - el.offsetWidth) / 2,
+        behavior: 'smooth',
+      });
+    }
+  }, [activeCategory]);
+
+  useEffect(() => {
+    const onResize = () => {
+      const el = categoryRefs.current[activeCategory];
+      if (el) setThumb({ x: el.offsetLeft, width: el.offsetWidth });
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [activeCategory]);
 
   // 🔥 YANDEX METRICA: fire deep-scroll goal once per session on the showcase
   useEffect(() => {
@@ -55,7 +93,7 @@ const Showcase = ({ onBuy, onOpenModal }) => {
   }, [filtered, activeCategory]);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-[calc(6rem+env(safe-area-inset-bottom))]">
       <SEO
         title="Arbarea"
         description="Авторская столярная мастерская. Эксклюзивная мебель и декор из массива дуба и ясеня ручной работы."
@@ -129,33 +167,40 @@ const Showcase = ({ onBuy, onOpenModal }) => {
 
       {/* 2. Catalog (Overlapping Grid) */}
       <div id="catalog" className="-mt-20 relative z-10 px-4 pb-24">
-        {/* STICKY CATEGORY NAV */}
+        {/* STICKY CATEGORY NAV — iOS segmented control with sliding thumb */}
         <div className="sticky top-0 z-40 w-full -mx-4 px-4 mb-6 border-b border-white/5 bg-[#1c1917]/80 backdrop-blur-xl transition-all duration-300">
           <div className="flex items-center justify-between py-4">
-            <div className="flex w-full overflow-x-auto scrollbar-hide">
-              <div className="flex gap-3">
-                {[
-                  { id: 'all', label: 'Все товары' },
-                  { id: 'wall-panels', label: 'Панно' },
-                  { id: 'bathroom', label: 'Для ванной' },
-                  { id: 'kitchen', label: 'Для кухни' },
-                  { id: 'light', label: 'Свет' },
-                ].map((cat) => (
+            <div
+              ref={scrollerRef}
+              className="flex w-full overflow-x-auto scrollbar-hide"
+            >
+              <div className="relative flex min-w-max w-full gap-1 rounded-2xl bg-white/5 p-1.5 border border-white/5">
+                {thumb && (
+                  <motion.div
+                    className="absolute top-1.5 bottom-1.5 left-0 rounded-xl bg-wood-amber shadow-wood-glow"
+                    initial={false}
+                    animate={{ x: thumb.x, width: thumb.width }}
+                    transition={spring.ui}
+                  />
+                )}
+                {CATEGORIES.map((cat) => (
                   <button
                     key={cat.id}
+                    ref={(el) => {
+                      categoryRefs.current[cat.id] = el;
+                    }}
                     type="button"
+                    onPointerDown={() => haptic(8)}
                     onClick={() => {
                       setActiveCategory(cat.id);
                       reachGoal(GOALS.CATEGORY_SELECT, { category: cat.id });
                     }}
-                    className={`
-                      relative whitespace-nowrap px-6 py-2.5 text-sm font-medium tracking-wide transition-all duration-300 rounded-xl
-                      ${
-                        activeCategory === cat.id
-                          ? 'bg-wood-amber text-base shadow-wood-glow font-bold'
-                          : 'bg-white/5 text-stone-400 border border-white/5 hover:bg-white/10 hover:text-wood-amber'
-                      }
-                    `}
+                    aria-pressed={activeCategory === cat.id}
+                    className={`relative z-10 flex-1 whitespace-nowrap px-5 py-3 text-sm font-medium tracking-wide rounded-xl transition-colors duration-200 ${
+                      activeCategory === cat.id
+                        ? 'text-wood-bg'
+                        : 'text-stone-400 hover:text-wood-amber'
+                    }`}
                   >
                     {cat.label}
                   </button>
@@ -170,7 +215,7 @@ const Showcase = ({ onBuy, onOpenModal }) => {
                 setIsSearchOpen(true);
                 reachGoal(GOALS.SEARCH, { source: 'showcase' });
               }}
-              className="ml-4 p-2.5 text-stone-400 hover:text-white bg-white/5 rounded-full border border-white/10 hover:bg-white/10 transition-colors"
+              className="ml-4 p-3 text-stone-400 hover:text-white bg-white/5 rounded-full border border-white/10 hover:bg-white/10 transition-colors"
               aria-label="Поиск"
             >
               <Search size={20} />
@@ -186,11 +231,7 @@ const Showcase = ({ onBuy, onOpenModal }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filtered.map((p) => (
-            <div
-              key={p.id}
-              data-testid="product-card"
-              className="h-full transition-transform duration-300 hover:scale-[1.02]"
-            >
+            <div key={p.id} data-testid="product-card" className="h-full">
               <FlipProductCard
                 product={p}
                 onBuy={onBuy}

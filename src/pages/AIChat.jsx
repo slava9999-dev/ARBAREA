@@ -75,7 +75,7 @@ const AIChat = () => {
   const showQuickReplies = messages.length === 1 && !isLoading;
 
   return (
-    <div className="pt-16 pb-24 px-4 h-screen flex flex-col bg-wood-bg">
+    <div className="pt-16 pb-[calc(11rem+env(safe-area-inset-bottom))] px-4 h-screen flex flex-col bg-wood-bg">
       <SEO
         title="AI-консультант"
         description="Подберите изделие Arbarea из массива дерева с помощью умного консультанта."
@@ -171,7 +171,7 @@ const AIChat = () => {
       </div>
 
       {/* Input */}
-      <div className="fixed bottom-24 left-0 right-0 p-4 bg-gradient-to-t from-wood-bg via-wood-bg to-transparent z-10">
+      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+6.5rem)] left-0 right-0 p-4 bg-gradient-to-t from-wood-bg via-wood-bg to-transparent z-10">
         <div className="max-w-md mx-auto">
           <div className="flex items-center gap-2 bg-wood-bg-card/90 backdrop-blur-xl p-2 rounded-2xl border border-wood-amber/20 shadow-wood-glow">
             <input

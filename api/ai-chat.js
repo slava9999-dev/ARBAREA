@@ -33,6 +33,16 @@ const SYSTEM_PROMPT = `Тебя зовут Арбо — ты цифровой м
 3. Никогда не придумывай товары, цены или характеристики, которых нет выше.
 4. Будь искренним и полезным — твоя цель, чтобы человек почувствовал заботу и захотел вещь с историей, а не просто "купил мебель".`;
 
+/**
+ * Groq deprecates models without notice (llama-3.3-70b died exactly like
+ * this), so try models in order and fall through on "model not found".
+ */
+const MODEL_CHAIN = [
+  'openai/gpt-oss-120b',
+  'llama-3.3-70b-versatile',
+  'llama-3.1-8b-instant',
+];
+
 export default async function handler(req, res) {
   // Apply secure CORS
   if (applyCors(req, res)) return; // Handle preflight
@@ -106,30 +116,39 @@ export default async function handler(req, res) {
         : message,
     });
 
-    // Вызов Groq API (OpenAI compatible)
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: messages,
-        temperature: 0.6,
-        max_tokens: 500,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('OpenAI API Error:', error);
-      return res.status(response.status).json({
-        error: error.error?.message || 'Failed to get response from AI',
+    // Вызов Groq API (OpenAI compatible), с фолбэком на живые модели
+    let data = null;
+    let lastError = 'Failed to get response from AI';
+    for (const model of MODEL_CHAIN) {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: messages,
+          temperature: 0.6,
+          // gpt-oss "thinking" tokens come out of this budget — keep headroom.
+          max_tokens: 800,
+        }),
       });
+
+      if (response.ok) {
+        data = await response.json();
+        break;
+      }
+
+      const error = await response.json().catch(() => ({}));
+      console.error(`Groq model "${model}" failed:`, response.status, error.error?.message);
+      lastError = error.error?.message || lastError;
     }
 
-    const data = await response.json();
+    if (!data) {
+      return res.status(502).json({ error: lastError });
+    }
+
     const reply =
       data.choices?.[0]?.message?.content ||
       'Извините, не могу ответить на этот вопрос.';

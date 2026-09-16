@@ -1,12 +1,18 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import {
+  animate,
+  AnimatePresence,
+  motion,
+  useMotionValue,
+} from 'framer-motion';
 import {
   ChevronLeft,
   ChevronRight,
   Maximize2,
   ShoppingBag,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { project, spring } from '../../lib/motion';
 import { useToast } from '../../context/ToastContext';
 import { haptic } from '../../lib/haptics';
 import { GOALS, reachGoal } from '../../lib/yandex-metrica';
@@ -24,7 +30,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
     product.variants?.sizes?.[0],
   );
 
-  // Gallery Logic
+  // Gallery Logic — sliding track with 1:1 drag tracking
   const images =
     product.gallery && product.gallery.length > 0
       ? product.gallery
@@ -32,14 +38,74 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
   const [imgIndex, setImgIndex] = useState(0);
   const [showFullScreen, setShowFullScreen] = useState(false);
 
-  const paginate = (newDirection) => {
-    setImgIndex((prev) => {
-      let next = prev + newDirection;
-      if (next < 0) next = images.length - 1;
-      if (next >= images.length) next = 0;
-      return next;
+  const trackRef = useRef(null);
+  const [trackWidth, setTrackWidth] = useState(0);
+  const x = useMotionValue(0);
+  // Guards the card's navigation click against a just-finished drag.
+  const dragMoved = useRef(false);
+  const imgIndexRef = useRef(imgIndex);
+
+  useEffect(() => {
+    imgIndexRef.current = imgIndex;
+  }, [imgIndex]);
+
+  // Measure the viewport so slides and constraints track the real card size.
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return undefined;
+    const ro = new ResizeObserver(() => {
+      const w = el.clientWidth;
+      setTrackWidth(w);
+      x.set(-imgIndexRef.current * w);
     });
-  };
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [x]);
+
+  /**
+   * Animate the track to a slide, handing the gesture's release velocity to
+   * the spring so drag → animation is seamless. Bounce only when the gesture
+   * itself carried momentum (a flick), per the house motion rules.
+   */
+  const goTo = useCallback(
+    (next, velocity = 0) => {
+      const clamped = Math.max(0, Math.min(images.length - 1, next));
+      if (clamped !== imgIndexRef.current) {
+        haptic(8);
+      }
+      setImgIndex(clamped);
+      if (trackWidth > 0) {
+        const springToken =
+          Math.abs(velocity) > 50 ? spring.momentum : spring.ui;
+        animate(x, -clamped * trackWidth, { ...springToken, velocity });
+      }
+    },
+    [images.length, trackWidth, x],
+  );
+
+  const paginate = useCallback(
+    (direction) => {
+      goTo(imgIndexRef.current + direction);
+    },
+    [goTo],
+  );
+
+  /** Momentum projection decides the landing slide, not the release point. */
+  const handleDragEnd = useCallback(
+    (_e, { offset, velocity }) => {
+      const projected = offset.x + project(velocity.x);
+      const threshold = trackWidth * 0.25;
+      if (projected < -threshold) {
+        goTo(imgIndexRef.current + 1, velocity.x);
+      } else if (projected > threshold) {
+        goTo(imgIndexRef.current - 1, velocity.x);
+      } else {
+        // Rubber-band back home, still carrying the finger's velocity.
+        goTo(imgIndexRef.current, velocity.x);
+      }
+    },
+    [goTo, trackWidth],
+  );
 
   // Dynamic Price Calculation
   const basePrice = product.basePrice || product.price;
@@ -96,26 +162,52 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
         role="link"
         tabIndex={0}
         aria-label={`Просмотреть детали товара: ${product.name}`}
-        onClick={handleDetailsClick}
+        // Clear the drag guard on every new touch, so only a genuine drag
+        // (set in onDragStart) can suppress the navigation click.
+        onPointerDown={() => {
+          dragMoved.current = false;
+        }}
+        onClick={(e) => {
+          if (dragMoved.current) return;
+          handleDetailsClick(e);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             handleDetailsClick(e);
           }
         }}
       >
-        {/* Image Container with Swipe */}
-        <div className="relative h-64 overflow-hidden bg-stone-900 group/image">
-          <motion.img
-            key={imgIndex}
-            src={images[imgIndex]}
-            alt={product.name}
-            loading="lazy"
-            className="w-full h-full object-cover absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            style={{ cursor: 'pointer' }}
-          />
+        {/* Image Container with 1:1 Swipe */}
+        <div
+          ref={trackRef}
+          className="relative h-64 overflow-hidden bg-stone-900 group/image"
+        >
+          <motion.div
+            className="flex h-full cursor-pointer"
+            style={{ x }}
+            drag="x"
+            dragConstraints={{
+              left: -(images.length - 1) * trackWidth,
+              right: 0,
+            }}
+            dragElastic={0.15}
+            dragMomentum={false}
+            onDragStart={() => {
+              dragMoved.current = true;
+            }}
+            onDragEnd={handleDragEnd}
+          >
+            {images.map((src) => (
+              <img
+                key={src}
+                src={src}
+                alt={product.name}
+                loading="lazy"
+                draggable={false}
+                className="h-full w-full shrink-0 object-cover"
+              />
+            ))}
+          </motion.div>
 
           {/* Navigation Dots */}
           {images.length > 1 && (
@@ -123,8 +215,8 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
               {images.map((img, idx) => (
                 <div
                   key={img}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    idx === imgIndex ? 'bg-white w-3' : 'bg-white/50'
+                  className={`h-1.5 rounded-full transition-all ${
+                    idx === imgIndex ? 'bg-white w-3' : 'bg-white/50 w-1.5'
                   }`}
                 />
               ))}
@@ -132,13 +224,13 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
           )}
 
           {/* Controls Overlay */}
-          <div className="absolute inset-0 z-10 opacity-0 group-hover/image:opacity-100 transition-opacity duration-300">
-            {/* Navigation Arrows */}
+          <div className="absolute inset-0 z-10 opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 pointer-events-none">
+            {/* Navigation Arrows (desktop — touch users swipe the track) */}
             {images.length > 1 && (
               <>
                 <button
                   type="button"
-                  className="absolute left-1 top-1/2 -translate-y-1/2 p-2 bg-black/60 text-white rounded-full hover:bg-black/80 active:scale-95 transition-all"
+                  className="pointer-events-auto absolute left-1 top-1/2 -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 active:scale-95 transition-all"
                   onClick={(e) => {
                     e.stopPropagation();
                     paginate(-1);
@@ -148,7 +240,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                 </button>
                 <button
                   type="button"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 p-2 bg-black/60 text-white rounded-full hover:bg-black/80 active:scale-95 transition-all"
+                  className="pointer-events-auto absolute right-1 top-1/2 -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 active:scale-95 transition-all"
                   onClick={(e) => {
                     e.stopPropagation();
                     paginate(1);
@@ -158,19 +250,20 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                 </button>
               </>
             )}
-
-            {/* Maximize Button */}
-            <button
-              type="button"
-              className="absolute top-2 left-2 p-2 bg-black/60 text-white rounded-lg hover:bg-black/80 active:scale-95 transition-all z-30"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowFullScreen(true);
-              }}
-            >
-              <Maximize2 size={18} />
-            </button>
           </div>
+
+          {/* Maximize Button — always visible (touch has no hover) */}
+          <button
+            type="button"
+            className="absolute top-2 left-2 p-3 bg-black/60 text-white rounded-lg hover:bg-black/80 active:scale-95 transition-all z-30"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowFullScreen(true);
+            }}
+            aria-label="Открыть на весь экран"
+          >
+            <Maximize2 size={20} />
+          </button>
 
           {product.isSold && (
             <div className="absolute bottom-3 left-3 bg-wood-bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-xl text-xs font-bold text-stone-400 border border-white/10 z-20 pointer-events-none shadow-lg">
@@ -212,7 +305,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                           value: color.id,
                         });
                       }}
-                      className={`w-5 h-5 rounded-full border transition-all ${
+                      className={`relative w-5 h-5 rounded-full border transition-all before:absolute before:-inset-3 before:rounded-full before:content-[''] ${
                         selectedColor?.id === color.id
                           ? 'border-wood-amber scale-110 ring-2 ring-wood-amber/50 ring-offset-2 ring-offset-wood-bg-card shadow-wood-glow'
                           : 'border-white/20'
@@ -239,7 +332,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                           value: size.value,
                         });
                       }}
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all border ${
+                      className={`relative px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all border before:absolute before:-inset-2 before:rounded-lg before:content-[''] ${
                         selectedSize?.value === size.value
                           ? 'bg-wood-amber text-wood-bg border-wood-amber shadow-wood-glow-sm'
                           : 'bg-transparent text-wood-text-muted border-white/10 hover:border-wood-amber/50 hover:text-wood-amber'
@@ -257,7 +350,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
             <button
               type="button"
               disabled
-              className="w-full bg-wood-bg-elevated text-wood-text-muted py-2.5 rounded-xl font-medium text-sm cursor-not-allowed border border-white/5"
+              className="w-full bg-wood-bg-elevated text-wood-text-muted py-3 rounded-xl font-medium text-sm cursor-not-allowed border border-white/5"
             >
               Продано
             </button>
@@ -266,7 +359,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
               <button
                 type="button"
                 onClick={handleBuy}
-                className="flex-[1.4] h-8 btn-primary rounded-lg flex items-center justify-center gap-1 shadow-wood-glow hover:shadow-wood-glow-lg text-[10px] font-bold uppercase tracking-tight px-1"
+                className="flex-[1.4] h-11 btn-primary rounded-lg flex items-center justify-center gap-1.5 shadow-wood-glow hover:shadow-wood-glow-lg text-xs font-bold uppercase tracking-tight px-2"
               >
                 <ShoppingBag size={12} />
                 <span className="whitespace-nowrap">В корзину</span>
@@ -282,7 +375,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
                   });
                   if (onOpenModal) onOpenModal(product);
                 }}
-                className="flex-1 h-8 bg-transparent text-wood-amber hover:bg-wood-amber/10 active:scale-95 transition-all duration-200 rounded-lg flex items-center justify-center gap-1 border border-wood-amber/40 hover:border-wood-amber text-[10px] font-bold uppercase tracking-tight px-1"
+                className="flex-1 h-11 bg-transparent text-wood-amber hover:bg-wood-amber/10 active:scale-95 transition-all duration-200 rounded-lg flex items-center justify-center gap-1.5 border border-wood-amber/40 hover:border-wood-amber text-xs font-bold uppercase tracking-tight px-2"
               >
                 <span className="whitespace-nowrap">Подробнее</span>
               </button>

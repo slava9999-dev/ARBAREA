@@ -11,7 +11,12 @@ import { haptic } from '../../lib/haptics';
 
 const BottomNav = memo(({ cartCount }) => {
   return (
-    <nav className="fixed bottom-4 left-4 right-4 z-[100] will-change-transform">
+    <nav
+      className="fixed z-[100] will-change-transform
+        left-[max(1rem,env(safe-area-inset-left))]
+        right-[max(1rem,env(safe-area-inset-right))]
+        bottom-[max(1rem,env(safe-area-inset-bottom))]"
+    >
       {/* Glass background with wood accent */}
       <div className="nav-glass relative flex items-center h-[72px] rounded-2xl overflow-hidden">
         {/* Subtle top glow line */}

@@ -4,7 +4,7 @@ import SEO from '../components/seo/SEO';
 import { INTERIORS } from '../data/mockData';
 
 const Gallery = () => (
-  <section className="pb-24 pt-20 px-4 bg-linen-dark min-h-screen">
+  <section className="pb-[calc(6rem+env(safe-area-inset-bottom))] pt-20 px-4 bg-linen-dark min-h-screen">
     <SEO
       title="Галерея интерьеров"
       description="Реальные интерьеры с изделиями Arbarea из массива дуба и ясеня: панно, полки, рейлинги и декор ручной работы."
