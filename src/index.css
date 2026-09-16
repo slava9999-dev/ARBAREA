@@ -61,16 +61,21 @@
   h3,
   h4 {
     @apply font-serif font-semibold text-white tracking-tight;
+    font-optical-sizing: auto;
   }
 
+  /* Tracking is size-specific: tighten display sizes, keep small text readable */
   h1 {
     @apply text-3xl sm:text-4xl;
+    letter-spacing: -0.03em;
   }
   h2 {
     @apply text-2xl sm:text-3xl;
+    letter-spacing: -0.025em;
   }
   h3 {
     @apply text-xl sm:text-2xl;
+    letter-spacing: -0.015em;
   }
 
   /* Links */
@@ -99,6 +104,24 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
+  /* Floating chrome (tab bar, toolbars). Lives as a class rather than inline
+     styles so the reduced-transparency / increased-contrast media queries
+     below can actually reach it. Heavier than .glass-panel: it sits above
+     scrolling content, so it needs more blur and a deeper shadow. */
+  .nav-glass {
+    background: linear-gradient(
+      180deg,
+      rgba(42, 37, 32, 0.95) 0%,
+      rgba(26, 22, 20, 0.98) 100%
+    );
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(201, 164, 92, 0.15);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
   /* ─────────────────────────────────────────────────────────────────────────
      BUTTONS — Кнопки в стиле премиум-дерева
      ───────────────────────────────────────────────────────────────────────── */
@@ -107,7 +130,7 @@
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3;
     @apply font-sans font-semibold text-[0.9375rem] rounded-xl;
-    @apply transition-all duration-300 ease-out;
+    @apply transition-[transform,box-shadow,filter] duration-200 ease-out;
     background: linear-gradient(135deg, #a8834a 0%, #c9a45c 50%, #dbb978 100%);
     color: #1a1614;
     border: none;
@@ -127,46 +150,14 @@
   }
 
   .btn-primary:active {
-    transform: translateY(0) scale(0.98);
+    transform: translateY(0) scale(0.97);
+    transition-duration: 80ms;
   }
 
   .btn-primary:disabled {
     @apply opacity-50 cursor-not-allowed;
     transform: none !important;
     filter: grayscale(30%);
-  }
-
-  /* Secondary (Outline) */
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3;
-    @apply font-sans font-semibold text-[0.9375rem] rounded-xl;
-    @apply transition-all duration-300 ease-out;
-    @apply bg-transparent;
-    color: #c9a45c;
-    border: 1.5px solid #c9a45c;
-  }
-
-  .btn-secondary:hover {
-    background: rgba(201, 164, 92, 0.1);
-    border-color: #dbb978;
-    box-shadow: 0 0 20px rgba(201, 164, 92, 0.25);
-    transform: translateY(-1px);
-  }
-
-  .btn-secondary:active {
-    transform: scale(0.98);
-  }
-
-  /* Ghost Button */
-  .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2;
-    @apply font-sans font-medium text-sm rounded-lg;
-    @apply text-stone-400 bg-transparent border border-white/10;
-    @apply transition-all duration-200;
-  }
-
-  .btn-ghost:hover {
-    @apply text-wood-amber bg-wood-amber/10 border-wood-amber/30;
   }
 
   /* ─────────────────────────────────────────────────────────────────────────
@@ -191,6 +182,16 @@
     box-shadow: 0 0 0 3px rgba(201, 164, 92, 0.15);
   }
 
+  /* Explicit opt-in class for branded inputs (kept in sync with the element
+     styles above so `input-premium` and a bare <input> can't drift apart). */
+  .input-premium {
+    @apply w-full p-4 font-sans text-white bg-surface border border-white/10 rounded-xl outline-none;
+    @apply transition-all duration-200;
+    @apply placeholder:text-muted;
+    @apply hover:border-wood-amber/30;
+    @apply focus:border-wood-amber focus:ring-2 focus:ring-wood-amber/20;
+  }
+
   /* ─────────────────────────────────────────────────────────────────────────
      BADGES & TAGS
      ───────────────────────────────────────────────────────────────────────── */
@@ -198,46 +199,6 @@
     @apply inline-flex items-center gap-1 px-3 py-1;
     @apply text-xs font-semibold rounded-full;
     @apply bg-wood-amber/15 text-wood-amber border border-wood-amber/25;
-  }
-
-  .badge-success {
-    @apply bg-emerald-500/15 text-emerald-400 border-emerald-500/25;
-  }
-
-  .badge-info {
-    @apply bg-blue-500/15 text-blue-400 border-blue-500/25;
-  }
-
-  /* ─────────────────────────────────────────────────────────────────────────
-     DIVIDERS
-     ───────────────────────────────────────────────────────────────────────── */
-  .divider {
-    @apply w-full h-px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(201, 164, 92, 0.2) 20%,
-      rgba(201, 164, 92, 0.2) 80%,
-      transparent 100%
-    );
-  }
-
-  /* ─────────────────────────────────────────────────────────────────────────
-     PRODUCT CARDS
-     ───────────────────────────────────────────────────────────────────────── */
-  .product-card {
-    @apply relative overflow-hidden rounded-2xl;
-    @apply bg-gradient-to-b from-card to-surface;
-    @apply border border-white/5;
-    @apply transition-all duration-300 ease-out;
-  }
-
-  .product-card:hover {
-    @apply border-wood-amber/20;
-    transform: translateY(-4px);
-    box-shadow:
-      0 12px 40px rgba(0, 0, 0, 0.4),
-      0 0 0 1px rgba(201, 164, 92, 0.1);
   }
 
   /* ─────────────────────────────────────────────────────────────────────────
@@ -249,10 +210,6 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-  }
-
-  .price-old {
-    @apply text-stone-500 line-through text-sm;
   }
 }
 
@@ -323,41 +280,12 @@
   }
 }
 
-@keyframes scale-up {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes glow-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 20px rgba(201, 164, 92, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 35px rgba(201, 164, 92, 0.5);
-  }
-}
-
 .animate-fade-in {
   animation: fade-in 0.4s ease-out;
 }
 
 .animate-slide-up {
   animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.animate-scale-up {
-  animation: scale-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.animate-glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -442,15 +370,14 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ACCESSIBILITY — respect the OS "reduce motion" setting.
-   Disables looping/decorative motion and heavy transitions for users who
-   opt out, which also spares battery/CPU on low-end devices.
+   ACCESSIBILITY — Reduced motion / transparency / contrast
+   Respect the OS settings: drop looping motion and heavy transitions for
+   users who opt out (also spares battery/CPU on low-end devices), make
+   translucent chrome solid, and firm up contrast when requested.
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
 
+/* Reduced motion: keep feedback, drop movement and endless oscillation */
+@media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
@@ -458,5 +385,24 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Reduced transparency: make translucent chrome solid, drop the blur */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-panel,
+  .nav-glass {
+    background: var(--wood-bg-elevated, #221e1a);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Increased contrast: solid surfaces with a defined, contrasting edge */
+@media (prefers-contrast: more) {
+  .glass-panel,
+  .nav-glass {
+    background: var(--wood-bg-card, #2a2520);
+    border-color: rgba(201, 164, 92, 0.5);
   }
 }

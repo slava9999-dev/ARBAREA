@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { spring } from '../../lib/motion';
 import { cn } from '../../lib/utils';
 
 // Define style variants for the button
@@ -31,8 +32,10 @@ const Button = ({
     <motion.button
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
+      transition={spring.press}
       className={cn(
         'rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wood-amber/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base',
         variants[variant] || variants.primary,
         sizes[size] || sizes.md,
         className,

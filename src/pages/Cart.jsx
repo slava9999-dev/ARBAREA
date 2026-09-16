@@ -576,7 +576,7 @@ const Cart = () => {
                 type="button"
                 onClick={step === 'form' ? handlePayment : null}
                 disabled={step === 'processing'}
-                className="btn-primary w-full py-4 text-base font-bold flex items-center justify-center gap-3 shadow-wood-glow-lg active:scale-[0.98] transition-all"
+                className="btn-primary w-full py-4 text-base font-bold flex items-center justify-center gap-3 shadow-wood-glow-lg"
               >
                 {step === 'processing' ? (
                   <>

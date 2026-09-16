@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { haptic } from '../../lib/haptics';
+import { press, spring } from '../../lib/motion';
 
 const TactileButton = ({
   children,
@@ -9,10 +11,11 @@ const TactileButton = ({
   type = 'button',
 }) => {
   const handleTap = (e) => {
-    if (!disabled && window.navigator?.vibrate) {
-      window.navigator.vibrate(10);
+    if (disabled) {
+      return;
     }
-    if (onClick && !disabled) {
+    haptic(10);
+    if (onClick) {
       onClick(e);
     }
   };
@@ -29,7 +32,8 @@ const TactileButton = ({
   return (
     <motion.button
       type={type}
-      whileTap={{ scale: 0.95 }}
+      whileTap={disabled ? undefined : press.small}
+      transition={spring.press}
       onClick={handleTap}
       disabled={disabled}
       className={`
@@ -37,6 +41,7 @@ const TactileButton = ({
                 flex items-center justify-center gap-2 transition-colors 
                 px-6 py-3
                 disabled:opacity-50 disabled:cursor-not-allowed
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wood-amber/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base
                 ${className}
                 ${variants[variant] || variants.primary}
             `}
