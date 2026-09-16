@@ -11,7 +11,7 @@ import SEO from '../components/seo/SEO';
 
 const LegalInfo = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white pt-20 pb-24 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white pt-20 pb-[calc(6rem+env(safe-area-inset-bottom))] px-4">
       <SEO
         title="Оплата и доставка, реквизиты"
         description="Условия оплаты, доставки по России, гарантия и реквизиты мастерской Arbarea."

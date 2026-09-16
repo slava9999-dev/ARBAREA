@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { haptic } from '../../lib/haptics';
+import { project, spring } from '../../lib/motion';
 
 const FullScreenImageViewer = ({ images, initialIndex = 0, onClose }) => {
   const dialogRef = useRef(null);
   const [index, setIndex] = useState(initialIndex);
-  const [scale, setScale] = useState(1);
 
   // Lock body scroll and handle dialog
   useEffect(() => {
@@ -32,14 +33,14 @@ const FullScreenImageViewer = ({ images, initialIndex = 0, onClose }) => {
 
   const handleNext = (e) => {
     e?.stopPropagation();
+    haptic(8);
     setIndex((prev) => (prev + 1) % images.length);
-    setScale(1);
   };
 
   const handlePrev = (e) => {
     e?.stopPropagation();
+    haptic(8);
     setIndex((prev) => (prev - 1 + images.length) % images.length);
-    setScale(1);
   };
 
   const currentImage = images[index];
@@ -51,6 +52,8 @@ const FullScreenImageViewer = ({ images, initialIndex = 0, onClose }) => {
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === 'Escape') onClose();
+        if (e.key === 'ArrowRight') handleNext();
+        if (e.key === 'ArrowLeft') handlePrev();
       }}
     >
       <motion.div
@@ -81,10 +84,7 @@ const FullScreenImageViewer = ({ images, initialIndex = 0, onClose }) => {
         <div
           className="relative w-full h-full flex items-center justify-center p-4 overflow-hidden"
           onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowRight') handleNext();
-            if (e.key === 'ArrowLeft') handlePrev();
-          }}
+          onKeyDown={(e) => e.stopPropagation()}
           role="presentation"
         >
           <motion.img
@@ -92,17 +92,21 @@ const FullScreenImageViewer = ({ images, initialIndex = 0, onClose }) => {
             src={currentImage}
             alt={`Full screen view ${index + 1}`}
             className="max-w-full max-h-full object-contain"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: scale }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            drag
-            dragConstraints={{ left: -500, right: 500, top: -500, bottom: 500 }}
-            dragElastic={0.1}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={spring.ui}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            dragMomentum={false}
             onDragEnd={(_e, { offset, velocity }) => {
-              const swipe = Math.abs(offset.x) * velocity.x;
-              if (swipe < -100) {
+              // Momentum projection decides the landing, not the release
+              // point: offset + where the flick is still heading.
+              const projected = offset.x + project(velocity.x);
+              const threshold = window.innerWidth * 0.2;
+              if (projected < -threshold) {
                 handleNext();
-              } else if (swipe > 100) {
+              } else if (projected > threshold) {
                 handlePrev();
               }
             }}

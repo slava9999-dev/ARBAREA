@@ -86,7 +86,7 @@ const CartItem = ({ item, onRemove }) => {
               onClick={handleDecrease}
               disabled={quantity <= 1}
               aria-label="Уменьшить количество"
-              className="w-8 h-8 flex items-center justify-center rounded-md text-stone-400 hover:text-wood-amber hover:bg-wood-amber/10 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-stone-400"
+              className="relative w-8 h-8 flex items-center justify-center rounded-md text-stone-400 hover:text-wood-amber hover:bg-wood-amber/10 transition-all duration-200 before:absolute before:-inset-2 before:rounded-md before:content-[''] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-stone-400"
             >
               <Minus size={14} />
             </button>
@@ -98,7 +98,7 @@ const CartItem = ({ item, onRemove }) => {
               onClick={handleIncrease}
               disabled={quantity >= 99}
               aria-label="Увеличить количество"
-              className="w-8 h-8 flex items-center justify-center rounded-md text-stone-400 hover:text-wood-amber hover:bg-wood-amber/10 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="relative w-8 h-8 flex items-center justify-center rounded-md text-stone-400 hover:text-wood-amber hover:bg-wood-amber/10 transition-all duration-200 before:absolute before:-inset-2 before:rounded-md before:content-[''] disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <Plus size={14} />
             </button>
@@ -131,7 +131,7 @@ const CartItem = ({ item, onRemove }) => {
         type="button"
         onClick={onRemove}
         aria-label="Удалить из корзины"
-        className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-stone-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+        className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-stone-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 before:absolute before:-inset-2 before:rounded-lg before:content-['']"
       >
         <Trash2 size={16} />
       </button>
