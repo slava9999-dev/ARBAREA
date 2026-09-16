@@ -135,61 +135,9 @@ export default {
       },
     },
   },
-  plugins: [
-    ({ addComponents, addUtilities }) => {
-      addComponents({
-        // Premium glass panel
-        '.glass-panel': {
-          '@apply bg-card/90 backdrop-blur-xl border border-white/5 shadow-wood-md rounded-2xl':
-            {},
-        },
-        // Wood button primary
-        '.btn-primary': {
-          '@apply inline-flex items-center justify-center gap-2 px-6 py-3 font-sans font-semibold text-base rounded-xl transition-all duration-300':
-            {},
-          '@apply bg-gradient-to-br from-wood-amber-dark to-wood-amber text-base shadow-wood-glow':
-            {},
-          '@apply hover:shadow-wood-glow-lg hover:-translate-y-0.5 hover:brightness-110':
-            {},
-          '@apply active:scale-[0.98] active:translate-y-0': {},
-          '@apply disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none':
-            {},
-        },
-        // Wood button secondary (outline)
-        '.btn-secondary': {
-          '@apply inline-flex items-center justify-center gap-2 px-6 py-3 font-sans font-semibold text-wood-amber rounded-xl transition-all duration-300':
-            {},
-          '@apply bg-transparent border-2 border-wood-amber': {},
-          '@apply hover:bg-wood-amber/10 hover:border-wood-amber-light hover:shadow-wood-glow hover:-translate-y-0.5':
-            {},
-          '@apply active:scale-[0.98]': {},
-        },
-        // Premium card
-        '.card-premium': {
-          '@apply bg-gradient-to-b from-card to-surface border border-white/5 rounded-2xl shadow-wood-sm transition-all duration-300':
-            {},
-          '@apply hover:border-wood-amber/20 hover:shadow-wood-md hover:-translate-y-1':
-            {},
-        },
-        // Input field
-        '.input-premium': {
-          '@apply w-full p-4 font-sans text-white bg-surface border border-white/10 rounded-xl outline-none transition-all duration-200':
-            {},
-          '@apply placeholder:text-muted': {},
-          '@apply hover:border-wood-amber/30': {},
-          '@apply focus:border-wood-amber focus:ring-2 focus:ring-wood-amber/20':
-            {},
-        },
-      });
-      addUtilities({
-        '.text-gradient-amber': {
-          background:
-            'linear-gradient(135deg, #dbb978 0%, #c9a45c 50%, #a8834a 100%)',
-          '-webkit-background-clip': 'text',
-          '-webkit-text-fill-color': 'transparent',
-          'background-clip': 'text',
-        },
-      });
-    },
-  ],
+  /* Component classes (.glass-panel, .nav-glass, .btn-primary, .input-premium)
+     live in src/index.css @layer components — a single source of truth.
+     Defining them here too emitted a second, conflicting copy into the bundle
+     that the stylesheet then had to override. */
+  plugins: [],
 };

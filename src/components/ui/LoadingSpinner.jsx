@@ -2,8 +2,12 @@ import { motion } from 'framer-motion';
 
 const LoadingSpinner = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#1c1917]">
-      <div className="relative w-24 h-24 flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-base">
+      <div
+        className="relative w-24 h-24 flex items-center justify-center"
+        aria-live="polite"
+        aria-label="Загрузка"
+      >
         {/* Outer Ring */}
         <motion.div
           className="absolute inset-0 border-4 border-amber-900/30 rounded-full"

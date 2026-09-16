@@ -92,6 +92,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
           boxShadow:
             '0 20px 40px rgba(201, 164, 92, 0.2), 0 0 60px rgba(201, 164, 92, 0.1)',
         }}
+        // biome-ignore lint/a11y/useSemanticElements: <a> can't wrap the variant buttons or the drag-to-swipe gallery (invalid nesting / broken gesture), so role="link" with Enter+Space handling is the accessible equivalent.
         role="link"
         tabIndex={0}
         aria-label={`Просмотреть детали товара: ${product.name}`}
@@ -265,7 +266,7 @@ const FlipProductCard = ({ product, onBuy, onOpenModal }) => {
               <button
                 type="button"
                 onClick={handleBuy}
-                className="flex-[1.4] h-8 btn-primary rounded-lg flex items-center justify-center gap-1 shadow-wood-glow hover:shadow-wood-glow-lg active:scale-95 transition-all duration-200 text-[10px] font-bold uppercase tracking-tight px-1"
+                className="flex-[1.4] h-8 btn-primary rounded-lg flex items-center justify-center gap-1 shadow-wood-glow hover:shadow-wood-glow-lg text-[10px] font-bold uppercase tracking-tight px-1"
               >
                 <ShoppingBag size={12} />
                 <span className="whitespace-nowrap">В корзину</span>

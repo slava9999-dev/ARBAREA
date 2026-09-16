@@ -1,0 +1,21 @@
+# Line endings: LF in the repo and in every working tree, on every OS.
+#
+# The repo stores LF. Without this file a Windows checkout
+# (core.autocrlf=true) lands CRLF on disk, so `npm run format:check`
+# (Biome, lineEnding: lf) fails on nearly every file locally while CI on
+# Linux stays green — a phantom failure that hides real formatting issues.
+* text=auto eol=lf
+
+# Binary assets — never normalised, never diffed as text
+*.webp binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.avif binary
+*.mp4 binary
+*.webm binary
+*.woff binary
+*.woff2 binary
+*.ttf binary

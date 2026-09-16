@@ -7,23 +7,13 @@ import {
 } from 'lucide-react';
 import { memo } from 'react';
 import { NavLink } from 'react-router-dom';
+import { haptic } from '../../lib/haptics';
 
 const BottomNav = memo(({ cartCount }) => {
   return (
     <nav className="fixed bottom-4 left-4 right-4 z-[100] will-change-transform">
       {/* Glass background with wood accent */}
-      <div
-        className="relative flex items-center h-[72px] rounded-2xl overflow-hidden"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(42, 37, 32, 0.95) 0%, rgba(26, 22, 20, 0.98) 100%)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(201, 164, 92, 0.15)',
-          boxShadow:
-            '0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-        }}
-      >
+      <div className="nav-glass relative flex items-center h-[72px] rounded-2xl overflow-hidden">
         {/* Subtle top glow line */}
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px"
@@ -49,12 +39,15 @@ const BottomNav = memo(({ cartCount }) => {
           <NavLink
             key={tab.path}
             to={tab.path}
+            onPointerDown={() => haptic(8)}
             className={({ isActive }) =>
-              `flex-1 relative flex flex-col items-center justify-center h-full transition-all duration-200 group ${
-                isActive
-                  ? 'text-wood-amber'
-                  : 'text-stone-500 hover:text-stone-300'
-              }`
+              `flex-1 relative flex flex-col items-center justify-center h-full group
+               transition-[color,transform] duration-200 ease-out
+               active:scale-[0.94] active:duration-75 ${
+                 isActive
+                   ? 'text-wood-amber'
+                   : 'text-stone-500 hover:text-stone-300'
+               }`
             }
           >
             {({ isActive }) => (

@@ -101,15 +101,13 @@ const Wishlist = () => {
 
               <div className="flex-1 min-w-0 flex flex-col justify-between">
                 <div>
-                  <div
-                    className="font-medium text-sm text-white line-clamp-2 leading-snug cursor-pointer hover:text-amber-400 transition-colors"
+                  <button
+                    type="button"
+                    className="block w-full text-left font-medium text-sm text-white line-clamp-2 leading-snug hover:text-amber-400 transition-colors"
                     onClick={() => navigate(`/product/${item.id}`)}
-                    onKeyDown={() => {}}
-                    role="button"
-                    tabIndex={0}
                   >
                     {item.name}
-                  </div>
+                  </button>
                   <p className="text-amber-500 font-bold text-sm mt-1 font-mono">
                     {(item.price || 0).toLocaleString()} ₽
                   </p>

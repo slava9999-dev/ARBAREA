@@ -30,7 +30,7 @@ const BuyModal = lazy(() => import('./components/features/BuyModal'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const DebugPWA = lazy(() => import('./pages/DebugPWA'));
 
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, MotionConfig } from 'framer-motion';
 import { Route, Routes, useLocation } from 'react-router-dom';
 
 const AppContent = () => {
@@ -118,19 +118,21 @@ const AppContent = () => {
 
 const App = () => (
   <ErrorBoundary>
-    <ThemeProvider>
-      <ToastProvider>
-        <SimpleAuthProvider>
-          <ProductProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <AppContent />
-              </WishlistProvider>
-            </CartProvider>
-          </ProductProvider>
-        </SimpleAuthProvider>
-      </ToastProvider>
-    </ThemeProvider>
+    <MotionConfig reducedMotion="user">
+      <ThemeProvider>
+        <ToastProvider>
+          <SimpleAuthProvider>
+            <ProductProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <AppContent />
+                </WishlistProvider>
+              </CartProvider>
+            </ProductProvider>
+          </SimpleAuthProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </MotionConfig>
   </ErrorBoundary>
 );
 

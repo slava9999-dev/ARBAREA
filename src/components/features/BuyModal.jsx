@@ -288,7 +288,7 @@ const BuyModal = ({ product, onClose, onAddToCart }) => {
           <button
             type="button"
             onClick={handleBuyNow}
-            className="flex-[1.3] btn-primary py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-wood-glow active:scale-[0.98] transition-all"
+            className="flex-[1.3] btn-primary py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-wood-glow"
           >
             <CreditCard size={18} />
             <span>Оформить заказ</span>
