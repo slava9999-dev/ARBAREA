@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "context-budget": {
+      "source": "affaan-m/ecc",
+      "sourceType": "github",
+      "skillPath": "skills/context-budget/SKILL.md",
+      "computedHash": "b66f9dea9c1dc8ea220b641503613009de537129f4eb5ca1f8edbf7acd708f42"
+    },
+    "principle-guard-the-context-window": {
+      "source": "cursor/plugins",
+      "sourceType": "github",
+      "skillPath": "pstack/skills/principle-guard-the-context-window/SKILL.md",
+      "computedHash": "f4bc80b6c5b2137b66a712b6845ffb167e1e8ebed10b44f9218992b110a20298"
+    }
+  }
+}
