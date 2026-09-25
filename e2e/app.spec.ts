@@ -2,7 +2,8 @@
  * E2E Test: Homepage and Navigation
  * Tests core navigation and page loading
  */
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 test.describe('Homepage', () => {
   test.beforeEach(async ({ page }) => {
@@ -99,6 +100,96 @@ test.describe('Profile', () => {
         .getByText(/скидка 10%|получить скидку|ваше имя|номер телефона|регистрац/i)
         .first(),
     ).toBeVisible({ timeout: 5000 });
+  });
+});
+
+test.describe('Product gallery', () => {
+  const swipe = async (
+    page: Page,
+    from: { x: number; y: number },
+    dx: number,
+  ) => {
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    for (let i = 1; i <= 12; i++) {
+      await page.mouse.move(from.x + (dx * i) / 12, from.y, { steps: 1 });
+      await page.waitForTimeout(16);
+    }
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+  };
+
+  test('swiping photos on details must not open the lightbox', async ({
+    page,
+  }) => {
+    await page.goto('/product/101');
+    await page.waitForTimeout(1500);
+
+    // Swipe through every photo and past the last one: no modal may appear.
+    for (let i = 0; i < 12; i++) {
+      await swipe(page, { x: 300, y: 300 }, -180);
+      await expect(page.locator('dialog[open]')).toHaveCount(0);
+    }
+  });
+
+  test('tap opens the fullscreen viewer and it is viewport-centered', async ({
+    page,
+  }) => {
+    await page.goto('/product/101');
+    await page.waitForTimeout(1500);
+
+    await page.mouse.click(200, 300);
+    const dialog = page.locator('dialog[open]');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('/ 9')).toBeVisible();
+
+    // Regression: the fixed overlay used to be trapped by <main>'s
+    // backdrop-filter containing block, pushing the photo off-screen.
+    const img = await page.evaluate(() => {
+      const el = document.querySelector('dialog[open] img') as HTMLImageElement;
+      const r = el.getBoundingClientRect();
+      return {
+        centerY: r.y + r.height / 2,
+        viewportCenterY: window.innerHeight / 2,
+        width: r.width,
+        naturalWidth: el.naturalWidth,
+      };
+    });
+    expect(Math.abs(img.centerY - img.viewportCenterY)).toBeLessThan(40);
+    expect(img.width).toBeGreaterThan(100);
+    expect(img.naturalWidth).toBeGreaterThan(0);
+
+    // Swiping inside the viewer pages to the next photo.
+    await swipe(page, { x: 300, y: 420 }, -220);
+    await expect(dialog.getByText('/ 9')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+  });
+
+  test('card gallery swipes past the last photo without opening modals', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const card = page.locator('[data-testid="product-card"]').first();
+    await card.waitFor({ timeout: 15000 });
+    await card.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+
+    const tbox = await card.locator('.cursor-pointer').first().boundingBox();
+    const cx = (tbox?.x ?? 0) + (tbox?.width ?? 0) / 2;
+    const cy = (tbox?.y ?? 0) + (tbox?.height ?? 0) / 2;
+
+    for (let i = 0; i < 12; i++) {
+      await swipe(page, { x: cx + 100, y: cy }, -160);
+      await expect(page.locator('dialog[open]')).toHaveCount(0);
+    }
+
+    // The maximize button still opens the viewer.
+    await card.locator('button[aria-label="Открыть на весь экран"]').click();
+    await expect(page.locator('dialog[open]')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
   });
 });
 
