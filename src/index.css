@@ -314,59 +314,66 @@
 .leaflet-popup-tip {
   background: #2a2520 !important;
 }
-/* AURORA BACKGROUND ANIMATIONS */
-@keyframes aurora-1 {
+/* AMBIENT BACKGROUND — warm drifting light.
+   Composited-only motion (transform/opacity), no blur filters: the radial
+   gradients are already soft, and a 100px backdrop blur on mobile Safari
+   costs a full-screen offscreen pass on every frame. Long 26-40s cycles
+   keep the drift below the vestibular-risk frequency band. */
+@keyframes ambient-drift-1 {
   0%,
   100% {
     transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.5;
+    opacity: 0.55;
   }
   33% {
-    transform: translate3d(5vw, -5vh, 0) scale(1.1);
+    transform: translate3d(4vw, -4vh, 0) scale(1.08);
     opacity: 0.7;
   }
   66% {
-    transform: translate3d(-5vw, 5vh, 0) scale(0.9);
-    opacity: 0.4;
+    transform: translate3d(-4vw, 3vh, 0) scale(0.94);
+    opacity: 0.45;
   }
 }
-@keyframes aurora-2 {
+@keyframes ambient-drift-2 {
   0%,
   100% {
     transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.4;
+    opacity: 0.45;
   }
-  33% {
-    transform: translate3d(-5vw, 5vh, 0) scale(0.9);
-    opacity: 0.6;
+  40% {
+    transform: translate3d(-4vw, 4vh, 0) scale(0.92);
+    opacity: 0.58;
   }
-  66% {
-    transform: translate3d(5vw, -5vh, 0) scale(1.1);
-    opacity: 0.3;
+  70% {
+    transform: translate3d(3vw, -3vh, 0) scale(1.1);
+    opacity: 0.38;
   }
 }
-@keyframes aurora-3 {
+@keyframes ambient-drift-3 {
   0%,
   100% {
     transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.3;
+    opacity: 0.35;
   }
   50% {
-    transform: translate3d(0, 5vh, 0) scale(1.2);
+    transform: translate3d(0, 4vh, 0) scale(1.15);
     opacity: 0.5;
   }
 }
-.aurora-orb-1 {
-  animation: aurora-1 15s ease-in-out infinite;
+.ambient-orb {
+  position: absolute;
+  border-radius: 9999px;
+  transform: translate3d(0, 0, 0);
   will-change: transform, opacity;
 }
-.aurora-orb-2 {
-  animation: aurora-2 18s ease-in-out infinite;
-  will-change: transform, opacity;
+.ambient-orb-1 {
+  animation: ambient-drift-1 26s ease-in-out infinite;
 }
-.aurora-orb-3 {
-  animation: aurora-3 20s ease-in-out infinite;
-  will-change: transform, opacity;
+.ambient-orb-2 {
+  animation: ambient-drift-2 32s ease-in-out infinite;
+}
+.ambient-orb-3 {
+  animation: ambient-drift-3 40s ease-in-out infinite;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

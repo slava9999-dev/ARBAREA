@@ -193,6 +193,51 @@ test.describe('Product gallery', () => {
   });
 });
 
+test.describe('Ambient background', () => {
+  const dustPixels = (page: Page) =>
+    page.evaluate(() => {
+      const canvas = document.querySelector('canvas');
+      if (!canvas) return -1;
+      const ctx = canvas.getContext('2d');
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let lit = 0;
+      for (let i = 3; i < data.length; i += 4) {
+        if (data[i] > 0) lit += 1;
+      }
+      return lit;
+    });
+
+  test('renders moving dust and the hero sheen', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForTimeout(1800);
+
+    const first = await dustPixels(page);
+    expect(first).toBeGreaterThan(0);
+
+    await page.waitForTimeout(700);
+    const second = await dustPixels(page);
+    expect(second).toBeGreaterThan(0);
+    expect(second).not.toBe(first);
+
+    const sheen = await page.evaluate(() => {
+      const h1 = document.querySelector('h1.text-sheen');
+      return h1 ? getComputedStyle(h1, '::after').animationName : null;
+    });
+    expect(sheen).toBe('text-sheen-sweep');
+  });
+
+  test('prefers-reduced-motion freezes the dust', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await page.waitForTimeout(1800);
+
+    const first = await dustPixels(page);
+    expect(first).toBeGreaterThan(0);
+    await page.waitForTimeout(800);
+    expect(await dustPixels(page)).toBe(first);
+  });
+});
+
 test.describe('Accessibility', () => {
   test('should have proper heading structure', async ({ page }) => {
     await page.goto('/');

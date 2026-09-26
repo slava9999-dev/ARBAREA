@@ -61,7 +61,7 @@ const AppContent = () => {
     <div className="min-h-screen font-sans pb-safe selection:bg-wood-amber/30 relative">
       <AnimatedBackground />
       {!location.pathname.startsWith('/product/') && <Header />}
-      <main className="max-w-md mx-auto min-h-screen shadow-2xl relative overflow-hidden bg-surface/40 backdrop-blur-md border-x border-white/5">
+      <main className="max-w-md mx-auto min-h-screen shadow-2xl relative overflow-hidden bg-surface/40 backdrop-blur-[2px] border-x border-white/5">
         <Suspense fallback={<LoadingSpinner />}>
           <AnimatePresence mode="popLayout">
             <Routes location={location} key={location.pathname}>

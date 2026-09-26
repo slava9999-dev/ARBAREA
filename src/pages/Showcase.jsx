@@ -1,15 +1,15 @@
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { SearchOverlay } from '../components/SearchOverlay';
 import FlipProductCard from '../components/features/FlipProductCard';
 import HeroBanner from '../components/features/HeroBanner';
 import SocialFooter from '../components/layout/SocialFooter';
-import { SearchOverlay } from '../components/SearchOverlay';
 import SEO from '../components/seo/SEO';
 import { useProducts } from '../context/ProductContext';
 import { haptic } from '../lib/haptics';
 import { spring } from '../lib/motion';
-import { ecommerceImpressions, GOALS, reachGoal } from '../lib/yandex-metrica';
+import { GOALS, ecommerceImpressions, reachGoal } from '../lib/yandex-metrica';
 
 const CATEGORIES = [
   { id: 'all', label: 'Все товары' },
@@ -93,7 +93,7 @@ const Showcase = ({ onBuy, onOpenModal }) => {
   }, [filtered, activeCategory]);
 
   return (
-    <div className="min-h-screen bg-background pb-[calc(6rem+env(safe-area-inset-bottom))]">
+    <div className="min-h-screen pb-[calc(6rem+env(safe-area-inset-bottom))]">
       <SEO
         title="Arbarea"
         description="Авторская столярная мастерская. Эксклюзивная мебель и декор из массива дуба и ясеня ручной работы."
@@ -121,7 +121,10 @@ const Showcase = ({ onBuy, onOpenModal }) => {
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="mb-8"
           >
-            <h1 className="font-serif text-6xl md:text-8xl tracking-tight leading-none text-gradient-amber drop-shadow-wood-glow">
+            <h1
+              data-text="Arbarea"
+              className="font-serif text-6xl md:text-8xl tracking-tight leading-none text-gradient-amber text-sheen drop-shadow-wood-glow"
+            >
               Arbarea
             </h1>
             <div className="h-px w-32 mx-auto mt-4 bg-gradient-to-r from-transparent via-wood-amber to-transparent opacity-50" />

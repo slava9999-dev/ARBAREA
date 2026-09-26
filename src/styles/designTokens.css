@@ -125,3 +125,41 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* Sheen — медленный блик по золотому тексту.
+   Псевдоэлемент дублирует текст и клипается по глифам; сам блик проезжает
+   раз в ~11 секунд, остальное время стоит. Гасится prefers-reduced-motion
+   глобальным правилом в index.css. */
+.text-sheen {
+  position: relative;
+}
+.text-sheen::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 42%,
+    rgba(255, 245, 220, 0.5) 50%,
+    transparent 58%
+  );
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  background-position: 140% 0;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-sheen-sweep 11s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes text-sheen-sweep {
+  0%,
+  62% {
+    background-position: 140% 0;
+  }
+  88%,
+  100% {
+    background-position: -40% 0;
+  }
+}
